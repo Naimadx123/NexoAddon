@@ -1,4 +1,4 @@
-package zone.vao.nexoAddon.classes.bedrockbreak;
+package zone.vao.nexoAddon.classes;
 
 import com.nexomc.nexo.mechanics.Mechanic;
 import com.nexomc.nexo.mechanics.MechanicFactory;
