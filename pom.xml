@@ -6,7 +6,7 @@
 
     <groupId>zone.vao</groupId>
     <artifactId>NexoAddon</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.6</version>
     <packaging>jar</packaging>
 
     <name>NexoAddon</name>
@@ -65,6 +65,11 @@
             <name>Nexo Repository</name>
             <url>https://repo.nexomc.com/snapshots</url>
         </repository>
+        <repository>
+            <id>oraxen-releases</id>
+            <name>Oraxen Repository</name>
+            <url>https://repo.oraxen.com/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -77,13 +82,13 @@
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>0.5.0-dev.8</version>
+            <version>0.6.0-dev.7</version>
             <scope>provided</scope>
             <classifier>dev</classifier>
             <exclusions>
                 <exclusion>
-                    <groupId>net.byteflux</groupId>
-                    <artifactId>libby-bukkit</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -113,5 +118,12 @@
             <artifactId>acf-paper</artifactId>
             <version>0.5.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>io.th0rgal</groupId>
+            <artifactId>protectionlib</artifactId>
+            <version>1.8.0</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 </project>

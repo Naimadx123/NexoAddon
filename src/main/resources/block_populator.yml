@@ -1,0 +1,9 @@
+#custom_block:            # ID of Nexo custom block or Nexo furniture
+#  iterations: 50         # How many blocks should be iterated
+#  worlds: [ world ]      # World where custom blocks should be spawned
+#  maxY: 50               # Max Y of chunk where custom block should be spawned
+#  minY: 20               # Min Y of chunk where custom block should be spawned
+#  biomes: [ SWAMP ]      # Biomes where custom blocks should be spawned, leave `[]` if it should spawn on every biome
+#  chance: 0.2            # Chance of custom block spawn in chunk
+#  replace:               # You can also use `place_on: [ STONE ]` to place custom blocks on provided blocks
+#    - STONE              # Replace STONE

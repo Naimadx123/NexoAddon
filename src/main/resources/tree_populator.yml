@@ -1,0 +1,8 @@
+#custom_tree:               # ID of custom tree
+#  worlds: [ world ]        # World where custom tree should be spawned
+#  maxY: 50                 # Max Y of chunk where custom tree should be spawned
+#  minY: 20                 # Min Y of chunk where custom tree should be spawned
+#  biomes: [ SWAMP ]        # Biomes where custom tree should be spawned, leave `[]` if it should spawn on every biome
+#  chance: 0.2              # Chance of custom tree spawn in chunk
+#  logs: custom_log          # Logs of custom tree
+#  leaves: custom_leaves    # Leaves of custom tree
