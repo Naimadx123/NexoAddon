@@ -70,6 +70,10 @@
             <name>Oraxen Repository</name>
             <url>https://repo.oraxen.com/releases</url>
         </repository>
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -117,12 +121,6 @@
             <groupId>co.aikar</groupId>
             <artifactId>acf-paper</artifactId>
             <version>0.5.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>io.th0rgal</groupId>
-            <artifactId>protectionlib</artifactId>
-            <version>1.8.0</version>
-            <scope>compile</scope>
         </dependency>
 
     </dependencies>

@@ -1,8 +1,8 @@
 package zone.vao.nexoAddon.classes.bedrockbreak;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.nexo.utils.breaker.ModernBreakerManager;
-import com.nexomc.nexo.mechanics.breakable.BreakableMechanic;
+import zone.vao.nexoAddon.utils.breaker.ModernBreakerManager;
+import zone.vao.nexoAddon.utils.breaker.ModernBreakerManager.HardnessModifier;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -22,7 +22,6 @@ public class BedrockBreakMechanicManager {
                 String itemID = NexoItems.idFromItem(tool);
                 boolean disableFirstLayer = !factory.isDisabledOnFirstLayer() || block.getY() > (block.getWorld().getMinHeight());
                 return !factory.isNotImplementedIn(itemID) && disableFirstLayer;
-
             }
 
             @Override
@@ -47,5 +46,4 @@ public class BedrockBreakMechanicManager {
             }
         });
     }
-
 }

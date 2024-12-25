@@ -1,22 +1,18 @@
-package zone.vao.nexoAddon.classes;
+package zone.vao.nexoAddon.classes.bedrockbreak;
 
-import com.nexomc.nexo.mechanics.Mechanic;
+import zone.vao.nexoAddon.mechanics.breakable.BreakableMechanic;
 import com.nexomc.nexo.mechanics.MechanicFactory;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class BedrockBreakMechanic extends Mechanic {
+public class BedrockBreakMechanic extends BreakableMechanic {
 
     final long delay;
     final long period;
     final int probability;
 
     public BedrockBreakMechanic(MechanicFactory mechanicFactory, ConfigurationSection section) {
-        /*
-         * We give: - an instance of the Factory which created the mechanic - the
-         * section used to configure the mechanic
-         */
         super(mechanicFactory, section);
         this.delay = section.getLong("delay");
         this.period = section.getLong("hardness");

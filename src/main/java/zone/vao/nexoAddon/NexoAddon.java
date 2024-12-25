@@ -12,6 +12,8 @@ import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import zone.vao.nexoAddon.classes.Components;
+import zone.vao.nexoAddon.classes.bigmining.BigMiningMechanicFactory;
+import zone.vao.nexoAddon.classes.bigmining.BigMiningMechanicListener;
 import zone.vao.nexoAddon.classes.populators.CustomChunkGenerator;
 import zone.vao.nexoAddon.classes.populators.orePopulator.CustomOrePopulator;
 import zone.vao.nexoAddon.classes.populators.orePopulator.Ore;
@@ -47,6 +49,8 @@ public final class NexoAddon extends JavaPlugin {
   public final TreePopulator treePopulator = new TreePopulator();
   public Map<String, List<BlockPopulator>> worldPopulators = new HashMap<>();
   public Map<String, String> jukeboxLocations = new HashMap<>();
+  private BigMiningMechanicFactory bigMiningMechanicFactory;
+  private BedrockBreakMechanicFactory bedrockBreakMechanicFactory;
 
   @Override
   public void onEnable() {
@@ -55,6 +59,18 @@ public final class NexoAddon extends JavaPlugin {
     saveDefaultConfig();
     globalConfig = getConfig();
 
+  private void initializeCommandManager() {
+    PaperCommandManager manager = new PaperCommandManager(this);
+    manager.registerCommand(new NexoAddonCommand());
+    
+    // Initialize BigMining
+    bigMiningMechanicFactory = new BigMiningMechanicFactory(this);
+    MechanicFactory.register(bigMiningMechanicFactory);
+    
+    // Initialize BedrockBreak
+    bedrockBreakMechanicFactory = new BedrockBreakMechanicFactory(this);
+    MechanicFactory.register(bedrockBreakMechanicFactory);
+  }
     checkComponentSupport();
     initializeCommandManager();
     initializePopulators();
@@ -89,8 +105,16 @@ public final class NexoAddon extends JavaPlugin {
   private void initializeCommandManager() {
     PaperCommandManager manager = new PaperCommandManager(this);
     manager.registerCommand(new NexoAddonCommand());
+    
+    // Initialize BigMining
+    bigMiningMechanicFactory = new BigMiningMechanicFactory(this);
+    MechanicFactory.register(bigMiningMechanicFactory);
+    
+    // Initialize BedrockBreak
+    bedrockBreakMechanicFactory = new BedrockBreakMechanicFactory(getConfig().getConfigurationSection("bedrock-break"));
+    MechanicFactory.register(bedrockBreakMechanicFactory);
+    new BedrockBreakMechanicManager(bedrockBreakMechanicFactory);
   }
-
   private void initializePopulators() {
     populatorsConfig = new PopulatorsConfigUtil(getDataFolder(), getClassLoader());
     initializeOres();
@@ -103,7 +127,6 @@ public final class NexoAddon extends JavaPlugin {
     ores.forEach(orePopulator::addOre);
     orePopulator.getOres().forEach(ore -> {
       for (World world : ore.getWorlds()) {
-
         CustomOrePopulator customOrePopulator = new CustomOrePopulator(orePopulator);
         if(!worldPopulators.containsKey(world.getName())) {
           worldPopulators.put(world.getName(), new ArrayList<>());
@@ -138,6 +161,7 @@ public final class NexoAddon extends JavaPlugin {
     registerEvent(new PlayerMovementListener());
     registerEvent(new NexoFurnitureBreakListener());
     registerEvent(new BlockBreakListener());
+    registerEvent(new BigMiningMechanicListener(bigMiningMechanicFactory));
   }
 
   private void initializeMetrics() {
@@ -170,7 +194,6 @@ public final class NexoAddon extends JavaPlugin {
     });
     worldPopulators.clear();
   }
-
 
   public void addPopulatorToWorld(World world, BlockPopulator populator) {
     if (world == null) {
