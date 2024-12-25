@@ -51,7 +51,6 @@ public final class NexoAddon extends JavaPlugin {
   public Map<String, String> jukeboxLocations = new HashMap<>();
   private BigMiningMechanicFactory bigMiningMechanicFactory;
   private BedrockBreakMechanicFactory bedrockBreakMechanicFactory;
-
   @Override
   public void onEnable() {
     instance = this;
@@ -59,18 +58,6 @@ public final class NexoAddon extends JavaPlugin {
     saveDefaultConfig();
     globalConfig = getConfig();
 
-  private void initializeCommandManager() {
-    PaperCommandManager manager = new PaperCommandManager(this);
-    manager.registerCommand(new NexoAddonCommand());
-    
-    // Initialize BigMining
-    bigMiningMechanicFactory = new BigMiningMechanicFactory(this);
-    MechanicFactory.register(bigMiningMechanicFactory);
-    
-    // Initialize BedrockBreak
-    bedrockBreakMechanicFactory = new BedrockBreakMechanicFactory(this);
-    MechanicFactory.register(bedrockBreakMechanicFactory);
-  }
     checkComponentSupport();
     initializeCommandManager();
     initializePopulators();
@@ -78,6 +65,17 @@ public final class NexoAddon extends JavaPlugin {
     initializeMetrics();
   }
 
+  private void initializeCommandManager() {
+    PaperCommandManager manager = new PaperCommandManager(this);
+    manager.registerCommand(new NexoAddonCommand());
+    
+    bigMiningMechanicFactory = new BigMiningMechanicFactory(this);
+    MechanicFactory.register(bigMiningMechanicFactory);
+    
+    bedrockBreakMechanicFactory = new BedrockBreakMechanicFactory(getConfig().getConfigurationSection("bedrock-break"));
+    MechanicFactory.register(bedrockBreakMechanicFactory);
+    new BedrockBreakMechanicManager(bedrockBreakMechanicFactory);
+  }
   @Override
   public void onDisable() {
     bossBars.values().forEach(BossBarUtil::removeBar);
