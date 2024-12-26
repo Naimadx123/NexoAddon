@@ -1,8 +1,7 @@
 package zone.vao.nexoAddon.classes.bigmining;
 
 import com.nexomc.nexo.utils.BlockHelpers;
-import com.nexomc.nexo.utils.EventUtils;
-import com.nexomc.nexo.utils.VersionUtil;
+import zone.vao.nexoAddon.utils.EventUtils;
 import io.th0rgal.protectionlib.ProtectionLib;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,13 +13,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-
+import org.bukkit.Bukkit;
+import com.nexomc.nexo.mechanics.MechanicsManager;
 import java.util.List;
+import java.util.Set;
 
 public class BigMiningMechanicListener implements Listener {
-
     private final BigMiningMechanicFactory factory;
     private int blocksToProcess = 0;
+    private static final Set<Material> UNBREAKABLE_BLOCKS = Set.of(Material.BEDROCK, Material.BARRIER);
 
     public BigMiningMechanicListener(final BigMiningMechanicFactory factory) {
         this.factory = factory;
@@ -60,31 +61,28 @@ public class BigMiningMechanicListener implements Listener {
                 }
         blocksToProcess = 0;
     }
-
     private void breakBlock(final Player player, final Block block, final ItemStack itemStack) {
         if (block.isLiquid()
-                || BlockHelpers.UNBREAKABLE_BLOCKS.contains(block.getType())
+                || UNBREAKABLE_BLOCKS.contains(block.getType())
                 || !ProtectionLib.canBreak(player, block.getLocation()))
             return;
-        blocksToProcess += 1; // to avoid this method to call itself <- need other way to handle players using
-        // the same tool at the same time
-        final BlockBreakEvent event = new BlockBreakEvent(block, player);
-        if (!factory.callEvents() || !EventUtils.callEvent(event)) return;
-        if (event.isDropItems())
-            if (VersionUtil.isPaperServer()) block.breakNaturally(itemStack, true);
-            else block.breakNaturally();
-        else block.setType(Material.AIR);
+        blocksToProcess += 1;
+        
+        BlockBreakEvent event = new BlockBreakEvent(block, player);
+        if (!factory.callEvents() || !EventUtils.handleEvent(event)) return;
+        
+        if (event.isDropItems()) {
+            block.breakNaturally(itemStack);
+        } else {
+            block.setType(Material.AIR);
+        }
     }
 
-    /*
-     * It converts a relative location in 2d into another location in 3d on a
-     * certain axis
-     */
     private Location transpose(Location loc, final BlockFace face, final double relX, final double relY,
-                               final double relativeDepth) {
+                             final double relativeDepth) {
         loc = loc.clone();
         return switch (face) {
-            case WEST, EAST ->  loc.add(relativeDepth, relX, relY);
+            case WEST, EAST -> loc.add(relativeDepth, relX, relY);
             case UP, DOWN -> loc.add(relX, relativeDepth, relY);
             default -> loc.add(relX, relY, relativeDepth);
         };

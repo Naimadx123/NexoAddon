@@ -8,34 +8,44 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
-public class BedrockBreakMechanicManager {
+public class BedrockBreakMechanicManager implements Listener {
+    private final BedrockBreakMechanicFactory factory;
 
     public BedrockBreakMechanicManager(BedrockBreakMechanicFactory factory) {
-        ModernBreakerManager.MODIFIERS.add(new HardnessModifier() {
+        this.factory = factory;
+        registerBreakModifier();
+    }
 
+    private void registerBreakModifier() {
+        ModernBreakerManager.MODIFIERS.add(new HardnessModifier() {
             @Override
             public boolean isTriggered(Player player, Block block, ItemStack tool) {
                 if (block.getType() != Material.BEDROCK) return false;
 
                 String itemID = NexoItems.idFromItem(tool);
-                boolean disableFirstLayer = !factory.isDisabledOnFirstLayer() || block.getY() > (block.getWorld().getMinHeight());
-                return !factory.isNotImplementedIn(itemID) && disableFirstLayer;
+                boolean validLayer = !factory.isDisabledOnFirstLayer() || 
+                                   block.getY() > block.getWorld().getMinHeight();
+                                   
+                return !factory.isNotImplementedIn(itemID) && validLayer;
             }
 
             @Override
             public void breakBlock(Player player, Block block, ItemStack tool) {
                 String itemID = NexoItems.idFromItem(tool);
                 BedrockBreakMechanic mechanic = (BedrockBreakMechanic) factory.getMechanic(itemID);
+                if (mechanic == null) return;
+
                 World world = block.getWorld();
                 Location loc = block.getLocation();
 
-                if (mechanic == null) return;
-                if (mechanic.bernouilliTest())
+                if (mechanic.bernouilliTest()) {
                     world.dropItemNaturally(loc, new ItemStack(Material.BEDROCK));
+                }
 
-                block.breakNaturally(true);
+                block.breakNaturally(tool);
             }
 
             @Override
