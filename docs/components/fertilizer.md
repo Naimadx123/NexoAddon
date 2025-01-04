@@ -35,3 +35,19 @@ common_fertilizer:
     max_stack_size: 1
     durability: 50                                  # How many uses
 </code></pre>
+
+### Support Vanilla Blocks
+
+```yaml
+# Example
+
+common_fertilizer:
+  material: DIAMOND
+  itemname: Common Ferilizer
+  Components:
+    fertilizer:
+      usable_on:
+      - _MINECRAFT                 # Act as bone meal on any vanilla block
+      - WHEAT                      # Or just on specific minecraft block
+      growth_speedup: 50
+```
