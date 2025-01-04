@@ -43,6 +43,24 @@ ruby_ore:
   cluster_chance: 1
 ```
 
+### Place below - Icicles
+
+```yaml
+# Example made by Phil (discord: voogle)
+
+icicle:
+  iterations: 50
+  worlds: [ world ]
+  maxY: 150
+  minY: 61
+  biomes: [ SNOWY_TAIGA, SNOWY_BEACH, SNOWY_SLOPES, SNOWY_PLAINS ]
+  chance: 1
+  air_only: true                                                     # Replace Air only
+  place_below: [ SPRUCE_LEAVES, OAK_LEAVES ]
+```
+
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th></tr></thead><tbody><tr><td></td><td></td><td></td><td><a href="../.gitbook/assets/obraz_2025-01-04_232133289.png">obraz_2025-01-04_232133289.png</a></td></tr><tr><td></td><td></td><td></td><td><a href="../.gitbook/assets/obraz_2025-01-04_231941587.png">obraz_2025-01-04_231941587.png</a></td></tr></tbody></table>
+
 ***
 
 ```yaml
@@ -56,6 +74,8 @@ ruby_ore:
 #   replace:               # List of block types that the custom block can replace. Leave empty if not replacing any blocks.
 #     - STONE              # Example: Replaces STONE blocks during generation.
 #   place_on: [ STONE ]    # Optional: List of block types that the custom block can be placed on. Overrides `replace` if provided.
+#   place_below: [ STONE ] # Optional: List of block types that the custom block can be placed below. Overrides `replace` if provided.
+#   air_only: false        # Optional: Replace Air only (for place_on and place_below).
 #   vein_size: 5           # Optional: Maximum number of blocks in a vein. Set to 0 for single block placement. Default: 0.
 #   cluster_chance: 0.8    # Optional: Probability of cluster (vein) formation within the chunk. Defaults to 0.0 for no clustering.
 
