@@ -1,6 +1,6 @@
 # fertilizer
 
-`fertilizer`Component have 2 properties, `usable_on`and \`growth\_speedup\`. Check example below.
+`fertilizer`Component have 2 properties, `usable_on`and `growth_speedup`. Check example below.
 
 ### One time usable
 
