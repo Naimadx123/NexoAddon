@@ -10,11 +10,49 @@ The Repair Mechanic allows players to repair damaged items in their inventory us
 `ratio` options is required!
 {% endhint %}
 
+### One-time Repair item stackable
+
 ```yaml
 # Example
 
-Mechanics:
-  repair:
-    ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
+repair_tool:
+  material: PAPER
+  itemname: <blue>Repair tool
+  Mechanics:
+    repair:
+      ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
+
+```
+
+### One-time Repair item unstackable
+
+```yaml
+# Example
+
+repair_tool:
+  material: PAPER
+  itemname: <blue>Repair tool
+  Components:
+    max_stack_size: 1
+  Mechanics:
+    repair:
+      ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
+
+```
+
+### Reusable Repair item unstackable
+
+```yaml
+# Example
+
+repair_tool:
+  material: PAPER
+  itemname: <blue>Repair tool
+  Components:
+    max_stack_size: 1
+    durability: 50       # 50 uses
+  Mechanics:
+    repair:
+      ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
 
 ```
