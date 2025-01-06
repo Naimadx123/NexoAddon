@@ -6,6 +6,10 @@ description: Repair mechanic.
 
 The Repair Mechanic allows players to repair damaged items in their inventory using a specific repair item. The repair process consumes the repair item while restoring a portion of the durability of the damaged item. The amount of durability restored is determined by the repair ratio defined in the mechanic configuration.
 
+{% hint style="warning" %}
+There is duplication bug using <mark style="color:red;">**Creative**</mark> mode. There is no bug using other gamemodes
+{% endhint %}
+
 {% hint style="info" %}
 `ratio` options is required!
 {% endhint %}
