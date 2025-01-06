@@ -23,6 +23,7 @@ sword_flower:                       # nexo item id
   minY: 20
   biomes: [ PLAINS, BIRCH_FOREST ]
   chance: 1
+  air_only: true
   place_on: [ GRASS_BLOCK ]
 ```
 
