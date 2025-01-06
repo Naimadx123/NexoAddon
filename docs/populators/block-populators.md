@@ -16,14 +16,14 @@ With Block Populators you can simply populate your world with for eg. flowers:
 
 ```yaml
 # Example
-sword_flower:                       # nexo item id
+sword_flower:                             # nexo item id
   iterations: 5
   worlds: [ world ]
   maxY: 120
   minY: 20
   biomes: [ PLAINS, BIRCH_FOREST ]
   chance: 1
-  air_only: true
+  air_only: true                          # Replace Air only
   place_on: [ GRASS_BLOCK ]
 ```
 
