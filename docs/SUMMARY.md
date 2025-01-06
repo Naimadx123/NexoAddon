@@ -8,6 +8,11 @@
 * [jukebox\_playable](components/jukebox_playable.md)
 * [fertilizer](components/fertilizer.md)
 
+## Mechanics
+
+* [BigMining](mechanics/bigmining.md)
+* [Repair](mechanics/repair.md)
+
 ## Settings
 
 * [Double Hit Destroy](settings/double-hit-destroy.md)
