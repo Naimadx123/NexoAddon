@@ -10,7 +10,7 @@ The BedrockBreak Mechanic allows players to break bedrock blocks with specified 
 **For this Mechanic ProtocolLib is required!**
 {% endhint %}
 
-Looooooooong Bedrock Break
+### Looooooooong Bedrock Break
 
 ```yaml
 # Example
@@ -22,7 +22,7 @@ Mechanics:
     durability_cost: 1         # Cost of durability
 ```
 
-Break Bedrock, but at what cost 😢 (break item on bedrock break)
+### Break Bedrock, but at what cost 😢 (break item on bedrock break)
 
 ```yaml
 # Example
@@ -35,7 +35,7 @@ Mechanics:
     disable_on_first_layer: true          # Default on true
 ```
 
-Beyond the world! (Break bottom/last layer of the world)
+### Beyond the world! (Break bottom/last layer of the world)
 
 ```yaml
 # Example
