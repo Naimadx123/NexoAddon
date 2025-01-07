@@ -22,4 +22,4 @@ example_recipe:                           # Unique identifier for the recipe
     minecraft_item: NETHER_STAR
 ```
 
-Made by [**AkisYTB3**](https://github.com/AkisYTB3) via [Pull Request](https://github.com/Naimadx123/NexoAddon/pull/35)
+> Made by [**AkisYTB3**](https://github.com/AkisYTB3) via [Pull Request](https://github.com/Naimadx123/NexoAddon/pull/35)
