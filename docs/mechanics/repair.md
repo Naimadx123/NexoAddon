@@ -11,7 +11,7 @@ There is duplication bug using <mark style="color:red;">**Creative**</mark> mode
 {% endhint %}
 
 {% hint style="info" %}
-`ratio` options is required!
+`ratio` <mark style="color:red;">**OR**</mark> `fixed_amount` option is required!
 {% endhint %}
 
 ### One-time Repair item stackable
@@ -40,7 +40,7 @@ repair_tool:
     max_stack_size: 1
   Mechanics:
     repair:
-      ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
+      fixed_amount: 50         # Amount of durability restored.
 
 ```
 

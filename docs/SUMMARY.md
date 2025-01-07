@@ -12,6 +12,7 @@
 
 * [BigMining](mechanics/bigmining.md)
 * [Repair](mechanics/repair.md)
+* [BedrockBreak](mechanics/bedrockbreak.md)
 
 ## Settings
 
