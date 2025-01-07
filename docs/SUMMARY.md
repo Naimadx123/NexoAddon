@@ -14,6 +14,14 @@
 * [Repair](mechanics/repair.md)
 * [BedrockBreak](mechanics/bedrockbreak.md)
 
+## Populators
+
+* [Block Populators](populators/block-populators.md)
+
+## Recipes
+
+* [Smithing Recipe](recipes/smithing-recipe.md)
+
 ## Settings
 
 * [Double Hit Destroy](settings/double-hit-destroy.md)
@@ -21,7 +29,3 @@
 * [Count shears as silktouch](settings/count-shears-as-silktouch.md)
 * [Prevent furniture breaks](settings/prevent-furniture-breaks.md)
 * [Default config.yml](https://github.com/Naimadx123/NexoAddon/blob/master/src/main/resources/config.yml)
-
-## Populators
-
-* [Block Populators](populators/block-populators.md)
