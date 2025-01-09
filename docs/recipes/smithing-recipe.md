@@ -42,4 +42,4 @@ enderite_sword:
     nexo_item: enderite_ingot
 ```
 
-> Made by [**AkisYTB3**](https://github.com/AkisYTB3) via [Pull Request](https://github.com/Naimadx123/NexoAddon/pull/35)
+> Smithing Recipes made by [**AkisYTB3**](https://github.com/AkisYTB3) via [Pull Request](https://github.com/Naimadx123/NexoAddon/pull/35)
