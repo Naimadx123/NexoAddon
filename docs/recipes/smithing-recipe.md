@@ -10,6 +10,7 @@ Create custom smithing recipe!
 # Example
 
 example_recipe:                           # Unique identifier for the recipe
+  keep_durability: true                   # Should keep durability of base item?
   copy_trim: false                        # Should the result retain the trim design from the base item? Defaults to true
   copy_enchantments: true                 # Should enchantments from the base item be transferred to the result? Defaults to true
   result:
@@ -17,7 +18,7 @@ example_recipe:                           # Unique identifier for the recipe
   template:
     minecraft_item: NETHERITE_UPGRADE_SMITHING_TEMPLATE
   base:
-    minecraft_item: LEATHER_CHESTPLATE
+    nexo_item: forst_axe
   addition:
     minecraft_item: NETHER_STAR
 ```
