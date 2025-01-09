@@ -45,5 +45,5 @@ Mechanics:
     hardness: 1                           # Fast digging
     probability: 0.5                      
     durability_cost: 1
-    disable_on_first_layer: false
+    disable_on_first_layer: false         # Allow to break last layer of the bedrock
 ```
