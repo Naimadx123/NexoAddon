@@ -18,7 +18,7 @@ example_recipe:                           # Unique identifier for the recipe
   template:
     minecraft_item: NETHERITE_UPGRADE_SMITHING_TEMPLATE
   base:
-    nexo_item: forst_axe
+    nexo_item: forest_chestplate
   addition:
     minecraft_item: NETHER_STAR
 ```
