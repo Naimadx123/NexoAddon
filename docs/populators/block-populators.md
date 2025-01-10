@@ -39,7 +39,7 @@ ruby_ore:
   minY: 0
   biomes: [  ]
   chance: 0.4
-  replace: [ STONE,  ]
+  replace: [ STONE, DEEPSLATE ]
   vein_size: 5
   cluster_chance: 1
 ```
