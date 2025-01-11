@@ -23,6 +23,8 @@ Mechanics:
 
 ### Advanced Aura
 
+#### Start
+
 {% hint style="info" %}
 Available variables: `x`, `y`, `z`, `angle`, `angle2`,`yaw`, `pitch`, `Math_PI`
 {% endhint %}
