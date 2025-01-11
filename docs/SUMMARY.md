@@ -13,6 +13,7 @@
 * [BigMining](mechanics/bigmining.md)
 * [Repair](mechanics/repair.md)
 * [BedrockBreak](mechanics/bedrockbreak.md)
+* [Aura](mechanics/aura.md)
 
 ## Populators
 
