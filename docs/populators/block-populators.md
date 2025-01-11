@@ -16,6 +16,7 @@ With Block Populators you can simply populate your world with for eg. flowers:
 
 ```yaml
 # Example
+
 sword_flower:                             # nexo item id
   iterations: 5
   worlds: [ world ]
@@ -32,6 +33,8 @@ sword_flower:                             # nexo item id
 Create custom ores in veins!
 
 ```yaml
+# Example
+
 ruby_ore:
   iterations: 10
   worlds: [ world ]

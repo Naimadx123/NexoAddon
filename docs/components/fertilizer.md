@@ -6,6 +6,7 @@
 
 ```yaml
 # Example
+
 common_fertilizer:
   material: DIAMOND
   itemname: Common Ferilizer
