@@ -18,7 +18,6 @@ Dev builds only!
 Mechanics:
   aura:
     type: simple          # Available: simple, ring, helix, heart, custom
-    custom: "(x+cos(angle)*angle*0.1),(y+angle*0.1),(z+sin(angle)*angle*0.1)"
     particle: PORTAL      # Particle to spawn
 ```
 
