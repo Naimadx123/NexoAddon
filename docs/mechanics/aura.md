@@ -10,7 +10,7 @@ The Aura Mechanic creates dynamic, particle-based visual effects around the play
 Aura mechanic works on held item and items in armor slots!
 {% endhint %}
 
-### Basic Aura
+## Basic Aura
 
 ```yaml
 # Example
@@ -21,9 +21,7 @@ Mechanics:
     particle: PORTAL      # Particle to spawn
 ```
 
-### Advanced Aura
-
-#### Start
+## Advanced Aura
 
 {% hint style="info" %}
 Available variables: `x`, `y`, `z`, `angle`, `angle2`,`yaw`, `pitch`, `Math_PI`
@@ -51,6 +49,6 @@ Mechanics:
     particle: FLAME
 ```
 
-#### Operators and functions
+### Operators and functions
 
 <figure><img src="../.gitbook/assets/obraz_2025-01-11_183151805.png" alt="" width="356"><figcaption><p>operators and functions</p></figcaption></figure>
