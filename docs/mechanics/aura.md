@@ -48,3 +48,7 @@ Mechanics:
     custom: "(x+4*sin(angle)^3),(y+0.5),(z+3*cos(angle)-1.25*cos(2*angle)-0.75*cos(3*angle)-0.25*cos(4*angle))"
     particle: FLAME
 ```
+
+#### Operators and functions
+
+<figure><img src="../.gitbook/assets/obraz_2025-01-11_183151805.png" alt="" width="356"><figcaption><p>operators and functions</p></figcaption></figure>
