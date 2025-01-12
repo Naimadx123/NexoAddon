@@ -13,6 +13,7 @@
 * [BigMining](mechanics/bigmining.md)
 * [Repair](mechanics/repair.md)
 * [BedrockBreak](mechanics/bedrockbreak.md)
+* [Aura](mechanics/aura.md)
 
 ## Populators
 
@@ -28,4 +29,5 @@
 * [Bossbar](settings/bossbar.md)
 * [Count shears as silktouch](settings/count-shears-as-silktouch.md)
 * [Prevent furniture breaks](settings/prevent-furniture-breaks.md)
+* [Delay of Aura Mechanic](settings/prevent-furniture-breaks-1.md)
 * [Default config.yml](https://github.com/Naimadx123/NexoAddon/blob/master/src/main/resources/config.yml)

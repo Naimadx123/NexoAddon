@@ -10,6 +10,7 @@ Refer to [Nexo docs](https://docs.nexomc.com/configuration/items-advanced) for s
 
 ```yaml
 # Example
+
 forest_helmet:
   itemname: Forest Helmet
   material: PAPER

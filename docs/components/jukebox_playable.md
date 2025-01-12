@@ -9,7 +9,8 @@
 Refer to [Nexo docs](https://docs.nexomc.com/configuration/items-advanced) for setup this Component.
 
 ```yaml
-// Example
+# Example
+
 sample-cd:
   material: DIAMOND
   itemname: <blue>Sample Disc
