@@ -16,6 +16,7 @@
 * [Aura](mechanics/aura.md)
 * [MiningTools](mechanics/miningtools.md)
 * [SpawnerBreak](mechanics/spawnerbreak.md)
+* [Custom Block Experience](mechanics/custom-block-experience.md)
 
 ## Populators
 
