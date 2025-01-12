@@ -32,3 +32,5 @@ Mechanics:
     depth: 3
     switchable: true  # Will switch bigmining mode on right-click
 ```
+
+<figure><img src="../.gitbook/assets/bigmining.gif" alt="" width="640"></figure>

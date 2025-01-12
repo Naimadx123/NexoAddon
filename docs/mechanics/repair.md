@@ -60,3 +60,5 @@ repair_tool:
       ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
 
 ```
+
+<figure><img src="../.gitbook/assets/repair.gif" alt="" width="640"></figure>
