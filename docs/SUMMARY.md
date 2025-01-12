@@ -14,6 +14,7 @@
 * [Repair](mechanics/repair.md)
 * [BedrockBreak](mechanics/bedrockbreak.md)
 * [Aura](mechanics/aura.md)
+* [SpawnerBreak](mechanics/spawnerbreak.md)
 
 ## Populators
 
