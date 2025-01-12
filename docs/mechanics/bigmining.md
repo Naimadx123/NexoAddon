@@ -6,6 +6,8 @@ description: The BigMining mechanic
 
 The BigMining mechanic allows players to break multiple blocks around a target block efficiently, respecting protection rules, unbreakable blocks, and player permissions.
 
+<figure><img src="../.gitbook/assets/bigmining.gif" alt="" width="640"><figcaption></figcaption></figure>
+
 {% hint style="info" %}
 `radius` and `depth` options are required!
 {% endhint %}
@@ -32,5 +34,3 @@ Mechanics:
     depth: 3
     switchable: true  # Will switch bigmining mode on right-click
 ```
-
-<figure><img src="../.gitbook/assets/bigmining.gif" alt="" width="640"></figure>

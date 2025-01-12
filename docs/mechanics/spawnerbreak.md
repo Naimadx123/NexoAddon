@@ -6,6 +6,7 @@ description: SpawnerBreak mechanic.
 
 The SpawnerBreak Mechanic allows players to break spawners and have them drop
 
+<figure><img src="../.gitbook/assets/spawnerbreak.gif" alt="" width="640"><figcaption></figcaption></figure>
 
 ### Break a Spawner and always get the spawner
 
@@ -27,5 +28,3 @@ Mechanics:
     probability: 0.01
     dropExperience: true # This is optional, defaults to false
 ```
-
-<figure><img src="../.gitbook/assets/spawnerbreak.gif" alt="" width="640"></figure>
