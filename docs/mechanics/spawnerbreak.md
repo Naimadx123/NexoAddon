@@ -27,3 +27,5 @@ Mechanics:
     probability: 0.01
     dropExperience: true # This is optional, defaults to false
 ```
+
+<figure><img src="../.gitbook/assets/spawnerbreak.gif" alt="" width="640"></figure>

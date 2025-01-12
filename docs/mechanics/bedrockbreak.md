@@ -47,3 +47,6 @@ Mechanics:
     durability_cost: 1
     disable_on_first_layer: false         # Allow to break last layer of the bedrock
 ```
+
+
+<figure><img src="../.gitbook/assets/bedrockbreak.gif" alt="" width="640"></figure>

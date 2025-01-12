@@ -31,3 +31,5 @@ Mechanics:
       - forest_sword            # Nexo item
       - PAPER                   # Vanilla Material
 ```
+
+<figure><img src="../.gitbook/assets/miningtools.gif" alt="" width="640"></figure>
