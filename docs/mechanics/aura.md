@@ -6,6 +6,8 @@ description: Aura mechanic
 
 The Aura Mechanic creates dynamic, particle-based visual effects around the player, triggered by specific  items. Auras are customizable through formulas and particle types, allowing for a wide variety of effects like rings, spirals, hearts, or custom shapes. These effects can be used for decorative or gameplay purposes, adding an immersive visual layer to the player's experience.
 
+<figure><img src="../.gitbook/assets/obraz_2025-01-12_162030861.png" alt=""><figcaption><p>Aura showcase</p></figcaption></figure>
+
 {% hint style="info" %}
 Aura mechanic works on held item and items in armor slots!
 {% endhint %}
