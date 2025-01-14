@@ -4,7 +4,7 @@ description: SpawnerBreak mechanic.
 
 # Infested
 
-The Infested Mechanic let's you add a list of entities that should spawn upon breaking a custom block
+The Infested Mechanic lets you add a list of entities that should spawn upon breaking a custom block
 
 ### A custom block infested with Zombies and Slimes
 It will select one of them, and 100% spawn it, it will also spawn particles
