@@ -51,6 +51,45 @@ Mechanics:
     particle: FLAME
 ```
 
-### Operators and functions
+```yaml
+# Example
 
-<figure><img src="../.gitbook/assets/obraz_2025-01-11_183151805.png" alt="" width="356"><figcaption><p>operators and functions</p></figcaption></figure>
+Mechanics:
+  aura:
+    type: custom
+    # Egg shape
+    custom: (x+1*cos(angle)*cos(angle2)),(y+1.5*sin(angle2)+1),(z+1*sin(angle)*cos(angle2))
+    particle: END_ROD
+```
+
+### Supported Operators
+
+- **Addition (`+`)**: Adds two numbers. Example: `2 + 2`.
+- **Subtraction (`-`)**: Subtracts the second number from the first. Example: `2 - 2`.
+- **Multiplication (`*`)**: Multiplies two numbers. Example: `2 * 2`.
+- **Division (`/`)**: Divides the first number by the second. Example: `2 / 2`.
+- **Exponential (`^`)**: Raises the first number to the power of the second. Example: `2 ^ 2`.
+- **Unary minus/plus (`-` / `+`)**: Negates or keeps the sign of a single number. Example: `+2 - (-2)`.
+- **Modulo (`%`)**: Returns the remainder of the division of the first number by the second. Example: `2 % 2`.
+
+### Supported Functions
+
+- **`abs`**: Absolute value.
+- **`acos`**: Arc cosine.
+- **`asin`**: Arc sine.
+- **`atan`**: Arc tangent.
+- **`cbrt`**: Cube root.
+- **`ceil`**: Round up.
+- **`cos`**: Cosine.
+- **`cosh`**: Hyperbolic cosine.
+- **`exp`**: Exponential (`e^x`).
+- **`floor`**: Round down.
+- **`log`**: Natural logarithm.
+- **`log2`**: Base-2 logarithm.
+- **`log10`**: Base-10 logarithm.
+- **`sin`**: Sine.
+- **`sinh`**: Hyperbolic sine.
+- **`sqrt`**: Square root.
+- **`tan`**: Tangent.
+- **`tanh`**: Hyperbolic tangent.
+- **`signum`**: Signum. 
