@@ -6,6 +6,8 @@ description: BedrockBreak mechanic.
 
 The BedrockBreak Mechanic allows players to break bedrock blocks with specified tools
 
+<figure><img src="../.gitbook/assets/bedrockbreak.gif" alt="" width="640"><figcaption></figcaption></figure>
+
 {% hint style="danger" %}
 **For this Mechanic ProtocolLib is required!**
 {% endhint %}
@@ -47,6 +49,3 @@ Mechanics:
     durability_cost: 1
     disable_on_first_layer: false         # Allow to break last layer of the bedrock
 ```
-
-
-<figure><img src="../.gitbook/assets/bedrockbreak.gif" alt="" width="640"></figure>

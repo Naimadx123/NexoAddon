@@ -6,6 +6,8 @@ description: MiningTools mechanic.
 
 Allows you to destroy Custom Blocks or only drop Custom Blocks drop using specified list of Nexo Items and Vanilla Materials.
 
+<figure><img src="../.gitbook/assets/miningtools.gif" alt="" width="640"><figcaption></figcaption></figure>
+
 {% hint style="info" %}
 `items` option is required!
 {% endhint %}
@@ -31,5 +33,3 @@ Mechanics:
       - forest_sword            # Nexo item
       - PAPER                   # Vanilla Material
 ```
-
-<figure><img src="../.gitbook/assets/miningtools.gif" alt="" width="640"></figure>
