@@ -7,6 +7,7 @@
 * [equippable](components/equippable.md)
 * [jukebox\_playable](components/jukebox_playable.md)
 * [fertilizer](components/fertilizer.md)
+* [skull\_value](components/skull_value.md)
 
 ## Mechanics
 
