@@ -4,7 +4,7 @@ description: Add skull with custom textures!
 
 # skull\_value
 
-Decorate yoru world with player heads with custom textures!
+Decorate your world with player heads with custom textures!
 
 ### Hedgehog
 
