@@ -19,6 +19,7 @@
 * [SpawnerBreak](mechanics/spawnerbreak.md)
 * [Custom Block Experience](mechanics/custom-block-experience.md)
 * [Infested](mechanics/infested.md)
+* [KillMessage](mechanics/killmessage.md)
 
 ## Populators
 
