@@ -21,6 +21,7 @@
 * [Infested](mechanics/infested.md)
 * [KillMessage](mechanics/killmessage.md)
 * [Stackable](mechanics/stackable.md)
+* [Decay](mechanics/decay.md)
 
 ## Populators
 
