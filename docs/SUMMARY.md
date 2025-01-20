@@ -22,6 +22,7 @@
 * [KillMessage](mechanics/killmessage.md)
 * [Stackable](mechanics/stackable.md)
 * [Decay](mechanics/decay.md)
+* [ShiftBlock](mechanics/shiftblock.md)
 
 ## Populators
 
