@@ -15,7 +15,7 @@ public class DropExperienceListener {
         Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(event.getMechanic().getItemID());
         if (mechanics == null || mechanics.getDropExperience() == null) return;
 
-        double experience = mechanics.getDropExperience().experience();
+        double experience = mechanics.getDropExperience().getExperience();
 
         if (!event.isCancelled() && !(event.getPlayer().getGameMode() == GameMode.CREATIVE)) {
             Location location = event.getBlock().getLocation();

@@ -25,7 +25,7 @@ public class FertilizeVanillaCrops {
 
     if (!canApplyFertilizer(player, clickedBlock, component)) return;
 
-    int growthSpeedup = Math.max(0, component.getFertilizer().growthSpeedup());
+    int growthSpeedup = Math.max(0, component.getFertilizer().getGrowthSpeedup());
     boolean appliedSuccessfully = applyFertilizer(clickedBlock, growthSpeedup, event.getBlockFace());
 
     if (!appliedSuccessfully) return;
@@ -49,7 +49,7 @@ public class FertilizeVanillaCrops {
     boolean canInteract = ProtectionLib.canInteract(player, block.getLocation()) &&
         ProtectionLib.canUse(player, block.getLocation());
     boolean isUsableOnBlock = component.getFertilizer()
-        .usableOn()
+        .getUsableOn()
         .stream()
         .anyMatch(blockType -> blockType.equals("_MINECRAFT") ||
             blockType.equals(block.getType().toString().toUpperCase()));

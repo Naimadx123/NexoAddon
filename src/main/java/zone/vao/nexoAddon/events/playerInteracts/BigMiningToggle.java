@@ -31,7 +31,7 @@ public class BigMiningToggle {
         .get(toolId)
         .getBigMining();
 
-    if (!bigMiningMechanic.switchable() || tool.getItemMeta() == null) return;
+    if (!bigMiningMechanic.isSwitchable() || tool.getItemMeta() == null) return;
 
     var meta = tool.getItemMeta();
     PersistentDataContainer pdc = meta.getPersistentDataContainer();

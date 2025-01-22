@@ -31,8 +31,8 @@ public class SpawnerBreakListener {
         Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(nexoItemId);
         if (mechanics == null || mechanics.getSpawnerBreak() == null || !ProtectionLib.canBreak(player, block.getLocation())) return;
 
-        double probability = mechanics.getSpawnerBreak().probability();
-        boolean dropExperience = mechanics.getSpawnerBreak().dropExperience();
+        double probability = mechanics.getSpawnerBreak().getProbability();
+        boolean dropExperience = mechanics.getSpawnerBreak().isDropExperience();
         handleBreakingSpawner(e, block, probability, dropExperience);
     }
 

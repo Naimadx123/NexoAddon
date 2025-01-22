@@ -16,14 +16,11 @@ public class Mechanics {
   private BigMining bigMining;
   private BedrockBreak bedrockBreak;
   private Aura aura;
+
   private SpawnerBreak spawnerBreak;
   private MiningTools miningTools;
   private DropExperience dropExperience;
   private Infested infested;
-  private KillMessage killMessage;
-  private Stackable stackable;
-  private Decay decay;
-  private ShiftBlock shiftBlock;
 
   public Mechanics(String id) {
     this.id = id;
@@ -57,19 +54,7 @@ public class Mechanics {
     this.dropExperience = new DropExperience(experience);
   }
 
-  public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop) {
-    this.infested = new Infested(entities, mythicMobs, probability, selector, particles, drop);
+  public void setInfested(List<EntityType> entities, double probability, String selector, boolean particles) {
+    this.infested = new Infested(entities, probability, selector, particles);
   }
-  
-  public void setKillMessage(String deathMessage) {
-    this.killMessage = new KillMessage(deathMessage);
-  }
-  
-  public void setStackable(String next, String group){
-    this.stackable = new Stackable(next, group);
-  }
-
-  public void setDecay(int time, double chance, List<Material> base, List<String> nexoBase, int radius){this.decay = new Decay(time, chance, base, nexoBase, radius);}
-
-  public void setShiftBlock(String replaceTo, int time, List<Material> materials, List<String> nexoIds){this.shiftBlock = new ShiftBlock(replaceTo, time, materials, nexoIds);}
 }

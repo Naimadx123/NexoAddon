@@ -46,7 +46,7 @@ public class BigMiningListener {
 
     PersistentDataContainer pdc = tool.getItemMeta().getPersistentDataContainer();
 
-    if(bigMiningMechanic.switchable()
+    if(bigMiningMechanic.isSwitchable()
         && pdc.has(new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable"), PersistentDataType.BOOLEAN)
         && Boolean.FALSE.equals(pdc.get(new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable"), PersistentDataType.BOOLEAN))
     ) return;
@@ -67,8 +67,8 @@ public class BigMiningListener {
 
   private static void breakBlocksInRadius(Player player, Location origin, BlockFace face, BigMining mechanic, int modifier, ItemStack tool) {
     Location tempLocation;
-    double radius = mechanic.radius();
-    double depth = mechanic.depth();
+    double radius = mechanic.getRadius();
+    double depth = mechanic.getDepth();
 
     for (double xOffset = -radius; xOffset <= radius; xOffset++) {
       for (double yOffset = -radius; yOffset <= radius; yOffset++) {

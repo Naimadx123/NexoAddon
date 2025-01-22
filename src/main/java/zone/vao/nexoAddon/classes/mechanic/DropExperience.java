@@ -1,5 +1,14 @@
 package zone.vao.nexoAddon.classes.mechanic;
 
 
-public record DropExperience(double experience) {
+import lombok.Getter;
+
+@Getter
+public class DropExperience {
+    private final double experience;
+
+
+    public DropExperience(final double experience) {
+        this.experience = experience;
+    }
 }

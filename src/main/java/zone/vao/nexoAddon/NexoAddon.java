@@ -3,23 +3,16 @@ package zone.vao.nexoAddon;
 import co.aikar.commands.PaperCommandManager;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.jeff_media.customblockdata.CustomBlockData;
 import com.jeff_media.updatechecker.UpdateCheckSource;
 import com.jeff_media.updatechecker.UpdateChecker;
-import com.nexomc.nexo.api.NexoBlocks;
 import io.th0rgal.protectionlib.ProtectionLib;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +31,10 @@ import zone.vao.nexoAddon.handlers.BlockHardnessHandler;
 import zone.vao.nexoAddon.handlers.ParticleEffectManager;
 import zone.vao.nexoAddon.handlers.RecipeManager;
 import zone.vao.nexoAddon.metrics.Metrics;
-import zone.vao.nexoAddon.utils.*;
+import zone.vao.nexoAddon.utils.BossBarUtil;
+import zone.vao.nexoAddon.utils.ItemConfigUtil;
+import zone.vao.nexoAddon.utils.PopulatorsConfigUtil;
+import zone.vao.nexoAddon.utils.RecipesUtil;
 
 import java.io.File;
 import java.util.*;
@@ -51,7 +47,6 @@ public final class NexoAddon extends JavaPlugin {
   public Set<File> nexoFiles = new HashSet<>();
   public Map<String, Components> components = new HashMap<>();
   public Map<String, Mechanics> mechanics = new HashMap<>();
-  private Map<String, ItemStack> skulls = new HashMap<>();
   public Map<UUID, BossBarUtil> bossBars = new HashMap<>();
   public FileConfiguration globalConfig;
   public PopulatorsConfigUtil populatorsConfig;
@@ -65,7 +60,6 @@ public final class NexoAddon extends JavaPlugin {
   private BlockHardnessHandler blockHardnessHandler;
   private ProtocolManager protocolManager;
   private boolean protocolLibLoaded = false;
-  private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
 
     @Override
@@ -85,11 +79,6 @@ public final class NexoAddon extends JavaPlugin {
       }else{
         getLogger().warning("ProtocolLib not found. Some features remain disabled!");
       }
-      if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
-          Bukkit.getPluginManager().getPlugin("MythicMobs").isEnabled())
-      {
-        mythicMobsLoaded = true;
-      }
 
       initializePopulators();
       registerEvents();
@@ -106,15 +95,6 @@ public final class NexoAddon extends JavaPlugin {
     RecipeManager.clearRegisteredRecipes();
     if(protocolLibLoaded){
       protocolManager.removePacketListeners(this);
-    }
-    for (Location shiftblock : BlockUtil.processedShiftblocks) {
-      PersistentDataContainer pdc = new CustomBlockData(shiftblock.getBlock(), this);
-      String targetBlock =  pdc.get(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING);
-      if(targetBlock == null || NexoBlocks.blockData(targetBlock) == null) continue;
-
-      shiftblock.getBlock().setBlockData(NexoBlocks.blockData(targetBlock));
-
-      pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
     }
   }
 
@@ -133,7 +113,6 @@ public final class NexoAddon extends JavaPlugin {
     bossBars.values().forEach(BossBarUtil::removeBar);
     RecipeManager.clearRegisteredRecipes();
     RecipesUtil.loadRecipes();
-    SkullUtil.applyTextures();
     particleEffectManager.stopAuraEffectTask();
     new BukkitRunnable() {
       @Override
@@ -205,9 +184,6 @@ public final class NexoAddon extends JavaPlugin {
     registerEvent(new WorldLoadListener());
     registerEvent(new NexoPackUploadListener());
     registerEvent(new NexoBlockBreakListener());
-    registerEvent(new EntityDeathListener());
-    registerEvent(new NexoStringBlockInteractListener());
-    registerEvent(new NexoBlockInteractListener());
   }
 
   private void initializeMetrics() {
@@ -215,7 +191,11 @@ public final class NexoAddon extends JavaPlugin {
     Metrics metrics = new Metrics(this, 24168);
     metrics.addCustomChart(new Metrics.SimplePie("marketplace", () -> "%%__POLYMART__%%".equals("1") ? "polymart" : "spigot"));
     new UpdateChecker(this, UpdateCheckSource.POLYMART, "6950")
-        .setDownloadLink(6950)
+        .checkEveryXHours(24)
+        .setNotifyOpsOnJoin(true)
+        .setDonationLink("https://buymeacoffee.com/naimad")
+        .checkNow();
+    new UpdateChecker(this, UpdateCheckSource.SPIGET, "121241")
         .checkEveryXHours(24)
         .setNotifyOpsOnJoin(true)
         .setDonationLink("https://buymeacoffee.com/naimad")

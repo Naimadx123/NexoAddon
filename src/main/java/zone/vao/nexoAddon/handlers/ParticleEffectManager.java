@@ -75,18 +75,18 @@ public class ParticleEffectManager {
   }
 
   private void applyAuraEffect(Player player, Aura aura) {
-    String formula = aura.formula();
-    Particle particle = aura.particle();
+    String formula = aura.getFormula();
+    Particle particle = aura.getParticle();
 
-    if ("custom".equalsIgnoreCase(aura.type())) {
+    if ("custom".equalsIgnoreCase(aura.getType())) {
       spawnCustomParticles(player, particle, formula);
-    } else if ("simple".equalsIgnoreCase(aura.type())) {
+    } else if ("simple".equalsIgnoreCase(aura.getType())) {
       spawnSimpleParticles(player, particle);
-    } else if ("ring".equalsIgnoreCase(aura.type())) {
+    } else if ("ring".equalsIgnoreCase(aura.getType())) {
       spawnRingParticles(player, particle);
-    } else if ("helix".equalsIgnoreCase(aura.type())) {
+    } else if ("helix".equalsIgnoreCase(aura.getType())) {
       spawnHelixParticles(player, particle);
-    } else if ("heart".equalsIgnoreCase(aura.type())) {
+    } else if ("heart".equalsIgnoreCase(aura.getType())) {
       spawnHeartParticles(player, particle);
     }
   }

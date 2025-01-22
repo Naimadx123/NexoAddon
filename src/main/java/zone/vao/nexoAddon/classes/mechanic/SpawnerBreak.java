@@ -1,4 +1,14 @@
 package zone.vao.nexoAddon.classes.mechanic;
 
-public record SpawnerBreak(double probability, boolean dropExperience) {
+import lombok.Getter;
+
+@Getter
+public class SpawnerBreak {
+    private final double probability;
+    private final boolean dropExperience;
+
+    public SpawnerBreak(final double probability, final boolean dropExperience) {
+        this.probability = probability;
+        this.dropExperience = dropExperience;
+    }
 }

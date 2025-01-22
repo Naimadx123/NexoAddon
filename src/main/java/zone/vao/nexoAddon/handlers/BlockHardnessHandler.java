@@ -71,10 +71,10 @@ public class BlockHardnessHandler {
     if (bedrockBreak == null) return;
 
     Block block = location.getBlock();
-    if (block.getType() != Material.BEDROCK || bedrockBreak.disableOnFirstLayer() && block.getY() <= block.getWorld().getMinHeight()) return;
+    if (block.getType() != Material.BEDROCK || bedrockBreak.isDisableOnFirstLayer() && block.getY() <= block.getWorld().getMinHeight()) return;
 
-    int hardness = bedrockBreak.hardness();
-    double probability = bedrockBreak.probability();
+    int hardness = bedrockBreak.getHardness();
+    double probability = bedrockBreak.getProbability();
 
     BukkitScheduler scheduler = Bukkit.getScheduler();
     breakingTasks.put(location, scheduler.runTaskTimer(NexoAddon.getInstance(), new Runnable() {
@@ -100,7 +100,7 @@ public class BlockHardnessHandler {
               block.breakNaturally();
 
               if(tool.getItemMeta() instanceof Damageable damageable){
-                damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
+                damageable.setDamage(damageable.getDamage()+bedrockBreak.getDurabilityCost());
                 int maxDurability = NexoItems.itemFromId(toolId).getDurability() != null ? NexoItems.itemFromId(toolId).getDurability() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
                 if(damageable.getDamage() >= maxDurability) {
                   player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));

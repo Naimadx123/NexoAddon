@@ -1,4 +1,12 @@
 package zone.vao.nexoAddon.classes.component;
 
-public record JukeboxPlayable(String songKey) {
+import lombok.Getter;
+
+@Getter
+public class JukeboxPlayable {
+  String songKey;
+
+  public JukeboxPlayable(String songKey) {
+    this.songKey = songKey;
+  }
 }
