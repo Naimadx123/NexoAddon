@@ -22,6 +22,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import zone.vao.nexoAddon.classes.Components;
 import zone.vao.nexoAddon.classes.Mechanics;
@@ -29,6 +30,7 @@ import zone.vao.nexoAddon.classes.populators.CustomChunkGenerator;
 import zone.vao.nexoAddon.classes.populators.orePopulator.CustomOrePopulator;
 import zone.vao.nexoAddon.classes.populators.orePopulator.Ore;
 import zone.vao.nexoAddon.classes.populators.orePopulator.OrePopulator;
+import zone.vao.nexoAddon.classes.populators.orePopulator.SaplingsTask;
 import zone.vao.nexoAddon.classes.populators.treePopulator.CustomTree;
 import zone.vao.nexoAddon.classes.populators.treePopulator.CustomTreePopulator;
 import zone.vao.nexoAddon.classes.populators.treePopulator.TreePopulator;
@@ -67,6 +69,7 @@ public final class NexoAddon extends JavaPlugin {
   private boolean protocolLibLoaded = false;
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
+  public static BukkitTask saplingsTask;
 
     @Override
   public void onEnable() {
@@ -114,6 +117,7 @@ public final class NexoAddon extends JavaPlugin {
 
       shiftblock.getBlock().setBlockData(NexoBlocks.blockData(targetBlock));
 
+      if(saplingsTask != null && !saplingsTask.isCancelled()) saplingsTask.cancel();
       pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
     }
   }
@@ -165,6 +169,9 @@ public final class NexoAddon extends JavaPlugin {
         CustomOrePopulator customOrePopulator = new CustomOrePopulator(orePopulator);
         if(!worldPopulators.containsKey(world.getName())) {
           worldPopulators.put(world.getName(), new ArrayList<>());
+        }
+        if(NexoBlocks.isNexoStringBlock(ore.getId()) && NexoBlocks.stringMechanic(ore.getId()).isSapling() && saplingsTask == null){
+          saplingsTask = new SaplingsTask().runTaskTimerAsynchronously(NexoAddon.getInstance(), 0L, 20L);
         }
         addPopulatorToWorld(world, customOrePopulator);
         worldPopulators.get(world.getName()).add(customOrePopulator);
@@ -233,19 +240,21 @@ public final class NexoAddon extends JavaPlugin {
   }
 
   private void clearPopulators() {
-    worldPopulators.forEach((worldName, populators) -> {
-      World world = Bukkit.getWorld(worldName);
-      if (world == null) {
-        getLogger().warning("World '" + worldName + "' not found. Skipping populator removal.");
-        return;
-      }
-      populators.forEach(populator -> {
-        if (world.getPopulators().remove(populator)) {
-          getLogger().info("Populator removed from world: " + worldName);
+      if(saplingsTask != null && !saplingsTask.isCancelled()) saplingsTask.cancel();
+      saplingsTask = null;
+      worldPopulators.forEach((worldName, populators) -> {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+          getLogger().warning("World '" + worldName + "' not found. Skipping populator removal.");
+          return;
         }
+        populators.forEach(populator -> {
+          if (world.getPopulators().remove(populator)) {
+            getLogger().info("Populator removed from world: " + worldName);
+          }
+        });
       });
-    });
-    worldPopulators.clear();
+      worldPopulators.clear();
   }
 
 

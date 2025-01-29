@@ -17,15 +17,15 @@ public class ChunkLoadListener implements Listener {
     World world = event.getWorld();
     Chunk chunk = event.getChunk();
 
+    if (!event.isNewChunk()) return;
+
     List<Ore> furniturePopulators = NexoAddon.getInstance()
         .getOrePopulator()
         .getOres()
         .stream()
         .filter(ore -> ore.getNexoFurniture() != null)
         .toList();
-
-    if (furniturePopulators.isEmpty() || !event.isNewChunk()) return;
-
+    if(furniturePopulators.isEmpty()) return;
     furniturePopulators.forEach(ore -> processOre(world, chunk, ore));
   }
 

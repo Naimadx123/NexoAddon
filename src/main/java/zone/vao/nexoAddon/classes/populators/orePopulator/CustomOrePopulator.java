@@ -1,16 +1,16 @@
 package zone.vao.nexoAddon.classes.populators.orePopulator;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import com.nexomc.nexo.api.NexoBlocks;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.LimitedRegion;
 import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Random;
+import java.util.*;
+
+import static zone.vao.nexoAddon.classes.populators.orePopulator.SaplingsTask.placedSaplings;
 
 public class CustomOrePopulator extends BlockPopulator {
 
@@ -160,6 +160,9 @@ public class CustomOrePopulator extends BlockPopulator {
         if(limitedRegion.getType(new Location(world, position.x(), position.y()+1, position.z())).isAir())
           limitedRegion.setBlockData(position.x(), position.y()+1, position.z(), Material.TRIPWIRE.createBlockData());
       }else{
+        if(NexoBlocks.isNexoStringBlock(ore.getNexoBlocks().getItemID()) && NexoBlocks.stringMechanic(ore.getNexoBlocks().getItemID()).isSapling()){
+          placedSaplings.put(position.getLocation().clone(), ore.getNexoBlocks().getItemID());
+        }
         limitedRegion.setBlockData(position.x(), position.y(), position.z(), ore.getNexoBlocks().getBlockData());
       }
     } else{
