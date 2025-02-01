@@ -6,6 +6,8 @@ description: Stack Stringblocks on each other!
 
 Change your custom stringblock like a minecraft PINK PETALS or CANDLE!
 
+<figure><img src="../.gitbook/assets/java_dHYz9HVB1P.gif" alt=""><figcaption><p>Stackable Showcase</p></figcaption></figure>
+
 {% hint style="info" %}
 This mechanic only works with Stringblocks!
 {% endhint %}
