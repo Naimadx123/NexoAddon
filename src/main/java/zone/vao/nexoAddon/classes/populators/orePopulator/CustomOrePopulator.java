@@ -87,7 +87,7 @@ public class CustomOrePopulator extends BlockPopulator {
         placeBlock(nextPosition, ore, worldInfo, limitedRegion);
         placedBlocks++;
       } else if (canPlaceOnBlock(nextPosition, ore, limitedRegion)) {
-        if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()+1, nextPosition.z())))
+        if(!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()+1, nextPosition.z())))
           continue;
         placeBlock(nextPosition.above(), ore, worldInfo, limitedRegion);
         placedBlocks++;
