@@ -63,33 +63,52 @@ public class CustomOrePopulator extends BlockPopulator {
     int veinSize = ore.getVeinSize();
     int placedBlocks = 0;
 
+    if (ore.isPillar()) {
+      for (int i = 0; i < veinSize; i++) {
+        Location loc = new Location(limitedRegion.getWorld(), start.x(), start.y() - i, start.z());
+        PlacementPosition pillarPos = new PlacementPosition(worldInfo, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), limitedRegion.getType(loc), limitedRegion.getBiome(loc), limitedRegion);
+        if (canPlaceBelowBlock(pillarPos.above(), ore, limitedRegion) || placedBlocks > 0 && !ore.getPlaceBelow().isEmpty()) {
+          if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), pillarPos.x(), pillarPos.y(), pillarPos.z())))
+            continue;
+          placeBlock(pillarPos, ore, worldInfo, limitedRegion);
+          placedBlocks++;
+        }
+      }
+      return placedBlocks;
+    }
+
     for (int i = 0; i < veinSize; i++) {
       PlacementPosition nextPosition = getAdjacentPlacementPosition(start, random, limitedRegion, ore, placedBlocks > 0 && !ore.getPlaceBelow().isEmpty());
-
       if (nextPosition == null) break;
 
       if (canReplaceBlock(nextPosition, ore)) {
-        if(!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y(), nextPosition.z())))
+        if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y(), nextPosition.z())))
           continue;
         placeBlock(nextPosition, ore, worldInfo, limitedRegion);
         placedBlocks++;
       } else if (canPlaceOnBlock(nextPosition, ore, limitedRegion)) {
-        if(!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()+1, nextPosition.z())))
+        if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()+1, nextPosition.z())))
           continue;
         placeBlock(nextPosition.above(), ore, worldInfo, limitedRegion);
         placedBlocks++;
-      } else if( canPlaceBelowBlock(nextPosition, ore, limitedRegion) || placedBlocks > 0 && !ore.getPlaceBelow().isEmpty()) {
-        if(!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()-1, nextPosition.z())))
-          continue;
-        placeBlock(nextPosition.below(), ore, worldInfo, limitedRegion);
-        placedBlocks++;
+      } else if (canPlaceBelowBlock(nextPosition, ore, limitedRegion) || placedBlocks > 0 && !ore.getPlaceBelow().isEmpty()) {
+        if (!ore.isPillar()) {
+          if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y()-1, nextPosition.z())))
+            continue;
+          placeBlock(nextPosition.below(), ore, worldInfo, limitedRegion);
+          placedBlocks++;
+        } else {
+          if (!limitedRegion.isInRegion(new Location(Bukkit.getWorld(worldInfo.getUID()), nextPosition.x(), nextPosition.y(), nextPosition.z())))
+            continue;
+          placeBlock(nextPosition, ore, worldInfo, limitedRegion);
+          placedBlocks++;
+        }
       } else {
         break;
       }
 
       start = nextPosition;
     }
-
     return placedBlocks;
   }
 

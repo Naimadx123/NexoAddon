@@ -104,6 +104,7 @@ public class PopulatorsConfigUtil {
     int iterations = Math.abs(section.getInt("iterations", 50));
     int veinSize = section.getInt("vein_size", 0);
     double clusterChance = section.getDouble("cluster_chance", 0.0);
+    boolean pillar = section.getBoolean("pillar", false);
 
     List<String> worldNames = section.getStringList("worlds");
     List<World> worlds = parseWorlds(section.getStringList("worlds"));
@@ -124,13 +125,13 @@ public class PopulatorsConfigUtil {
         if (stringMechanic != null) {
           isTall = stringMechanic.isTall();
         }
-        return new Ore(key, block, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, isTall, veinSize, clusterChance, airOnly);
+        return new Ore(key, block, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, isTall, veinSize, clusterChance, airOnly, pillar);
       }
       else if (furniture != null) {
-        return new Ore(key, furniture, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly);
+        return new Ore(key, furniture, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly, pillar);
       }
       else {
-        return new Ore(key, material, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly);
+        return new Ore(key, material, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly, pillar);
       }
     } catch (IllegalArgumentException e) {
       logError("Invalid custom block ID: " + key);
