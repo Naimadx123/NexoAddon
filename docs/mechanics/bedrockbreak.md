@@ -9,7 +9,7 @@ The BedrockBreak Mechanic allows players to break bedrock blocks with specified 
 <figure><img src="../.gitbook/assets/bedrockbreak.gif" alt="" width="640"><figcaption></figcaption></figure>
 
 {% hint style="danger" %}
-**For this Mechanic ProtocolLib is required!**
+**For this Mechanic** [**PacketEvents**](https://www.spigotmc.org/resources/packetevents-api.80279/) **is required!**
 {% endhint %}
 
 ### Looooooooong Bedrock Break
