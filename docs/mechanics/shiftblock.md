@@ -34,3 +34,20 @@ Mechanics:
       - forest_axe                 # Nexo Item
       - PAPER                      # Vanilla Material
 ```
+
+### Shift triggers
+
+```yaml
+# Example
+
+Mechanics:
+  custom_block:
+    type: NOTEBLOCK
+    shiftblock:
+      time: 5                      # Time in seconds
+      replace_to: test_block2      # Id of CustomBlock      
+
+      on_interact: true            # true is default
+      on_break: false              # false is default
+      on_place: false              # false is default
+```
