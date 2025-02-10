@@ -51,3 +51,60 @@ Mechanics:
       on_break: false              # false is default
       on_place: false              # false is default
 ```
+### Use Case examples
+
+Resource generation with `on_break`
+```yaml
+honeycomb_normal:
+  Mechanics:
+    custom_block:
+      type: NOTEBLOCK
+      hardness: 999
+```
+```yaml
+honeycomb_ore:
+  Mechanics:
+    custom_block:
+      type: NOTEBLOCK
+      shiftblock:
+        time: 5
+        replace_to: honeycomb_normal
+        on_interact: false
+        on_break: true
+        on_place: false
+```
+<figure><img src="../.gitbook/assets/on_break.gif" alt="" width="640"><figcaption></figcaption></figure>
+
+
+‎ 
+‎ 
+
+
+‎ 
+
+
+‎ 
+‎
+Block transform with `on_place`
+```yaml
+honeycomb_normal:
+  Mechanics:
+    custom_block:
+      type: NOTEBLOCK
+      hardness: 999
+```
+```yaml
+cut_nano_flux:
+  Mechanics:
+    custom_block:
+      type: NOTEBLOCK
+      shiftblock:
+        time: 5
+        replace_to: honeycomb_normal
+        on_interact: false
+        on_break: false
+        on_place: true
+```
+<figure><img src="../.gitbook/assets/on_place.gif" alt="" width="640"><figcaption></figcaption></figure>
+
+
