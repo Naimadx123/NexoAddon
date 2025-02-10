@@ -73,7 +73,8 @@ honeycomb_ore:
         on_break: true
         on_place: false
 ```
-https://github.com/user-attachments/assets/26967429-25ae-4759-a5ee-9f8e517d32ec
+<figure><img src="../.gitbook/assets/on_break.gif" alt="" width="640"><figcaption></figcaption></figure>
+
 
 ‎ 
 ‎ 
@@ -104,5 +105,6 @@ cut_nano_flux:
         on_break: false
         on_place: true
 ```
-https://github.com/user-attachments/assets/f1882326-d695-4e48-add9-fbb93dfe058f
+<figure><img src="../.gitbook/assets/on_place.gif" alt="" width="640"><figcaption></figcaption></figure>
+
 
