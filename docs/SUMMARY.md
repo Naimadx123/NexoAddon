@@ -23,6 +23,7 @@
 * [Stackable](mechanics/stackable.md)
 * [Decay](mechanics/decay.md)
 * [ShiftBlock](mechanics/shiftblock.md)
+* [BottledExp](mechanics/bottledexp.md)
 
 ## Populators
 
