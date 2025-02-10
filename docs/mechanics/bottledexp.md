@@ -15,7 +15,7 @@ Mechanics:
     ratio: 0.9    # Save 90% of experience
 </code></pre>
 
-### I can save it but in what cost...
+### I can save it, but at what cost....
 
 ```yaml
 # Example
