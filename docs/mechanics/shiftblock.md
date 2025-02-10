@@ -51,9 +51,11 @@ Mechanics:
       on_break: false              # false is default
       on_place: false              # false is default
 ```
+
 ### Use Case examples
 
-Resource generation with `on_break`
+#### Resource generation with `on_break`
+
 ```yaml
 honeycomb_normal:
   Mechanics:
@@ -61,6 +63,7 @@ honeycomb_normal:
       type: NOTEBLOCK
       hardness: 999
 ```
+
 ```yaml
 honeycomb_ore:
   Mechanics:
@@ -73,19 +76,11 @@ honeycomb_ore:
         on_break: true
         on_place: false
 ```
+
 <figure><img src="../.gitbook/assets/on_break.gif" alt="" width="640"><figcaption></figcaption></figure>
 
+#### ‎ ‎ Block transform with `on_place`
 
-‎ 
-‎ 
-
-
-‎ 
-
-
-‎ 
-‎
-Block transform with `on_place`
 ```yaml
 honeycomb_normal:
   Mechanics:
@@ -93,6 +88,7 @@ honeycomb_normal:
       type: NOTEBLOCK
       hardness: 999
 ```
+
 ```yaml
 cut_nano_flux:
   Mechanics:
@@ -105,6 +101,5 @@ cut_nano_flux:
         on_break: false
         on_place: true
 ```
+
 <figure><img src="../.gitbook/assets/on_place.gif" alt="" width="640"><figcaption></figcaption></figure>
-
-
