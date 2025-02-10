@@ -19,10 +19,11 @@ common_fertilizer:
 
 ### Multi time usable
 
-<pre class="language-yaml"><code class="lang-yaml"><strong># Example
-</strong>
+```yaml
+# Example
+
 common_fertilizer:
-  itemname: "&#x3C;#D5D6D8>Common Fertilizer"
+  itemname: "<#D5D6D8>Common Fertilizer"
   material: PAPER
   Pack:
     texture: test:fert/common_fertilizer.png
@@ -35,7 +36,7 @@ common_fertilizer:
       growth_speedup: 50
     max_stack_size: 1
     durability: 50                                  # How many uses
-</code></pre>
+```
 
 ### Support Vanilla Blocks
 
@@ -51,4 +52,25 @@ common_fertilizer:
       - _MINECRAFT                 # Act as bone meal on any vanilla block
       - WHEAT                      # Or just on specific minecraft block
       growth_speedup: 50
+```
+
+### Cooldown
+
+```yaml
+# Example
+
+common_fertilizer:
+  itemname: "<#D5D6D8>Common Fertilizer with Cooldown"
+  material: PAPER
+  Pack:
+    texture: test:fert/common_fertilizer.png
+    custom_model_data: 1007
+  Components:
+    fertilizer:
+      usable_on:
+      - _MINECRAFT
+      growth_speedup: 50
+    max_stack_size: 1
+    durability: 50                                  # How many uses
+    cooldown: 30                                    # 30 seconds of cooldown
 ```
