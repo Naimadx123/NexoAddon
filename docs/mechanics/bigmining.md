@@ -34,3 +34,16 @@ Mechanics:
     depth: 3
     switchable: true  # Will switch bigmining mode on right-click
 ```
+
+### Breaking material whitelist
+
+```yaml
+# Example
+
+Mechanics:
+  bigmining:
+    radius: 1
+    depth: 3
+    materials:       # List of whitelisted materials
+    - STONE
+```
