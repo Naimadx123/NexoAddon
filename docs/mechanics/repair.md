@@ -62,3 +62,24 @@ repair_tool:
       ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
 
 ```
+
+### Whitelist and Blacklist
+
+<pre class="language-yaml"><code class="lang-yaml"># Example
+
+repair_tool:
+  material: PAPER
+  itemname: &#x3C;blue>Repair tool
+  Components:
+    max_stack_size: 1
+    durability: 50       # 50 uses
+  Mechanics:
+    repair:
+      ratio: 0.5         # Percentage of durability restored, relative to the item's current damage.
+<strong>      whitelist:
+</strong>      - DIAMOND_AXE
+      - forest_sword
+      blacklist:
+      - forest_axe
+      - DIAMOND_SWORD
+</code></pre>
