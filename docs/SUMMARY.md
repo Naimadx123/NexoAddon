@@ -21,6 +21,7 @@
 * [Infested](mechanics/infested.md)
 * [KillMessage](mechanics/killmessage.md)
 * [Stackable](mechanics/stackable.md)
+* [Unstackable](mechanics/unstackable.md)
 * [Decay](mechanics/decay.md)
 * [ShiftBlock](mechanics/shiftblock.md)
 * [BottledExp](mechanics/bottledexp.md)
