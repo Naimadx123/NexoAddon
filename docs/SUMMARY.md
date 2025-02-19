@@ -5,27 +5,27 @@
 ## Components
 
 * [equippable](components/equippable.md)
-* [jukebox\_playable](components/jukebox_playable.md)
 * [fertilizer](components/fertilizer.md)
+* [jukebox\_playable](components/jukebox_playable.md)
 * [skull\_value](components/skull_value.md)
 
 ## Mechanics
 
-* [BigMining](mechanics/bigmining.md)
-* [Repair](mechanics/repair.md)
-* [BedrockBreak](mechanics/bedrockbreak.md)
 * [Aura](mechanics/aura.md)
-* [MiningTools](mechanics/miningtools.md)
-* [SpawnerBreak](mechanics/spawnerbreak.md)
+* [BedrockBreak](mechanics/bedrockbreak.md)
+* [BigMining](mechanics/bigmining.md)
+* [BlockAura](mechanics/blockaura.md)
+* [BottledExp](mechanics/bottledexp.md)
 * [Custom Block Experience](mechanics/custom-block-experience.md)
+* [Decay](mechanics/decay.md)
 * [Infested](mechanics/infested.md)
 * [KillMessage](mechanics/killmessage.md)
-* [Stackable](mechanics/stackable.md)
+* [MiningTools](mechanics/miningtools.md)
 * [Unstackable](mechanics/unstackable.md)
-* [Decay](mechanics/decay.md)
+* [Repair](mechanics/repair.md)
 * [ShiftBlock](mechanics/shiftblock.md)
-* [BottledExp](mechanics/bottledexp.md)
-* [BlockAura](mechanics/blockaura.md)
+* [SpawnerBreak](mechanics/spawnerbreak.md)
+* [Stackable](mechanics/stackable.md)
 
 ## Populators
 
