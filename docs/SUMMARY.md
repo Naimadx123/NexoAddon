@@ -25,6 +25,7 @@
 * [Decay](mechanics/decay.md)
 * [ShiftBlock](mechanics/shiftblock.md)
 * [BottledExp](mechanics/bottledexp.md)
+* [BlockAura](mechanics/blockaura.md)
 
 ## Populators
 
