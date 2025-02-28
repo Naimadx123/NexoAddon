@@ -21,11 +21,12 @@
 * [Infested](mechanics/infested.md)
 * [KillMessage](mechanics/killmessage.md)
 * [MiningTools](mechanics/miningtools.md)
-* [Unstackable](mechanics/unstackable.md)
 * [Repair](mechanics/repair.md)
 * [ShiftBlock](mechanics/shiftblock.md)
+* [Signal](mechanics/signal.md)
 * [SpawnerBreak](mechanics/spawnerbreak.md)
 * [Stackable](mechanics/stackable.md)
+* [Unstackable](mechanics/unstackable.md)
 
 ## Populators
 
