@@ -1,23 +1,20 @@
 ---
-description: Temporarily change the CustomBlock to another one!
+description: Temporarily change the CustomBlock or Furniture to another one!
 ---
 
 # ShiftBlock
 
-Change CustomBlock to another one for specified time and add new Mechanic to your server!
+Change CustomBlock or Furniture to another one for specified time and add new Mechanic to your server!
 
 ### Change CustomBlock
 
-```yaml
-# Example
+<pre class="language-yaml"><code class="lang-yaml"># Example
 
 Mechanics:
-  custom_block:
-    type: NOTEBLOCK
-    shiftblock:
-      time: 5                      # Time in seconds
-      replace_to: test_block2      # Id of CustomBlock
-```
+<strong>  shiftblock:
+</strong>    time: 5                      # Time in seconds
+    replace_to: test_block2      # Id of CustomBlock
+</code></pre>
 
 ### Change CustomBlock if clicked with specified items
 
@@ -27,12 +24,12 @@ Mechanics:
 Mechanics:
   custom_block:
     type: NOTEBLOCK
-    shiftblock:
-      time: 60                     # Time in seconds
-      replace_to: test_block2      # Id of CustomBlock
-      items:                       # Allow to use this Mechanic only using those items
-      - forest_axe                 # Nexo Item
-      - PAPER                      # Vanilla Material
+  shiftblock:
+    time: 60                     # Time in seconds
+    replace_to: test_block2      # Id of CustomBlock
+    items:                       # Allow to use this Mechanic only using those items
+    - forest_axe                 # Nexo Item
+    - PAPER                      # Vanilla Material
 ```
 
 ### Shift triggers
@@ -43,13 +40,13 @@ Mechanics:
 Mechanics:
   custom_block:
     type: NOTEBLOCK
-    shiftblock:
-      time: 5                      # Time in seconds
-      replace_to: test_block2      # Id of CustomBlock      
+  shiftblock:
+    time: 5                      # Time in seconds
+    replace_to: test_block2      # Id of CustomBlock      
 
-      on_interact: true            # true is default
-      on_break: false              # false is default
-      on_place: false              # false is default
+    on_interact: true            # true is default
+    on_break: false              # false is default
+    on_place: false              # false is default
 ```
 
 ### Use Case examples
@@ -69,12 +66,12 @@ honeycomb_ore:
   Mechanics:
     custom_block:
       type: NOTEBLOCK
-      shiftblock:
-        time: 5
-        replace_to: honeycomb_normal
-        on_interact: false
-        on_break: true
-        on_place: false
+    shiftblock:
+      time: 5
+      replace_to: honeycomb_normal
+      on_interact: false
+      on_break: true
+      on_place: false
 ```
 
 <figure><img src="../.gitbook/assets/on_break.gif" alt="" width="640"><figcaption></figcaption></figure>
@@ -94,12 +91,12 @@ cut_nano_flux:
   Mechanics:
     custom_block:
       type: NOTEBLOCK
-      shiftblock:
-        time: 5
-        replace_to: honeycomb_normal
-        on_interact: false
-        on_break: false
-        on_place: true
+    shiftblock:
+      time: 5
+      replace_to: honeycomb_normal
+      on_interact: false
+      on_break: false
+      on_place: true
 ```
 
 <figure><img src="../.gitbook/assets/on_place.gif" alt="" width="640"><figcaption></figcaption></figure>
