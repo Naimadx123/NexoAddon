@@ -7,7 +7,7 @@ description: Populate your worlds with CustomBlocks or Furnitures!
 
 
 {% hint style="info" %}
-Supports **Furnitures**, **Noteblocks**, **Stringblocks** and **Vanilla Materials**
+Supports **Furnitures**, **Noteblocks**, **Stringblocks, Chorusblocks** and **Vanilla Materials**
 {% endhint %}
 
 ### Flowers Populator Example
