@@ -7,7 +7,7 @@ description: Decay chorusblock mechanic.
 Create unique leaves with Decay Mechanic!
 
 {% hint style="info" %}
-This Mechanic only works on CHORUSBLOCK
+This Mechanic works on every custom\_block type
 {% endhint %}
 
 ### Decaying leaves
