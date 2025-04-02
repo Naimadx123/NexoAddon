@@ -5,14 +5,18 @@ import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.custom_block.stringblock.StringBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import org.bukkit.Material;
-import org.bukkit.Registry;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.dedicated.DedicatedServer;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_20_R3.CraftRegistry;
+import org.bukkit.craftbukkit.v1_20_R3.CraftServer;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
 import zone.vao.nexoAddon.populators.treePopulator.CustomTree;
@@ -149,7 +153,7 @@ public class PopulatorsConfigUtil {
     NexoAddon.getInstance().getLogger().info(key + " worlds: " + worldNames);
     List<World> worlds = parseWorlds(worldNames);
     if (worlds.isEmpty()) return null;
-    List<Biome> biomes = parseBiomes(worlds, section.getStringList("biomes"));
+    List<NamespacedKey> biomes = parseBiomes(worlds, section.getStringList("biomes"));
 
     List<Material> replaceMaterials = parseMaterials(section.getStringList("replace"));
     List<Material> placeOnMaterials = parseMaterials(section.getStringList("place_on"));
@@ -214,10 +218,10 @@ public class PopulatorsConfigUtil {
     double chance = section.getDouble("chance", 0.1);
 
     List<World> worlds = parseWorlds(section.getStringList("worlds"));
-    List<Biome> biomes = parseBiomes(worlds, section.getStringList("biomes"));
+    List<NamespacedKey> biomes = parseBiomes(worlds, section.getStringList("biomes"));
     if (worlds.isEmpty()) return null;
     if (biomes.isEmpty())
-      biomes = worlds.get(0).getBiomeProvider().getBiomes(worlds.get(0)).stream().toList();
+      biomes = getAllBiomes();
 
     try {
       return new CustomTree(
@@ -264,11 +268,19 @@ public class PopulatorsConfigUtil {
     return NexoAddon.getInstance().getServer().createWorld(creator);
   }
 
-  private List<Biome> parseBiomes(List<World> worlds, List<String> biomeNames) {
-    List<Biome> availableBiomes = new ArrayList<>();
-
-    for (Biome biome : getAllBiomes()) {
-      if (biomeNames.contains(biome.name().toUpperCase().replace(" ", "_"))) {
+  private List<NamespacedKey> parseBiomes(List<World> worlds, List<String> biomeNames) {
+    List<NamespacedKey> availableBiomes = new ArrayList<>();
+    biomeNames = biomeNames.stream()
+        .map(s -> {
+          if(!s.contains(":") && !s.startsWith("minecraft:")){
+            return "minecraft:" + s;
+          }
+          return s;
+        })
+        .map(String::toLowerCase)
+        .toList();
+    for (NamespacedKey biome : getAllBiomes()) {
+      if (biomeNames.contains(biome.asString())) {
         availableBiomes.add(biome);
       }
     }
@@ -276,8 +288,27 @@ public class PopulatorsConfigUtil {
     return availableBiomes.isEmpty() ? getAllBiomes() : availableBiomes;
   }
 
-  private List<Biome> getAllBiomes() {
-    return Registry.BIOME.stream().toList();
+  private List<NamespacedKey> getAllBiomes() {
+    List<NamespacedKey> vanillaKeys = new ArrayList<>(Registry.BIOME.stream().map(Biome::getKey).distinct().toList());
+
+    vanillaKeys.addAll(getDatapackCustomBiomes());
+
+    System.out.println(vanillaKeys);
+    return vanillaKeys;
+  }
+
+  public static List<NamespacedKey> getDatapackCustomBiomes() {
+    // Access the server's biome registry (NMS).
+    net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> biomeRegistry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
+
+    List<NamespacedKey> customBiomes = new ArrayList<>();
+    for (ResourceLocation biomeId : biomeRegistry.keySet()) {
+      if (!biomeId.getNamespace().equals("minecraft")) {
+        NamespacedKey key = new NamespacedKey(biomeId.getNamespace(), biomeId.getPath());
+        customBiomes.add(key);
+      }
+    }
+    return customBiomes;
   }
 
   private List<Material> parseMaterials(List<String> materialNames) {

@@ -1,11 +1,13 @@
 package zone.vao.nexoAddon.populators.orePopulator;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_20_R3.CraftRegistry;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.LimitedRegion;
 import org.bukkit.generator.WorldInfo;
@@ -44,7 +46,7 @@ public class CustomOrePopulator extends BlockPopulator {
 
         for (int y = worldInfo.getMinHeight(); y <= (replaceAir ? limitedRegion.getHighestBlockYAt(x,z) : worldInfo.getMaxHeight()); y++) {
           if (!limitedRegion.isInRegion(x, y, z)) continue;
-          if (!ore.biomes.isEmpty() && !ore.biomes.contains(limitedRegion.getBiome(x, y, z))) continue;
+          if (!ore.biomes.isEmpty() && !ore.biomes.contains(getBiomeKeyAtLocation(new Location(Bukkit.getWorld(worldInfo.getUID()), x, y, z)))) continue;
 
           Material currentMaterial = limitedRegion.getType(x, y, z);
 
@@ -196,7 +198,7 @@ public class CustomOrePopulator extends BlockPopulator {
     return ore.getReplace() != null
         && position != null
         && ore.getReplace().contains(position.blockType())
-        && ore.getBiomes().contains(position.biome());
+        && ore.getBiomes().contains(getBiomeKeyAtLocation(new Location(Bukkit.getWorld(position.worldInfo().getUID()), position.x, position.y, position.z)));
   }
 
   private boolean canPlaceOnBlock(PlacementPosition position, Ore ore, LimitedRegion limitedRegion) {
@@ -204,7 +206,7 @@ public class CustomOrePopulator extends BlockPopulator {
     Material aboveBlockType = limitedRegion.getType(position.x(), position.y() + 1, position.z());
     return ore.getPlaceOn() != null
         && ore.getPlaceOn().contains(position.blockType())
-        && ore.getBiomes().contains(position.biome())
+        && ore.getBiomes().contains(getBiomeKeyAtLocation(new Location(Bukkit.getWorld(position.worldInfo().getUID()), position.x, position.y, position.z)))
         && (!ore.isOnlyAir() || aboveBlockType.isAir());
   }
 
@@ -213,7 +215,7 @@ public class CustomOrePopulator extends BlockPopulator {
     Material belowBlockType = limitedRegion.getType(position.x(), position.y() - 1, position.z());
     return (!ore.getPlaceBelow().isEmpty())
         && ore.getPlaceBelow().contains(position.blockType())
-        && ore.getBiomes().contains(position.biome())
+        && ore.getBiomes().contains(getBiomeKeyAtLocation(new Location(Bukkit.getWorld(position.worldInfo().getUID()), position.x, position.y, position.z)))
         && (!ore.getPlaceBelow().contains(belowBlockType))
         && (!ore.isOnlyAir() || belowBlockType.isAir());
   }
@@ -252,4 +254,15 @@ public class CustomOrePopulator extends BlockPopulator {
       return new Location(Bukkit.getWorld(worldInfo.getUID()), x, y, z);
     }
   }
+
+  public static NamespacedKey getBiomeKeyAtLocation(Location loc) {
+    ServerLevel nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
+    int biomeX = loc.getBlockX() >> 2;
+    int biomeY = loc.getBlockY() >> 2;
+    int biomeZ = loc.getBlockZ() >> 2;
+    net.minecraft.world.level.biome.Biome biomeBase = nmsWorld.getNoiseBiome(biomeX, biomeY, biomeZ).value();
+    ResourceLocation biomeId = CraftRegistry.getMinecraftRegistry(Registries.BIOME).getKey(biomeBase);
+    return new NamespacedKey(biomeId.getNamespace(), biomeId.getPath());
+  }
+
 }
