@@ -85,7 +85,6 @@
                         <excludes>
                             <exclude>org.projectlombok:lombok</exclude>
                             <exclude>net.kyori:*</exclude>
-                            <exclude>org.sqlite:*</exclude>
                         </excludes>
                     </artifactSet>
                     <filters>
@@ -146,17 +145,17 @@
     </repositories>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>io.papermc.paper</groupId>-->
-<!--            <artifactId>paper-api</artifactId>-->
-<!--            <version>1.20.4-R0.1-SNAPSHOT</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.20.4-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>ca.bkaw</groupId>
             <artifactId>paper-nms</artifactId>
-            <version>1.20.4-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>1.21.4-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.nexomc</groupId>
