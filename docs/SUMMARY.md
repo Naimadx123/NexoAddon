@@ -44,3 +44,7 @@
 * [Prevent furniture breaks](settings/prevent-furniture-breaks.md)
 * [Delay of Aura Mechanic](settings/prevent-furniture-breaks-1.md)
 * [Default config.yml](https://github.com/Naimadx123/NexoAddon/blob/master/src/main/resources/config.yml)
+
+## Commands
+
+* [Totem Command](commands/totemcommand.md)
