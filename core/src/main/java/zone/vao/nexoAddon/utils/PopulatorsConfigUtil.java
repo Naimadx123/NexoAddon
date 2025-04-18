@@ -5,15 +5,13 @@ import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.custom_block.stringblock.StringBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.CraftRegistry;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.nms.NmsHandlerFactory;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
 import zone.vao.nexoAddon.populators.treePopulator.CustomTree;
 
@@ -294,17 +292,7 @@ public class PopulatorsConfigUtil {
   }
 
   public static List<NamespacedKey> getDatapackCustomBiomes() {
-    // Access the server's biome registry (NMS).
-    net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> biomeRegistry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
-
-    List<NamespacedKey> customBiomes = new ArrayList<>();
-    for (ResourceLocation biomeId : biomeRegistry.keySet()) {
-      if (!biomeId.getNamespace().equals("minecraft")) {
-        NamespacedKey key = new NamespacedKey(biomeId.getNamespace(), biomeId.getPath());
-        customBiomes.add(key);
-      }
-    }
-    return customBiomes;
+    return NmsHandlerFactory.create().getDatapackCustomBiomes();
   }
 
   private List<Material> parseMaterials(List<String> materialNames) {
