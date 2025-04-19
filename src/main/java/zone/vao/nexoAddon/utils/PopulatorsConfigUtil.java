@@ -5,10 +5,7 @@ import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.custom_block.stringblock.StringBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import org.bukkit.Material;
-import org.bukkit.Registry;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -267,13 +264,27 @@ public class PopulatorsConfigUtil {
   private List<Biome> parseBiomes(List<World> worlds, List<String> biomeNames) {
     List<Biome> availableBiomes = new ArrayList<>();
 
-    for (Biome biome : getAllBiomes()) {
-      if (biomeNames.contains(biome.name().toUpperCase().replace(" ", "_"))) {
+    Registry<Biome> biomeRegistry = Registry.BIOME;
+
+    for (String biomeName : biomeNames) {
+
+      NamespacedKey biomeKey;
+      if (biomeName.contains(":")) {
+        String[] parts = biomeName.split(":");
+        biomeKey = new NamespacedKey(parts[0], parts[1]);
+      } else {
+        biomeKey = NamespacedKey.minecraft(biomeName.toLowerCase());
+      }
+
+      Biome biome = biomeRegistry.get(biomeKey);
+      if (biome != null) {
         availableBiomes.add(biome);
+      } else {
+        NexoAddon.getInstance().getLogger().warning("Biome not found: " + biomeName);
       }
     }
 
-    return availableBiomes.isEmpty() ? getAllBiomes() : availableBiomes;
+    return availableBiomes.isEmpty() ? Registry.BIOME.stream().toList() : availableBiomes;
   }
 
   private List<Biome> getAllBiomes() {
