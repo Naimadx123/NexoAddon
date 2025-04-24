@@ -189,5 +189,20 @@
             <version>2.2.3</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>zone.vao</groupId>
+            <artifactId>nms-1_20_4</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>zone.vao</groupId>
+            <artifactId>nms-1_20_6</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>zone.vao</groupId>
+            <artifactId>nms-1_21_4</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

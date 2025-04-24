@@ -1,12 +1,12 @@
-package zone.vao.nexoAddon.nms.v1_20_4;
+package zone.vao.nexoAddon.nms.v1_21_4;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_20_R3.CraftRegistry;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftWorld;
 import zone.vao.nexoAddon.nms.INmsHandler;
 
 import java.util.ArrayList;

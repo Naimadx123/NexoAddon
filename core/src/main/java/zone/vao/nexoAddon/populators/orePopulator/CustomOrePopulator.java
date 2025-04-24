@@ -1,17 +1,13 @@
 package zone.vao.nexoAddon.populators.orePopulator;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.LimitedRegion;
 import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
+import zone.vao.nexoAddon.nms.NmsHandlerFactory;
 
 import java.util.*;
 
@@ -256,13 +252,7 @@ public class CustomOrePopulator extends BlockPopulator {
   }
 
   public static NamespacedKey getBiomeKeyAtLocation(Location loc) {
-    ServerLevel nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
-    int biomeX = loc.getBlockX() >> 2;
-    int biomeY = loc.getBlockY() >> 2;
-    int biomeZ = loc.getBlockZ() >> 2;
-    net.minecraft.world.level.biome.Biome biomeBase = nmsWorld.getNoiseBiome(biomeX, biomeY, biomeZ).value();
-    ResourceLocation biomeId = CraftRegistry.getMinecraftRegistry(Registries.BIOME).getKey(biomeBase);
-    return new NamespacedKey(biomeId.getNamespace(), biomeId.getPath());
+    return NmsHandlerFactory.create().getBiomeKeyAtLocation(loc);
   }
 
 }
