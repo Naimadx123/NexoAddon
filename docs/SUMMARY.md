@@ -21,6 +21,7 @@
 * [Infested](mechanics/infested.md)
 * [KillMessage](mechanics/killmessage.md)
 * [MiningTools](mechanics/miningtools.md)
+* [Remember](mechanics/remember.md)
 * [Repair](mechanics/repair.md)
 * [ShiftBlock](mechanics/shiftblock.md)
 * [Signal](mechanics/signal.md)
