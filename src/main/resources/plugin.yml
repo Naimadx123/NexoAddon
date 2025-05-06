@@ -6,3 +6,4 @@ author: "Naimad (discord: 4g0)"
 softdepend: [ WorldGuard, Towny, Factions, Lands, PlotSquared, CrashClaim, HuskTowns, packetevents, MythicMobs ]
 depend:
   - Nexo
+folia-supported: true
