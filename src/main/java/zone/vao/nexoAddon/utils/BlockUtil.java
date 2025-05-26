@@ -112,7 +112,7 @@ public class BlockUtil {
       return;
     }
 
-    NexoAddon.instance.foliaLib.getScheduler().runAsync(startDecay -> {
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location, startDecay -> {
       for (int x = -radius; x <= radius; x++) {
         for (int y = -radius; y <= radius; y++) {
           for (int z = -radius; z <= radius; z++) {
