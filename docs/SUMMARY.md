@@ -28,6 +28,7 @@
 * [SpawnerBreak](mechanics/spawnerbreak.md)
 * [Stackable](mechanics/stackable.md)
 * [Unstackable](mechanics/unstackable.md)
+* [VeinMiner](mechanics/veinminer.md)
 
 ## Populators
 
