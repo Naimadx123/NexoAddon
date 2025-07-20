@@ -1,5 +1,6 @@
 package zone.vao.nexoAddon.items.mechanics;
 
+import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.audience.Audience;
@@ -119,7 +120,7 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
             if (!EventUtil.callEvent(blockBreakEvent) ||
                     (!mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType()))) return;
 
-            if (blockBreakEvent.isDropItems()) {
+            if (blockBreakEvent.isDropItems() || NexoBlocks.isCustomBlock(block)) {
               block.breakNaturally(tool, true, true);
             } else {
               block.setType(Material.AIR);
@@ -130,7 +131,7 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
     }
 
     private static void isUnbreakableBlock(Player player, Block block, Consumer<Boolean> callback) {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(task -> {
+      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(block.getLocation(), task -> {
         boolean result = block.isLiquid()
                 || BlockUtil.UNBREAKABLE_BLOCKS.contains(block.getType())
                 || !ProtectionLib.canBreak(player, block.getLocation());
