@@ -113,19 +113,28 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
         if (isUnbreakable) return;
 
         NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(attempt -> {
-          activeBlockBreaks.incrementAndGet();
-          BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
-
-          NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(attemptEvent -> {
-            if (!EventUtil.callEvent(blockBreakEvent) ||
-                    (!mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType()))) return;
-
-            if (blockBreakEvent.isDropItems() || NexoBlocks.isCustomBlock(block)) {
-              block.breakNaturally(tool, true, true);
-            } else {
-              block.setType(Material.AIR);
+          try {
+            if (player == null || block == null || tool == null || mechanic == null) {
+              NexoAddon.getInstance().getLogger().warning("[BigMining] Null check failed: player=" + player + ", block=" + block + ", tool=" + tool + ", mechanic=" + mechanic);
+              return;
             }
-          });
+
+            activeBlockBreaks.incrementAndGet();
+            BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+
+            NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(block.getLocation(), attemptEvent -> {
+              if (!EventUtil.callEvent(blockBreakEvent) ||
+                      (!mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType()))) return;
+
+              if (blockBreakEvent.isDropItems() || NexoBlocks.isCustomBlock(block)) {
+                block.breakNaturally(tool, true, true);
+              } else {
+                block.setType(Material.AIR);
+              }
+            });
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
         });
       });
     }
