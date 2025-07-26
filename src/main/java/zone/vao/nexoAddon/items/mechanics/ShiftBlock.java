@@ -84,6 +84,9 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (!toCancelation.contains(event.getPlayer().getUniqueId()))
         toCancelation.add(event.getPlayer().getUniqueId());
 
+      UUID uuid = event.getPlayer().getUniqueId();
+      if (hasCooldown(uuid)) return;
+      setCooldown(uuid, 3);
       event.getPlayer().swingMainHand();
       startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
@@ -103,9 +106,6 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
           !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
         return;
       event.setCancelled(true);
-      UUID uuid = event.getPlayer().getUniqueId();
-      if (hasCooldown(uuid)) return;
-      setCooldown(uuid, 3);
       startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
 
