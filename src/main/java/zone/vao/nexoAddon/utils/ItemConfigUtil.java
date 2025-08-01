@@ -122,6 +122,7 @@ public class ItemConfigUtil {
         loadSignalMechanic(itemSection, mechanic);
         loadRememberMechanic(itemSection, mechanic);
         loadEnchantifyMechanic(itemSection, mechanic);
+        loadAutoCatchMechanic(itemSection, mechanic);
       });
     }
   }
@@ -418,6 +419,12 @@ public class ItemConfigUtil {
     parseItemList(section.getStringList("Mechanics.enchantify.blacklist"), materialsBlacklist, nexoIdsBlacklist);
 
     mechanic.setEnchantify(enchants, limits, materials, nexoIds, materialsBlacklist, nexoIdsBlacklist);
+  }
+
+  private static void loadAutoCatchMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.autocatch")) return;
+
+    mechanic.setAutoCatch(section.getBoolean("Mechanics.autocatch.toggable", false));
   }
 
   private static void parseEnchantments(List<Map<?, ?>> enchantList, Map<Enchantment, Integer> enchants, Map<Enchantment, Integer> limits) {

@@ -35,6 +35,7 @@ public class Mechanics {
   private Signal signal;
   private Remember remember;
   private Enchantify enchantify;
+  private AutoCatch autoCatch;
 
   public Mechanics(String id) {
     this.id = id;
@@ -108,7 +109,13 @@ public class Mechanics {
     this.enchantify = new Enchantify(enchants, limits, materials, nexoIds, materialsBlacklist, nexoIdsBlacklist);
   }
 
+  public void setAutoCatch(boolean toggable) {
+    this.autoCatch = new AutoCatch(toggable);
+  }
+
   public static void registerListeners(NexoAddon plugin){
+
+    registerListener(new AutoCatch.AutoCatchListener(), plugin);
 
     registerListener(new BigMining.BigMiningListener(), plugin);
     registerListener(new BlockAura.BlockAuraListener(), plugin);
