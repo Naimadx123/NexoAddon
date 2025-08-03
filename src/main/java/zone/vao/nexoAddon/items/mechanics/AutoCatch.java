@@ -1,6 +1,7 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import org.bukkit.Material;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.items.Mechanics;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -26,11 +28,13 @@ public record AutoCatch(boolean toggable) {
     public static boolean isAutoCatchTool(String toolId) {
         return toolId != null
                 && NexoAddon.getInstance().getMechanics().containsKey(toolId)
-                && NexoAddon.getInstance().getMechanics().get(toolId).getBigMining() != null;
+                && NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch() != null;
     }
 
-    public static boolean isAutoCatchEnabled(ItemStack item) {
+    public static boolean isAutoCatchEnabled(ItemStack item, boolean toggable) {
         if (item == null || item.getType() != Material.FISHING_ROD) return false;
+        if (!toggable) return true;
+
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
 
@@ -41,10 +45,11 @@ public record AutoCatch(boolean toggable) {
         );
     }
 
+
     public static class AutoCatchListener implements Listener {
 
         @EventHandler
-        public void onRodLeftClick(PlayerInteractEvent event) {
+        public static void onRodLeftClick(PlayerInteractEvent event) {
             if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.LEFT_CLICK_BLOCK) return;
 
             Player player = event.getPlayer();
@@ -60,19 +65,19 @@ public record AutoCatch(boolean toggable) {
             container.set(autoCatchKey, PersistentDataType.BOOLEAN, !current);
             item.setItemMeta(meta);
 
-            player.sendMessage("§7AutoCatch is now §b" + (!current ? "enabled" : "disabled") + "§7.");
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<grey>AutoCatch is now " + (!current ? "<green>enabled" : "<red>disabled") + "<grey>."));
             player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
         }
 
         @EventHandler
-        public void onAutoCatch(PlayerFishEvent event) {
-            if (event.isCancelled()) return;
+        public static void onAutoCatch(PlayerFishEvent event) {
 
             Player player = event.getPlayer();
             ItemStack tool = player.getInventory().getItemInMainHand();
 
             String toolId = NexoItems.idFromItem(tool);
-            if (!AutoCatch.isAutoCatchTool(toolId) || !AutoCatch.isAutoCatchEnabled(tool)) return;
+            Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(toolId);
+            if (!AutoCatch.isAutoCatchTool(toolId) || !AutoCatch.isAutoCatchEnabled(tool, mechanics.getAutoCatch().toggable())) return;
 
             if (event.getState() == PlayerFishEvent.State.BITE || event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
                 int delay = event.getState() == PlayerFishEvent.State.BITE ? 10 : 20;
