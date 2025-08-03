@@ -59,7 +59,7 @@ public record AutoCatch(boolean toggable) {
             Player player = event.getPlayer();
 
             String toolId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());
-            if(!NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch().toggable()) return;
+            if(NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch() == null || !NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch().toggable()) return;
 
             ItemStack item = player.getInventory().getItemInMainHand();
             if (item.getType() != Material.FISHING_ROD) return;
