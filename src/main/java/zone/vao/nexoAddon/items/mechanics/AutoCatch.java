@@ -48,8 +48,13 @@ public record AutoCatch(boolean toggable) {
 
     public static class AutoCatchListener implements Listener {
 
-        @EventHandler public static void onRodLeftClick(PlayerInteractEvent event) {
-            if ((event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.LEFT_CLICK_BLOCK) || event.getHand() == null || !event.getHand().equals(EquipmentSlot.HAND)) return;
+        @EventHandler
+        public static void onRodLeftClick(PlayerInteractEvent event) {
+            if (
+                (event.getAction() != Action.LEFT_CLICK_BLOCK)
+                || event.getHand() == null
+                || !event.getHand().equals(EquipmentSlot.HAND)
+            ) return;
 
             Player player = event.getPlayer();
 
@@ -57,7 +62,7 @@ public record AutoCatch(boolean toggable) {
             if(!NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch().toggable()) return;
 
             ItemStack item = player.getInventory().getItemInMainHand();
-            if (item == null || item.getType() != Material.FISHING_ROD) return;
+            if (item.getType() != Material.FISHING_ROD) return;
             ItemMeta meta = item.getItemMeta();
             if (meta == null) return;
             PersistentDataContainer container = meta.getPersistentDataContainer();
