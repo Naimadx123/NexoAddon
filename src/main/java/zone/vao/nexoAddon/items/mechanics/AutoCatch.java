@@ -19,8 +19,8 @@ import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public record AutoCatch(boolean toggable) {
 

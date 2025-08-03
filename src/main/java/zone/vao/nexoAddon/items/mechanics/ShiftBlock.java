@@ -20,14 +20,12 @@ import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
 import com.nexomc.nexo.api.events.furniture.NexoFurniturePlaceEvent;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 
