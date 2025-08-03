@@ -87,6 +87,7 @@ public record AutoCatch(boolean toggable) {
             if (event.getState() == PlayerFishEvent.State.BITE || event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
                 int delay = event.getState() == PlayerFishEvent.State.BITE ? 10 : 20;
                 NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+                    player.swingHand(EquipmentSlot.HAND);
                     Object hand = getFishingRodHand(player);
                     if (hand != null) {
                         simulateRodCast(player, hand);
