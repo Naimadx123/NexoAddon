@@ -82,7 +82,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (!toCancelation.contains(event.getPlayer().getUniqueId()))
         toCancelation.add(event.getPlayer().getUniqueId());
 
-      UUID uuid = event.getPlayer().getUniqueId();
+      UUID uuid = event.getBaseEntity().getUniqueId();
       if (hasCooldown(uuid)) return;
       setCooldown(uuid, 3);
       event.getPlayer().swingMainHand();
