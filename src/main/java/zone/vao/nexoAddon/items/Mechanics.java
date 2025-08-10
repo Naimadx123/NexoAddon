@@ -36,6 +36,7 @@ public class Mechanics {
   private Remember remember;
   private Enchantify enchantify;
   private AutoCatch autoCatch;
+  private UniqueId uniqueId;
 
   public Mechanics(String id) {
     this.id = id;
@@ -113,6 +114,10 @@ public class Mechanics {
     this.autoCatch = new AutoCatch(toggable);
   }
 
+  public void setUniqueId(boolean enabled) {
+      this.uniqueId = new UniqueId(enabled);
+  }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -131,6 +136,8 @@ public class Mechanics {
     registerListener(new KillMessage.KillMessageListener(), plugin);
 
     registerListener(new MiningTools.MiningToolsListener(), plugin);
+
+    registerListener(new UniqueId.UniqueIdListener(), plugin);
 
     registerListener(new Remember.RememberListener(), plugin);
     registerListener(new Repair.RepairListener(), plugin);
