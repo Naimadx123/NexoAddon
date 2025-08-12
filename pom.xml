@@ -168,7 +168,7 @@
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.9.0-dev.12</version>
+            <version>1.11.0-dev.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
