@@ -17,3 +17,6 @@ messages:
     off: <red>VeinMiner off
   bottledexp:
     not_enough_exp: <red>Not enough experience to convert
+  autocatch:
+    on: <grey>AutoCatch is now <green>enabled<grey>.
+    off: <grey>AutoCatch is now disabled<grey>.
