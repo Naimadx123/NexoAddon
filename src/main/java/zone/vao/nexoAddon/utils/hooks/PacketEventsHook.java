@@ -9,10 +9,8 @@ public class PacketEventsHook {
 
   public static void registerListener(){
 
-      if(NexoAddon.getInstance().getGlobalConfig().getBoolean("blockhardness.enabled", true)) {
-          NexoAddon.getInstance().blockHardnessHandler = new BlockHardnessHandler();
-          NexoAddon.getInstance().packetListenerCommon = PacketEvents.getAPI().getEventManager().registerListener(
-                  NexoAddon.getInstance().getBlockHardnessHandler(), PacketListenerPriority.NORMAL);
-      }
+      NexoAddon.getInstance().blockHardnessHandler = new BlockHardnessHandler();
+      NexoAddon.getInstance().packetListenerCommon = PacketEvents.getAPI().getEventManager().registerListener(
+              NexoAddon.getInstance().getBlockHardnessHandler(), PacketListenerPriority.NORMAL);
   }
 }
