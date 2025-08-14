@@ -1,7 +1,9 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,7 +52,7 @@ public record AutoCatch(boolean toggable) {
     public static class AutoCatchListener implements Listener {
 
         @EventHandler
-        public static void onRodLeftClick(PlayerInteractEvent event) {
+        public static void onRodLeftClick(final PlayerInteractEvent event) {
             if (
                 (event.getAction() != Action.LEFT_CLICK_BLOCK)
                 || event.getHand() == null
@@ -73,17 +75,20 @@ public record AutoCatch(boolean toggable) {
             container.set(autoCatchKey, PersistentDataType.BOOLEAN, !current);
             item.setItemMeta(meta);
 
-            String path = current ? "messages.autocatch.off" : "messages.autocatch.on";
+            FileConfiguration config = NexoAddon.getInstance().getGlobalConfig();
+            String path = current ? "messages.autocatch.disabled" : "messages.autocatch.enabled";
 
-            String message = NexoAddon.getInstance().getGlobalConfig().isString(path) ? NexoAddon.getInstance().getGlobalConfig().getString(path, "").trim() : "";
+            String message = config.isString(path) ? config.getString(path, "").trim() : "";
 
-            player.sendMessage(MiniMessage.miniMessage().deserialize(message));
+            if (!message.isEmpty()) {
+                Audience.audience(player).sendActionBar(MiniMessage.miniMessage().deserialize(message));
+            }
 
             player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
         }
 
         @EventHandler
-        public static void onAutoCatch(PlayerFishEvent event) {
+        public static void onAutoCatch(final PlayerFishEvent event) {
             Player player = event.getPlayer();
             ItemStack tool = player.getInventory().getItemInMainHand();
             String toolId = NexoItems.idFromItem(tool);

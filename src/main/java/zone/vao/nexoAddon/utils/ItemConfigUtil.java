@@ -429,9 +429,9 @@ public class ItemConfigUtil {
   }
 
     private static void loadUniqueIdMechanic(ConfigurationSection section, Mechanics mechanic) {
-        if (!section.contains("Mechanics.uniqueId")) return;
+        if (!section.contains("Mechanics.uniqueid")) return;
 
-        mechanic.setUniqueId(section.getBoolean("Mechanics.uniqueId.enabled", true));
+        mechanic.setUniqueId(section.getBoolean("Mechanics.uniqueid.enabled", true));
     }
 
   private static void parseEnchantments(List<Map<?, ?>> enchantList, Map<Enchantment, Integer> enchants, Map<Enchantment, Integer> limits) {
