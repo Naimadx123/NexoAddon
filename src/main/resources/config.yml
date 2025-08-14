@@ -8,6 +8,9 @@ aura_mechanic_delay: 5                      # Delay of refreshing particles in t
 
 update_checker: true
 
+blockhardness:
+  enabled: true
+
 messages:
   bigmining:
     on: <green>Bigmining on
