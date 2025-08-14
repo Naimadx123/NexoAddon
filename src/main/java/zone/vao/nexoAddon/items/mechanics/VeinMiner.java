@@ -212,13 +212,13 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         private static void turnOff(final Player player, PersistentDataContainer pdc) {
             pdc.set(key, PersistentDataType.BOOLEAN, false);
             Audience.audience(player)
-                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.off", "<red>VeinMiner off")));
+                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.disabled", "<red>VeinMiner disabled")));
         }
 
         private static void turnOn(final Player player, PersistentDataContainer pdc) {
             pdc.set(key, PersistentDataType.BOOLEAN, true);
             Audience.audience(player)
-                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.on", "<green>VeinMiner on")));
+                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.enabled", "<green>VeinMiner enabled")));
         }
     }
 }
