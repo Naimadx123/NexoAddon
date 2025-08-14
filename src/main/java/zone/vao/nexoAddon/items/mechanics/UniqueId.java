@@ -51,7 +51,7 @@ public record UniqueId(boolean enabled) {
         @EventHandler(ignoreCancelled = true)
         public void onClick(InventoryClickEvent event) {
             if (!(event.getWhoClicked() instanceof Player player)) return;
-            Bukkit.getScheduler().runTask(NexoAddon.getInstance(), () -> tagAllInInventory(player));
+            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick((tag) -> tagAllInInventory(player));
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -74,6 +74,7 @@ public record UniqueId(boolean enabled) {
 
         private void tagAllInInventory(Player player) {
             PlayerInventory inv = player.getInventory();
+            for (ItemStack it : inv.getContents()) tagIfMissing(it);
             for (ItemStack it : inv.getStorageContents()) tagIfMissing(it);
             for (ItemStack it : inv.getArmorContents()) tagIfMissing(it);
             for (ItemStack it : inv.getExtraContents()) tagIfMissing(it);
