@@ -18,5 +18,5 @@ messages:
   bottledexp:
     not_enough_exp: <red>Not enough experience to convert
   autocatch:
-    on: <gray>AutoCatch is now <green>enabled<gray>.
-    off: <gray>AutoCatch is now disabled<gray>.
+    on: "<gray>AutoCatch is now <green>enabled<gray>."
+    off: "<gray>AutoCatch is now disabled<gray>."

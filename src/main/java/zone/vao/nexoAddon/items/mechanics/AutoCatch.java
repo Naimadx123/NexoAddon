@@ -73,14 +73,11 @@ public record AutoCatch(boolean toggable) {
             container.set(autoCatchKey, PersistentDataType.BOOLEAN, !current);
             item.setItemMeta(meta);
 
-            FileConfiguration config = NexoAddon.getInstance().getGlobalConfig();
             String path = current ? "messages.autocatch.off" : "messages.autocatch.on";
 
-            String message = config.isString(path) ? config.getString(path, "").trim() : "";
+            String message = NexoAddon.getInstance().getGlobalConfig().isString(path) ? NexoAddon.getInstance().getGlobalConfig().getString(path, "").trim() : "";
 
-            if (!message.isEmpty()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize(message));
-            }
+            player.sendMessage(MiniMessage.miniMessage().deserialize(message));
 
             player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
         }
