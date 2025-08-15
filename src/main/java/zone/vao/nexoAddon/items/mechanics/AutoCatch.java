@@ -4,6 +4,7 @@ import com.nexomc.nexo.api.NexoItems;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,8 +25,9 @@ import zone.vao.nexoAddon.items.Mechanics;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
-public record AutoCatch(boolean toggable) {
+public record AutoCatch(boolean toggable, boolean recast) {
 
     private static final NamespacedKey autoCatchKey = new NamespacedKey(NexoAddon.getInstance(), "auto_catch_enabled");
 
@@ -53,17 +55,15 @@ public record AutoCatch(boolean toggable) {
 
         @EventHandler
         public static void onRodLeftClick(final PlayerInteractEvent event) {
-            if (
-                (event.getAction() != Action.LEFT_CLICK_BLOCK)
+            if ((event.getAction() != Action.LEFT_CLICK_BLOCK)
                 || event.getHand() == null
-                || !event.getHand().equals(EquipmentSlot.HAND)
-            ) return;
+                || !event.getHand().equals(EquipmentSlot.HAND)) return;
 
             Player player = event.getPlayer();
 
             String toolId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());
             if (!AutoCatch.isAutoCatchTool(toolId)) return;
-            if(!NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch().toggable()) return;
+            if (!NexoAddon.getInstance().getMechanics().get(toolId).getAutoCatch().toggable()) return;
 
             ItemStack item = player.getInventory().getItemInMainHand();
             if (item.getType() != Material.FISHING_ROD) return;
@@ -77,7 +77,6 @@ public record AutoCatch(boolean toggable) {
 
             FileConfiguration config = NexoAddon.getInstance().getGlobalConfig();
             String path = current ? "messages.autocatch.disabled" : "messages.autocatch.enabled";
-
             String message = config.isString(path) ? config.getString(path, "").trim() : "";
 
             if (!message.isEmpty()) {
@@ -94,31 +93,38 @@ public record AutoCatch(boolean toggable) {
             String toolId = NexoItems.idFromItem(tool);
             Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(toolId);
 
-            if (!AutoCatch.isAutoCatchTool(toolId) || !AutoCatch.isAutoCatchEnabled(tool, mechanics.getAutoCatch().toggable())) return;
+            if (!AutoCatch.isAutoCatchTool(toolId) || !AutoCatch.isAutoCatchEnabled(tool, mechanics.getAutoCatch().toggable()))
+                return;
 
             if (event.getState() == PlayerFishEvent.State.BITE || event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
                 int delay = event.getState() == PlayerFishEvent.State.BITE ? 10 : 20;
+
+                boolean recast = mechanics.getAutoCatch().recast();
+
                 NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
                     player.swingHand(EquipmentSlot.HAND);
                     Object hand = getFishingRodHand(player);
                     if (hand != null) {
-                        simulateRodCast(player, hand);
+                        Location lastLocation;
+                        if(!recast) lastLocation = event.getHook().getLocation().clone();
+                        else {
+                            lastLocation = null;
+                        }
+                        simulateRodCast(player, hand, recast, event);
+                        if(!recast) {
+                            if(player.getFishHook() != null)
+                                player.getFishHook().teleport(lastLocation);
+                        }
                     }
                 }, delay);
             }
         }
 
-        private static void simulateRodCast(Player player, Object hand) {
-            Object serverPlayer;
+        private static void simulateRodCast(Player player, Object hand, boolean recast, PlayerFishEvent event) {
             try {
-                serverPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                ex.printStackTrace();
-                return;
-            }
+                Object serverPlayer = player.getClass().getMethod("getHandle").invoke(player);
 
-            Class<?> handClass = hand.getClass();
-            try {
+                Class<?> handClass = hand.getClass();
                 Method getItemInHand = serverPlayer.getClass().getMethod("getItemInHand", handClass);
                 Object nmsItemStack = getItemInHand.invoke(serverPlayer, hand);
 
@@ -151,15 +157,13 @@ public record AutoCatch(boolean toggable) {
                     useItem.invoke(gameMode, serverPlayer, level, nmsItemStack, hand);
                 }
 
-                Method swing = null;
                 try {
-                    swing = serverPlayer.getClass().getMethod("swing", handClass);
+                    Method swing = serverPlayer.getClass().getMethod("swing", handClass);
                     swing.invoke(serverPlayer, hand);
                 } catch (NoSuchMethodException ex) {
-                    swing = serverPlayer.getClass().getMethod("swing", handClass, boolean.class);
+                    Method swing = serverPlayer.getClass().getMethod("swing", handClass, boolean.class);
                     swing.invoke(serverPlayer, hand, true);
                 }
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

@@ -110,8 +110,8 @@ public class Mechanics {
     this.enchantify = new Enchantify(enchants, limits, materials, nexoIds, materialsBlacklist, nexoIdsBlacklist);
   }
 
-  public void setAutoCatch(boolean toggable) {
-    this.autoCatch = new AutoCatch(toggable);
+  public void setAutoCatch(boolean toggable, boolean recast) {
+    this.autoCatch = new AutoCatch(toggable, recast);
   }
 
   public void setUniqueId(boolean enabled) {

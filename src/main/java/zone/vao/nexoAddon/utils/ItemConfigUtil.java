@@ -425,7 +425,7 @@ public class ItemConfigUtil {
   private static void loadAutoCatchMechanic(ConfigurationSection section, Mechanics mechanic) {
     if (!section.contains("Mechanics.autocatch")) return;
 
-    mechanic.setAutoCatch(section.getBoolean("Mechanics.autocatch.toggable", false));
+    mechanic.setAutoCatch(section.getBoolean("Mechanics.autocatch.toggable", false), section.getBoolean("Mechanics.autocatch.recast", true));
   }
 
     private static void loadUniqueIdMechanic(ConfigurationSection section, Mechanics mechanic) {
