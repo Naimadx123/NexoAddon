@@ -2,7 +2,6 @@ package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
