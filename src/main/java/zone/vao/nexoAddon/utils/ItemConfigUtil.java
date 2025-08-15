@@ -277,8 +277,9 @@ public class ItemConfigUtil {
       String selector = section.getString("Mechanics.custom_block.infested.selector", "all");
       boolean particles = section.getBoolean("Mechanics.custom_block.infested.particles", false);
       boolean drop = section.getBoolean("Mechanics.custom_block.infested.drop-loot", true);
+      boolean safeSpawn = section.getBoolean("Mechanics.custom_block.infested.safe-spawn", false);
 
-      mechanic.setInfested(entities, mythicMobs, probability, selector, particles, drop);
+      mechanic.setInfested(entities, mythicMobs, probability, selector, particles, drop, safeSpawn);
     }
   }
 

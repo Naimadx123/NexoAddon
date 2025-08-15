@@ -74,8 +74,8 @@ public class Mechanics {
     this.dropExperience = new DropExperience(experience);
   }
 
-  public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop) {
-    this.infested = new Infested(entities, mythicMobs, probability, selector, particles, drop);
+  public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop, boolean safeSpawn) {
+    this.infested = new Infested(entities, mythicMobs, probability, selector, particles, drop, safeSpawn);
   }
   
   public void setKillMessage(String deathMessage) {
