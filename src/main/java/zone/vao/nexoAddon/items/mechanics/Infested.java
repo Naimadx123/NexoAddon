@@ -108,7 +108,12 @@ public record Infested(List<EntityType> entities, List<String> mythicMobs, doubl
             MythicBukkit mythic = MythicBukkit.inst();
             if (mythic.getMobManager().getMythicMob(mobName).isPresent()) {
                 Location def = event.getBlock().getLocation().add(0.5, 0, 0.5);
-                Location spawnLoc = safeSpawn ? SafeSpawnUtil.findSafeSpawnAround(event.getBlock()).orElse(def) : def;
+                Entity e = null;
+                if(safeSpawn)
+                    e = def.getWorld().spawnEntity(def, EntityType.valueOf(mythic.getMobManager().getMythicMob(mobName).get().getEntityType().name()));
+                Location spawnLoc = safeSpawn ? SafeSpawnUtil.findSafeSpawnAround(event.getBlock(), e.copy()).orElse(def) : def;
+                if(safeSpawn)
+                    e.remove();
                 mythic.getMobManager().spawnMob(mobName, spawnLoc);
             } else {
                 NexoAddon.getInstance().getLogger().warning("MythicMob not found: " + mobName);
