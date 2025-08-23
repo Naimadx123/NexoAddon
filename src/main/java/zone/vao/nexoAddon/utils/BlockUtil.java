@@ -124,7 +124,7 @@ public class BlockUtil {
       return;
     }
 
-    NexoAddon.instance.foliaLib.getScheduler().runAsync(startDecay -> {
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location.clone(), startDecay -> {
       for (int x = -radius; x <= radius; x++) {
         for (int y = -radius; y <= radius; y++) {
           for (int z = -radius; z <= radius; z++) {
@@ -153,7 +153,7 @@ public class BlockUtil {
   }
 
   private static void startDecayTimer(Block block, Decay decay) {
-    NexoAddon.instance.foliaLib.getScheduler().runTimerAsync(decayTimer -> {
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocationTimer(block.getLocation(), decayTimer -> {
       if (block.getType() == Material.AIR && !NexoBlocks.isCustomBlock(block)) {
         processedCustomBlocks.remove(block.getLocation());
         decayTimer.cancel();
