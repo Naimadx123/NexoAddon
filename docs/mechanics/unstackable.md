@@ -1,54 +1,21 @@
 ---
-description: Unstack Stringblocks!
+description: Automate your fishing!
 ---
 
-# Unstackable
+# AutoCatch
 
-Take part of your stringblocks like a CAKE!
-
-{% hint style="info" %}
-This mechanic only works with Stringblocks!
-{% endhint %}
+Make your fishing rod catch fish automatically!
 
 ```yaml
 # Example
 
-cake_3:
-  itemname: Clover
-  material: PAPER
+automatic_fishing_rod:
+  material: FISHING_ROD
   Pack:
-    ...
+    model: nexo:item/fishing/auto_fishing
+    custom_model_data: 1001
   Mechanics:
-    custom_block:
-      type: STRINGBLOCK
-      ...
-      unstackable:
-        next: cake_2           # Next Stringblock item
-        give: cake_piece       # Give NexoItem
-
-cake_2:
-  Pack:
-    ...
-  Mechanics:
-    custom_block:
-      type: STRINGBLOCK
-      ...
-      unstackable:
-        next: cake              # Next Stringblock item
-        give: REDSTONE          # Give Vanilla Material
-
-cake:
-  Pack:
-    ...
-  Mechanics:
-    custom_block:
-      type: STRINGBLOCK
-      ...
-      unstackable:
-        next: stop              # No next stage.
-        give: cake_piece        # Give Vanilla Material
-        items:                  # List of items that may be used to trigger Unstackable Mechanic
-        - forest_axe
-        - DIAMOND_AXE
-      # There is no more stackable Mechanic so this is the last stackable option
+    autocatch:
+      toggable: false      # Allow do enbale/disable auto chatch
+      recast: false        # Should recast the fish hook when player is looking or to to the previous location?
 ```

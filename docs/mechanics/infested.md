@@ -49,4 +49,4 @@ Mechanics:
       particles: false      # If breaking the block should spawn particles. optional, defaults to false
 ```
 
-<sup><sub>Akis was here ;)</sub></sup>
+Akis was here ;)
