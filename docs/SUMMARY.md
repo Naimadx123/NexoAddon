@@ -12,7 +12,7 @@
 ## Mechanics
 
 * [Aura](mechanics/aura.md)
-* [AutoCatch](mechanics/unstackable.md)
+* [AutoCatch](mechanics/autocatch.md)
 * [BedrockBreak](mechanics/bedrockbreak.md)
 * [BigMining](mechanics/bigmining.md)
 * [BlockAura](mechanics/blockaura.md)
@@ -28,8 +28,8 @@
 * [Signal](mechanics/signal.md)
 * [SpawnerBreak](mechanics/spawnerbreak.md)
 * [Stackable](mechanics/stackable.md)
-* [UniqueId](mechanics/unstackable-1.md)
-* [Unstackable](mechanics/unstackable-2.md)
+* [UniqueId](mechanics/uniqueid.md)
+* [Unstackable](mechanics/unstackable.md)
 * [VeinMiner](mechanics/veinminer.md)
 
 ## Populators
