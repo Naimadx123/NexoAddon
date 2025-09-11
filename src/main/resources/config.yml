@@ -10,10 +10,13 @@ update_checker: true
 
 messages:
   bigmining:
-    on: <green>Bigmining on
-    off: <red>Bigmining off
+    enabled: <green>Bigmining on
+    disabled: <red>Bigmining off
   veinminer:
-    on: <green>VeinMiner on
-    off: <red>VeinMiner off
+    enabled: <green>VeinMiner on
+    disabled: <red>VeinMiner off
   bottledexp:
     not_enough_exp: <red>Not enough experience to convert
+  autocatch:
+    enabled: "<gray>AutoCatch is now <green>enabled<gray>."
+    disabled: "<gray>AutoCatch is now <red>disabled<gray>."

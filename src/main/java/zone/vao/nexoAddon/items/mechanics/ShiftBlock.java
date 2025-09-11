@@ -20,21 +20,16 @@ import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
 import com.nexomc.nexo.api.events.furniture.NexoFurniturePlaceEvent;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static zone.vao.nexoAddon.utils.BlockUtil.startShiftBlock;
 
@@ -42,6 +37,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
 
   public static class ShiftBlockListener implements Listener {
     public static List<UUID> toCancelation = Collections.synchronizedList(new ArrayList<>());
+    private static final Map<UUID, Long> cooldowns = new HashMap<>();
 
     @EventHandler
     public static void onShiftBlockPlaceFurniture(NexoFurniturePlaceEvent event) {
@@ -86,6 +82,9 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (!toCancelation.contains(event.getPlayer().getUniqueId()))
         toCancelation.add(event.getPlayer().getUniqueId());
 
+      UUID uuid = event.getBaseEntity().getUniqueId();
+      if (hasCooldown(uuid)) return;
+      setCooldown(uuid, 3);
       event.getPlayer().swingMainHand();
       startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
@@ -204,5 +203,16 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
         return;
       startShiftBlock(event.getBlock().getLocation(), customBlockMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
+
+    private static boolean hasCooldown(UUID uuid) {
+      long currentTick = NexoAddon.getInstance().getServer().getCurrentTick();
+      return cooldowns.getOrDefault(uuid, 0L) > currentTick;
+    }
+
+    private static void setCooldown(UUID uuid, int ticks) {
+      long currentTick = NexoAddon.getInstance().getServer().getCurrentTick();
+      cooldowns.put(uuid, currentTick + ticks);
+    }
+
   }
 }

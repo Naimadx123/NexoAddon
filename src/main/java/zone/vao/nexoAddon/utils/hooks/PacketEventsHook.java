@@ -8,8 +8,9 @@ import zone.vao.nexoAddon.utils.handlers.BlockHardnessHandler;
 public class PacketEventsHook {
 
   public static void registerListener(){
-    NexoAddon.getInstance().blockHardnessHandler = new BlockHardnessHandler();
-    NexoAddon.getInstance().packetListenerCommon = PacketEvents.getAPI().getEventManager().registerListener(
-        NexoAddon.getInstance().getBlockHardnessHandler(), PacketListenerPriority.NORMAL);
+
+      NexoAddon.getInstance().blockHardnessHandler = new BlockHardnessHandler();
+      NexoAddon.getInstance().packetListenerCommon = PacketEvents.getAPI().getEventManager().registerListener(
+              NexoAddon.getInstance().getBlockHardnessHandler(), PacketListenerPriority.NORMAL);
   }
 }

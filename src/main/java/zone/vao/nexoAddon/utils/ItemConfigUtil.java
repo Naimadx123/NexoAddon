@@ -122,6 +122,8 @@ public class ItemConfigUtil {
         loadSignalMechanic(itemSection, mechanic);
         loadRememberMechanic(itemSection, mechanic);
         loadEnchantifyMechanic(itemSection, mechanic);
+        loadAutoCatchMechanic(itemSection, mechanic);
+        loadUniqueIdMechanic(itemSection, mechanic);
       });
     }
   }
@@ -275,8 +277,9 @@ public class ItemConfigUtil {
       String selector = section.getString("Mechanics.custom_block.infested.selector", "all");
       boolean particles = section.getBoolean("Mechanics.custom_block.infested.particles", false);
       boolean drop = section.getBoolean("Mechanics.custom_block.infested.drop-loot", true);
+      boolean safeSpawn = section.getBoolean("Mechanics.custom_block.infested.safe-spawn", false);
 
-      mechanic.setInfested(entities, mythicMobs, probability, selector, particles, drop);
+      mechanic.setInfested(entities, mythicMobs, probability, selector, particles, drop, safeSpawn);
     }
   }
 
@@ -419,6 +422,18 @@ public class ItemConfigUtil {
 
     mechanic.setEnchantify(enchants, limits, materials, nexoIds, materialsBlacklist, nexoIdsBlacklist);
   }
+
+  private static void loadAutoCatchMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.autocatch")) return;
+
+    mechanic.setAutoCatch(section.getBoolean("Mechanics.autocatch.toggable", false), section.getBoolean("Mechanics.autocatch.recast", true));
+  }
+
+    private static void loadUniqueIdMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.uniqueid")) return;
+
+        mechanic.setUniqueId(section.getBoolean("Mechanics.uniqueid.enabled", true));
+    }
 
   private static void parseEnchantments(List<Map<?, ?>> enchantList, Map<Enchantment, Integer> enchants, Map<Enchantment, Integer> limits) {
     for (Map<?, ?> map : enchantList) {

@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoFurniture;
-import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureHelpers;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
@@ -13,7 +12,6 @@ import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.meta.ColorableArmorMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -126,7 +124,7 @@ public class BlockUtil {
       return;
     }
 
-    NexoAddon.instance.foliaLib.getScheduler().runAsync(startDecay -> {
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location.clone(), startDecay -> {
       for (int x = -radius; x <= radius; x++) {
         for (int y = -radius; y <= radius; y++) {
           for (int z = -radius; z <= radius; z++) {
@@ -155,7 +153,7 @@ public class BlockUtil {
   }
 
   private static void startDecayTimer(Block block, Decay decay) {
-    NexoAddon.instance.foliaLib.getScheduler().runTimerAsync(decayTimer -> {
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocationTimer(block.getLocation(), decayTimer -> {
       if (block.getType() == Material.AIR && !NexoBlocks.isCustomBlock(block)) {
         processedCustomBlocks.remove(block.getLocation());
         decayTimer.cancel();

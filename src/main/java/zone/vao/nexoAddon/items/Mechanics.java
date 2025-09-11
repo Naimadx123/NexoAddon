@@ -35,6 +35,8 @@ public class Mechanics {
   private Signal signal;
   private Remember remember;
   private Enchantify enchantify;
+  private AutoCatch autoCatch;
+  private UniqueId uniqueId;
 
   public Mechanics(String id) {
     this.id = id;
@@ -72,8 +74,8 @@ public class Mechanics {
     this.dropExperience = new DropExperience(experience);
   }
 
-  public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop) {
-    this.infested = new Infested(entities, mythicMobs, probability, selector, particles, drop);
+  public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop, boolean safeSpawn) {
+    this.infested = new Infested(entities, mythicMobs, probability, selector, particles, drop, safeSpawn);
   }
   
   public void setKillMessage(String deathMessage) {
@@ -108,7 +110,17 @@ public class Mechanics {
     this.enchantify = new Enchantify(enchants, limits, materials, nexoIds, materialsBlacklist, nexoIdsBlacklist);
   }
 
+  public void setAutoCatch(boolean toggable, boolean recast) {
+    this.autoCatch = new AutoCatch(toggable, recast);
+  }
+
+  public void setUniqueId(boolean enabled) {
+      this.uniqueId = new UniqueId(enabled);
+  }
+
   public static void registerListeners(NexoAddon plugin){
+
+    registerListener(new AutoCatch.AutoCatchListener(), plugin);
 
     registerListener(new BigMining.BigMiningListener(), plugin);
     registerListener(new BlockAura.BlockAuraListener(), plugin);
@@ -124,6 +136,8 @@ public class Mechanics {
     registerListener(new KillMessage.KillMessageListener(), plugin);
 
     registerListener(new MiningTools.MiningToolsListener(), plugin);
+
+    registerListener(new UniqueId.UniqueIdListener(), plugin);
 
     registerListener(new Remember.RememberListener(), plugin);
     registerListener(new Repair.RepairListener(), plugin);

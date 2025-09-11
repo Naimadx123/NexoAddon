@@ -172,14 +172,14 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
     private static void turnOff(final Player player, PersistentDataContainer pdc) {
       pdc.set(key, PersistentDataType.BOOLEAN, false);
       Audience.audience(player)
-          .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.bigmining.off", "<red>BigMining off")));
+          .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.bigmining.disabled", "<red>BigMining disabled")));
     }
 
     private static void turnOn(final Player player, PersistentDataContainer pdc) {
       pdc.set(key, PersistentDataType.BOOLEAN, true);
 
       Audience.audience(player)
-          .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.bigmining.on", "<green>BigMining on")));
+          .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.bigmining.enabled", "<green>BigMining enabled")));
     }
   }
 }

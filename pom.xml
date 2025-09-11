@@ -6,7 +6,7 @@
 
     <groupId>zone.vao</groupId>
     <artifactId>NexoAddon</artifactId>
-    <version>1.13.1</version>
+    <version>1.14.0-dev</version>
     <packaging>jar</packaging>
 
     <name>NexoAddon</name>
@@ -15,6 +15,13 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>bytecode.space</id>
+            <url>https://repo.bytecode.space/repository/maven-public/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <finalName>NexoAddon-${project.version}</finalName>
@@ -87,6 +94,19 @@
                     </filters>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>ca.bkaw</groupId>
+                <artifactId>paper-nms-maven-plugin</artifactId>
+                <version>1.4.10</version>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>remap</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -140,15 +160,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.20.4-R0.1-SNAPSHOT</version>
+            <groupId>ca.bkaw</groupId>
+            <artifactId>paper-nms</artifactId>
+            <version>1.20.4-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.9.0-dev.12</version>
+            <version>1.11.0-dev.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

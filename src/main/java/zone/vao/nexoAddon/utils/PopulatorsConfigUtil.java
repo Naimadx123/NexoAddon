@@ -263,13 +263,24 @@ public class PopulatorsConfigUtil {
   }
 
   private List<Biome> parseBiomesOld(List<Biome> biomes, List<String> biomeNames) {
+    if (biomeNames.isEmpty()) return biomes;
+
+    boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
+    List<String> cleanNames = biomeNames.stream()
+            .map(name -> name.replaceFirst("!", "").toUpperCase())
+            .toList();
+
     List<Biome> result = new ArrayList<>();
     try {
       Method nameMethod = Enum.class.getMethod("name");
       for (Biome biome : biomes) {
         String name = ((String) nameMethod.invoke(biome)).toUpperCase().replace(" ", "_");
         if (biomeNames.contains(name)) {
-          result.add(biome);
+          if (isBlacklist) {
+            if (!cleanNames.contains(name)) result.add(biome);
+          } else {
+            if (cleanNames.contains(name)) result.add(biome);
+          }
         }
       }
     } catch (Exception e) {
@@ -280,6 +291,13 @@ public class PopulatorsConfigUtil {
 
 
   private List<Biome> parseBiomesNew(Collection<Biome> biomes, List<String> biomeNames) {
+    if (biomeNames.isEmpty()) return new ArrayList<>(biomes);
+
+    boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
+    List<String> cleanNames = biomeNames.stream()
+            .map(name -> name.replaceFirst("!", "").toUpperCase())
+            .toList();
+
     List<Biome> result = new ArrayList<>();
     try {
       Method getKeyMethod = Biome.class.getMethod("getKey");
@@ -288,7 +306,11 @@ public class PopulatorsConfigUtil {
         Object keyObject = getKeyMethod.invoke(biome);
         String keyName = ((String) getKeyNameMethod.invoke(keyObject)).toUpperCase();
         if (biomeNames.contains(keyName)) {
-          result.add(biome);
+          if (isBlacklist) {
+            if (!cleanNames.contains(keyName)) result.add(biome);
+          } else {
+            if (cleanNames.contains(keyName)) result.add(biome);
+          }
         }
       }
     } catch (Exception e) {
