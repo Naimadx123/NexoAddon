@@ -235,18 +235,23 @@ public class CustomOrePopulator extends BlockPopulator {
     } else{
       limitedRegion.setBlockData(position.x(), position.y(), position.z(), ore.getVanillaMaterial().createBlockData());
     }
-    if(position.below().blockType.equals(Material.GRASS_BLOCK) && !limitedRegion.getBlockData(position.below().x, position.below().y, position.below().z).equals(Material.GRASS_BLOCK.createBlockData())){
-      limitedRegion.setBlockData(position.below().x(), position.below().y(), position.below().z(), Material.GRASS_BLOCK.createBlockData());
+    PlacementPosition belowPosition = position.below();
+    if(belowPosition != null) {
+      if (belowPosition.blockType.equals(Material.GRASS_BLOCK) && !limitedRegion.getBlockData(belowPosition.x, belowPosition.y, belowPosition.z).equals(Material.GRASS_BLOCK.createBlockData())) {
+        limitedRegion.setBlockData(belowPosition.x(), belowPosition.y(), belowPosition.z(), Material.GRASS_BLOCK.createBlockData());
+      }
     }
   }
 
   public record PlacementPosition(WorldInfo worldInfo, int x, int y, int z, Material blockType, Biome biome, LimitedRegion limitedRegion) {
 
     PlacementPosition above() {
+      if(!limitedRegion.isInRegion(x, y + 1, z)) return null;
       return new PlacementPosition(worldInfo, x, y + 1, z, limitedRegion.getType( x, y + 1, z), biome, limitedRegion);
     }
 
     PlacementPosition below() {
+      if(!limitedRegion.isInRegion(x, y - 1, z)) return null;
       return new PlacementPosition(worldInfo,x, y - 1, z, limitedRegion.getType(x, y - 1, z), biome, limitedRegion);
     }
 
