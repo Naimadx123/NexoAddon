@@ -4,9 +4,8 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockPlaceEvent;
-import com.nexomc.nexo.api.events.custom_block.chorusblock.NexoChorusBlockPlaceEvent;
-import com.nexomc.nexo.api.events.custom_block.noteblock.NexoNoteBlockPlaceEvent;
-import com.nexomc.nexo.api.events.custom_block.stringblock.NexoStringBlockPlaceEvent;
+import com.nexomc.nexo.api.events.furniture.NexoFurnitureBreakEvent;
+import com.nexomc.nexo.api.events.furniture.NexoFurniturePlaceEvent;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -35,21 +34,51 @@ public record BlockAura(Particle particle, String xOffset, String yOffset, Strin
     }
 
     @EventHandler
-    public static void onBlockPlace(NexoNoteBlockPlaceEvent event) {
+    public static void onFurnitureBreak(NexoFurnitureBreakEvent event) {
+      if(NexoAddon.getInstance().getMechanics().isEmpty()) return;
+
+      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(event.getMechanic().getItemID());
+      if (mechanics == null || mechanics.getBlockAura() == null) return;
+      Location location = event.getBaseEntity().getLocation();
+      if(!event.isCancelled()) {
+        BlockUtil.stopBlockAura(location);
+      }
+    }
+
+    @EventHandler
+    public static void onBlockPlace(NexoBlockPlaceEvent event) {
 
       handle(event);
     }
 
     @EventHandler
-    public static void onBlockPlace(NexoStringBlockPlaceEvent event) {
+    public static void onFurniturePlace(NexoFurniturePlaceEvent event) {
 
       handle(event);
     }
 
-    @EventHandler
-    public static void onBlockPlace(NexoChorusBlockPlaceEvent event) {
+    private static void handle(final NexoFurniturePlaceEvent event) {
+      if(NexoAddon.getInstance().getMechanics().isEmpty()) return;
 
-      handle(event);
+      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(event.getMechanic().getItemID());
+      if (mechanics == null || mechanics.getBlockAura() == null) return;
+      Particle particle = mechanics.getBlockAura().particle();
+      Location location = event.getBaseEntity().getLocation();
+      String xOffsetRange = mechanics.getBlockAura().xOffset();
+      String yOffsetRange = mechanics.getBlockAura().yOffset();
+      String zOffsetRange = mechanics.getBlockAura().zOffset();
+      int amount = mechanics.getBlockAura().amount();
+      double deltaX = mechanics.getBlockAura().deltaX();
+      double deltaY = mechanics.getBlockAura().deltaY();
+      double deltaZ = mechanics.getBlockAura().deltaZ();
+      double speed = mechanics.getBlockAura().speed();
+      boolean force = mechanics.getBlockAura().force();
+
+      if (!event.isCancelled()) {
+        BlockUtil.startBlockAura(particle, location, xOffsetRange, yOffsetRange, zOffsetRange, amount, deltaX, deltaY, deltaZ, speed, force);
+        CustomBlockData customBlockData = new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
+        customBlockData.set(new NamespacedKey(NexoAddon.getInstance(), "blockAura"), PersistentDataType.STRING, NexoBlocks.customBlockMechanic(location).getItemID());
+      }
     }
 
     private static void handle(final NexoBlockPlaceEvent event) {

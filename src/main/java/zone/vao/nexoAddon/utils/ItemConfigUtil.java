@@ -372,17 +372,17 @@ public class ItemConfigUtil {
   }
 
   private static void loadBlockAuraMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.block_aura.particle")) {
-      Particle particle = Particle.valueOf(section.getString("Mechanics.custom_block.block_aura.particle", "FLAME").toUpperCase());
-      String xOffset = section.getString("Mechanics.custom_block.block_aura.xOffset", "0.5");
-      String yOffset = section.getString("Mechanics.custom_block.block_aura.yOffset", "0.5");
-      String zOffset = section.getString("Mechanics.custom_block.block_aura.zOffset", "0.5");
-      int amount = section.getInt("Mechanics.custom_block.block_aura.amount", 10);
-      double deltaX = section.getDouble("Mechanics.custom_block.block_aura.deltaX", 0.6);
-      double deltaY = section.getDouble("Mechanics.custom_block.block_aura.deltaY", 0.6);
-      double deltaZ = section.getDouble("Mechanics.custom_block.block_aura.deltaZ", 0.6);
-      double speed = section.getDouble("Mechanics.custom_block.block_aura.speed", 0.05);
-      boolean force = section.getBoolean("Mechanics.custom_block.block_aura.force", true);
+    if (section.contains("Mechanics.block_aura.particle")) {
+      Particle particle = Particle.valueOf(section.getString("Mechanics.block_aura.particle", "FLAME").toUpperCase());
+      String xOffset = section.getString("Mechanics.block_aura.xOffset", "0.5");
+      String yOffset = section.getString("Mechanics.block_aura.yOffset", "0.5");
+      String zOffset = section.getString("Mechanics.block_aura.zOffset", "0.5");
+      int amount = section.getInt("Mechanics.block_aura.amount", 10);
+      double deltaX = section.getDouble("Mechanics.block_aura.deltaX", 0.6);
+      double deltaY = section.getDouble("Mechanics.block_aura.deltaY", 0.6);
+      double deltaZ = section.getDouble("Mechanics.block_aura.deltaZ", 0.6);
+      double speed = section.getDouble("Mechanics.block_aura.speed", 0.05);
+      boolean force = section.getBoolean("Mechanics.block_aura.force", true);
       mechanic.setBlockAura(particle, xOffset, yOffset, zOffset, amount, deltaX, deltaY, deltaZ, speed, force);
     }
   }
