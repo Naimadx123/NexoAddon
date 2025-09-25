@@ -12,6 +12,7 @@ import com.nexomc.protectionlib.ProtectionLib;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
@@ -78,6 +79,8 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  @Setter
+  private Boolean isDecay = false;
 
 
   @Override

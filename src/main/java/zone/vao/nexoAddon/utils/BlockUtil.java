@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BlockUtil {
 
   public static final Set<Material> UNBREAKABLE_BLOCKS = Sets.newHashSet(Material.BEDROCK, Material.BARRIER, Material.NETHER_PORTAL, Material.END_PORTAL_FRAME, Material.END_PORTAL, Material.END_GATEWAY);
-  private static final Set<Location> processedCustomBlocks = ConcurrentHashMap.newKeySet();
+  public static final Set<Location> processedCustomBlocks = ConcurrentHashMap.newKeySet();
   public static final Set<Location> processedShiftblocks = ConcurrentHashMap.newKeySet();
 
   public static void startShiftBlock(Location location, CustomBlockMechanic to, CustomBlockMechanic target, int time) {
@@ -120,35 +120,39 @@ public class BlockUtil {
     int radius = 10;
     World world = location.getWorld();
 
+    if(!NexoAddon.instance.getIsDecay()) return;
+
     if (world == null || VersionUtil.nexoVersionLessThan("0.10.0")) {
       return;
     }
 
-    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location.clone(), startDecay -> {
-      for (int x = -radius; x <= radius; x++) {
-        for (int y = -radius; y <= radius; y++) {
-          for (int z = -radius; z <= radius; z++) {
-            Location currentLocation = location.clone().add(x, y, z);
-            Block block = currentLocation.getBlock();
+    NexoAddon.instance.foliaLib.getScheduler().runAsync(startDecayA -> {
+      NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location.clone(), startDecay -> {
+        for (int x = -radius; x <= radius; x++) {
+          for (int y = -radius; y <= radius; y++) {
+            for (int z = -radius; z <= radius; z++) {
+              Location currentLocation = location.clone().add(x, y, z);
+              Block block = currentLocation.getBlock();
 
-            if (processedCustomBlocks.contains(currentLocation)) {
-              continue;
-            }
+              if (processedCustomBlocks.contains(currentLocation)) {
+                continue;
+              }
 
-            if (NexoBlocks.isCustomBlock(block)) {
-              String itemId = NexoBlocks.customBlockMechanic(block.getLocation()).getItemID();
-              Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(itemId);
+              if (NexoBlocks.isCustomBlock(block)) {
+                String itemId = NexoBlocks.customBlockMechanic(block.getLocation()).getItemID();
+                Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(itemId);
 
-              if (mechanic != null && mechanic.getDecay() != null) {
-                Decay decay = mechanic.getDecay();
+                if (mechanic != null && mechanic.getDecay() != null) {
+                  Decay decay = mechanic.getDecay();
 
-                processedCustomBlocks.add(currentLocation);
-                startDecayTimer(block, decay);
+                  processedCustomBlocks.add(currentLocation);
+                  startDecayTimer(block, decay);
+                }
               }
             }
           }
         }
-      }
+      });
     });
   }
 

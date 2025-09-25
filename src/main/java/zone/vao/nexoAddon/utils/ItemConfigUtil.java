@@ -320,6 +320,7 @@ public class ItemConfigUtil {
         }
       }
       mechanic.setDecay(time, chance, baseFinal, nexoBaseFinal, radius);
+      NexoAddon.instance.setIsDecay(true);
     }
   }
 
