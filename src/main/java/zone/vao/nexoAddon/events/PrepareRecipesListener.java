@@ -73,7 +73,13 @@ public class PrepareRecipesListener implements Listener {
     boolean copyMeta = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_meta", false);
 
     if (copyMeta) {
-      resultMeta = baseMeta.clone();
+      ItemMeta baseMetaClone = baseMeta.clone();
+      String nexoId = resultMeta.getPersistentDataContainer().get(new NamespacedKey("nexo", "id"), PersistentDataType.STRING);
+      if(nexoId != null)
+        baseMetaClone.getPersistentDataContainer().set(new NamespacedKey("nexo", "id"), PersistentDataType.STRING, nexoId);
+      if(resultMeta.hasCustomModelData())
+        baseMetaClone.setCustomModelData(resultMeta.getCustomModelData());
+      resultMeta = baseMetaClone;
     }
 
     if (copyEnchants) {
