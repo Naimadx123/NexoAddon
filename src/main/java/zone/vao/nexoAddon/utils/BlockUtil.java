@@ -11,6 +11,7 @@ import com.tcoded.folialib.wrapper.task.WrappedBukkitTask;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -331,5 +332,38 @@ public class BlockUtil {
       boolean force = mechanics.getBlockAura().force();
       BlockUtil.startBlockAura(particle, location, xOffsetRange, yOffsetRange, zOffsetRange, amount, deltaX, deltaY, deltaZ, speed, force);
     }
+  }
+
+  public static boolean isInteractable(Block block) {
+    BlockData data = block.getBlockData();
+
+    if (data instanceof org.bukkit.block.data.type.Switch) return true;
+
+    if (data instanceof org.bukkit.block.data.Openable) return true;
+
+    if (block.getState() instanceof org.bukkit.inventory.InventoryHolder) return true;
+
+    Material type = block.getType();
+    if (org.bukkit.Tag.CAULDRONS.isTagged(type)) return true;
+    if (org.bukkit.Tag.CANDLES.isTagged(type)) return true;
+    if (org.bukkit.Tag.SIGNS.isTagged(type)) return true;
+
+    return switch (type) {
+      case BELL,
+           NOTE_BLOCK,
+           REPEATER,
+           COMPARATOR,
+           DAYLIGHT_DETECTOR,
+           FLOWER_POT,
+           LODESTONE,
+           GRINDSTONE,
+           STONECUTTER,
+           LECTERN,
+           BEACON,
+           JUKEBOX,
+           CAKE,
+           RESPAWN_ANCHOR -> true;
+      default -> false;
+    };
   }
 }
