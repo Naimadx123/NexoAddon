@@ -4,17 +4,16 @@ import com.nexomc.nexo.api.events.custom_block.NexoBlockInteractEvent;
 import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.InventoryView;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
+
+import static zone.vao.nexoAddon.utils.handlers.ApiCompatibilityHandler.openCrafting;
 
 public record InventoryType(org.bukkit.event.inventory.InventoryType type, Component title) {
 
@@ -47,7 +46,8 @@ public record InventoryType(org.bukkit.event.inventory.InventoryType type, Compo
         case ENDER_CHEST -> {
           p.openInventory(p.getEnderChest());
         }
-        case PLAYER -> {
+        case WORKBENCH, BEACON, BREWING, CARTOGRAPHY, BLAST_FURNACE, SMITHING, STONECUTTER, ENCHANTING -> {
+          openCrafting(p, title);
         }
         default -> {
           Inventory inv = Bukkit.createInventory(null, type, title);
