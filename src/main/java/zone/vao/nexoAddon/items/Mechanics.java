@@ -1,6 +1,7 @@
 package zone.vao.nexoAddon.items;
 
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.enchantments.Enchantment;
@@ -37,6 +38,7 @@ public class Mechanics {
   private Enchantify enchantify;
   private AutoCatch autoCatch;
   private UniqueId uniqueId;
+  private InventoryType inventoryType;
 
   public Mechanics(String id) {
     this.id = id;
@@ -118,6 +120,8 @@ public class Mechanics {
       this.uniqueId = new UniqueId(enabled);
   }
 
+  public void setInventoryType(org.bukkit.event.inventory.InventoryType inventoryType, Component title) { this.inventoryType = new InventoryType(inventoryType, title); }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -132,6 +136,7 @@ public class Mechanics {
     registerListener(new Enchantify.EnchantifyListener(), plugin);
 
     registerListener(new Infested.InfestedListener(), plugin);
+    registerListener(new InventoryType.InventoryTypeListener(), plugin);
 
     registerListener(new KillMessage.KillMessageListener(), plugin);
 

@@ -1,6 +1,8 @@
 package zone.vao.nexoAddon.utils;
 
 import com.nexomc.nexo.api.NexoItems;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -9,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Components;
@@ -124,6 +127,7 @@ public class ItemConfigUtil {
         loadEnchantifyMechanic(itemSection, mechanic);
         loadAutoCatchMechanic(itemSection, mechanic);
         loadUniqueIdMechanic(itemSection, mechanic);
+        loadInventoryType(itemSection, mechanic);
       });
     }
   }
@@ -456,6 +460,32 @@ public class ItemConfigUtil {
         }
       }
     }
+  }
+
+  private static void loadInventoryType(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.inventoryType")) return;
+
+    InventoryType type = null;
+    try {
+      type = InventoryType.valueOf(section.getString("Mechanics.inventoryType.type", "WORKBENCH").toUpperCase());
+    } catch (IllegalArgumentException e) {
+      NexoAddon.getInstance().getLogger().warning("Invalid InventoryType: " + section.getString("Mechanics.inventoryType.type"));
+    }
+
+    if (type == null) {
+      NexoAddon.getInstance().getLogger().warning("Invalid InventoryType: " + section.getString("Mechanics.inventoryType.type"));
+      return;
+    }
+
+    String titleRaw = section.getString("Mechanics.inventoryType.title");
+    Component title = null;
+    if(titleRaw == null || titleRaw.isEmpty()){
+      title = type.defaultTitle();
+    } else {
+      title = MiniMessage.miniMessage().deserialize(titleRaw);
+    }
+
+    mechanic.setInventoryType(type, title);
   }
 
   private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {
