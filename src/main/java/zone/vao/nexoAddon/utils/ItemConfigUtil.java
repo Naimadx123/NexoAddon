@@ -116,11 +116,11 @@ public class ItemConfigUtil {
         loadDropExperienceMechanic(itemSection, mechanic);
         loadInfested(itemSection, mechanic);
         loadKillMessage(itemSection, mechanic);
-        loadStackableStringblockMechanic(itemSection, mechanic);
+        loadStackableMechanic(itemSection, mechanic);
         loadDecayMechanic(itemSection, mechanic);
         loadShiftBlockMechanic(itemSection, mechanic);
         loadBottledExpMechanic(itemSection, mechanic);
-        loadUnstackableStringblockMechanic(itemSection, mechanic);
+        loadUnstackableMechanic(itemSection, mechanic);
         loadBlockAuraMechanic(itemSection, mechanic);
         loadSignalMechanic(itemSection, mechanic);
         loadRememberMechanic(itemSection, mechanic);
@@ -294,11 +294,11 @@ public class ItemConfigUtil {
     }
   }
 
-  private static void loadStackableStringblockMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.stackable.next")
-        && section.contains("Mechanics.custom_block.stackable.group")
+  private static void loadStackableMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (section.contains("Mechanics.stackable.next")
+        && section.contains("Mechanics.stackable.group")
     ) {
-      mechanic.setStackable(section.getString("Mechanics.custom_block.stackable.next"), section.getString("Mechanics.custom_block.stackable.group"));
+      mechanic.setStackable(section.getString("Mechanics.stackable.next"), section.getString("Mechanics.stackable.group"));
     }
   }
 
@@ -354,11 +354,11 @@ public class ItemConfigUtil {
     }
   }
 
-  private static void loadUnstackableStringblockMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.unstackable.next")
-        && section.contains("Mechanics.custom_block.unstackable.give")
+  private static void loadUnstackableMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (section.contains("Mechanics.unstackable.next")
+        && section.contains("Mechanics.unstackable.give")
     ) {
-      List<String> rawItems = section.getStringList("Mechanics.custom_block.unstackable.items");
+      List<String> rawItems = section.getStringList("Mechanics.unstackable.items");
       List<Material> materials = new ArrayList<>();
       List<String> nexoIds = new ArrayList<>();
 
@@ -372,7 +372,7 @@ public class ItemConfigUtil {
         }
       }
 
-      mechanic.setUnstackable(section.getString("Mechanics.custom_block.unstackable.next"), section.getString("Mechanics.custom_block.unstackable.give"), materials, nexoIds);
+      mechanic.setUnstackable(section.getString("Mechanics.unstackable.next"), section.getString("Mechanics.unstackable.give"), materials, nexoIds);
     }
   }
 
