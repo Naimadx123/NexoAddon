@@ -2,9 +2,6 @@ package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockPlaceEvent;
-import com.nexomc.nexo.api.events.custom_block.chorusblock.NexoChorusBlockBreakEvent;
-import com.nexomc.nexo.api.events.custom_block.noteblock.NexoNoteBlockBreakEvent;
-import com.nexomc.nexo.api.events.custom_block.stringblock.NexoStringBlockBreakEvent;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
