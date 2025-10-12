@@ -67,7 +67,7 @@ public record Stackable(String next, String group) {
         InventoryUtil.removePartialStack(event.getPlayer(), event.getItemInHand(), 1);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = org.bukkit.event.EventPriority.HIGH)
     public static void onStackableFurniture(final NexoFurnitureInteractEvent event) {
       if(NexoAddon.getInstance().getMechanics().isEmpty()) return;
 
@@ -89,10 +89,11 @@ public record Stackable(String next, String group) {
       FurnitureMechanic newBlock = NexoFurniture.furnitureMechanic(nextStage);
       if(newBlock == null) return;
       UUID uuid = event.getBaseEntity().getUniqueId();
-      if (hasCooldown(uuid)) return;
-      setCooldown(uuid, 3);
 
       event.setCancelled(true);
+
+      if (hasCooldown(uuid)) return;
+      setCooldown(uuid, 3);
 
       startShiftBlock(event.getBaseEntity(), NexoFurniture.furnitureMechanic(nextStage), event.getMechanic(), 0);
 

@@ -76,7 +76,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public static void onUntackableFurniture(final NexoFurnitureInteractEvent event) {
       if(NexoAddon.getInstance().getMechanics().isEmpty()) return;
 
@@ -96,10 +96,12 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       if(newBlock == null && !nextStage.equalsIgnoreCase("stop")) return;
 
       UUID uuid = event.getBaseEntity().getUniqueId();
+
+      event.setCancelled(true);
+
       if (hasCooldown(uuid)) return;
       setCooldown(uuid, 3);
 
-      event.setCancelled(true);
       if(!nextStage.equalsIgnoreCase("stop")) {
         startShiftBlock(event.getBaseEntity(), NexoFurniture.furnitureMechanic(nextStage), event.getMechanic(), 0);
       }
