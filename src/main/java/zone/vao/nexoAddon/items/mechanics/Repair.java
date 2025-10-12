@@ -67,7 +67,7 @@ public record Repair(double ratio, int fixedAmount, List<Material> materials, Li
       Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(repairItemId);
       double repairRatio = mechanic.getRepair().ratio();
       int fixedAmount = mechanic.getRepair().fixedAmount();
-      int maxDurability = NexoItems.itemFromId(repairItemId).getDurability() != null ? NexoItems.itemFromId(repairItemId).getDurability() : NexoItems.itemFromId(repairItemId).build().getType().getMaxDurability();
+      int maxDurability = NexoItems.itemFromId(repairItemId).getMaxDamage() != null ? NexoItems.itemFromId(repairItemId).getMaxDamage() : NexoItems.itemFromId(repairItemId).build().getType().getMaxDurability();
       if(repairRatio > 0) {
 
         Damageable currentMeta = (Damageable) currentItem.getItemMeta();
