@@ -84,6 +84,14 @@ public class PrepareRecipesListener implements Listener {
         baseMetaClone.setDisplayName(resultMeta.getDisplayName());
       if(resultMeta.hasItemName())
         baseMetaClone.itemName(resultMeta.itemName());
+      if(resultMeta instanceof Damageable damageable) {
+        if(baseMetaClone instanceof Damageable baseDamageable) {
+          if(damageable.hasMaxDamage())
+            baseDamageable.setMaxDamage(damageable.getMaxDamage());
+          if(damageable.hasDamage())
+            baseDamageable.setDamage(damageable.getDamage());
+        }
+      }
       if(!VersionUtil.isVersionLessThan("1.21.2")){
         Object eq = EquippableCompat.getEquippable(resultMeta);
         if (eq != null || EquippableCompat.hasEquippable(resultMeta)) {
