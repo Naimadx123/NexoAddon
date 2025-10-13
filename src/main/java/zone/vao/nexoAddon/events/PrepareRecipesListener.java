@@ -1,8 +1,13 @@
 package zone.vao.nexoAddon.events;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.nexomc.nexo.NexoPlugin;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.utils.VersionUtil;
+import zone.vao.nexoAddon.utils.handlers.EquippableCompat;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 
 import java.util.HashMap;
@@ -61,11 +67,6 @@ public class PrepareRecipesListener implements Listener {
 
     if (baseMeta == null || resultMeta == null) return;
 
-    resultMeta.displayName(baseMeta.hasDisplayName() ? baseMeta.displayName() : resultMeta.displayName());
-    if (!resultMeta.hasLore() && baseMeta.hasLore()) {
-      resultMeta.lore(baseMeta.lore());
-    }
-
     boolean copyTrim = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_trim", false);
     boolean copyPdc = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_pdc", false);
     boolean copyEnchants = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_enchantments", true);
@@ -79,6 +80,38 @@ public class PrepareRecipesListener implements Listener {
         baseMetaClone.getPersistentDataContainer().set(new NamespacedKey("nexo", "id"), PersistentDataType.STRING, nexoId);
       if(resultMeta.hasCustomModelData())
         baseMetaClone.setCustomModelData(resultMeta.getCustomModelData());
+      if(resultMeta.hasDisplayName())
+        baseMetaClone.setDisplayName(resultMeta.getDisplayName());
+      if(resultMeta.hasItemName())
+        baseMetaClone.itemName(resultMeta.itemName());
+      if(!VersionUtil.isVersionLessThan("1.21.2")){
+        Object eq = EquippableCompat.getEquippable(resultMeta);
+        if (eq != null || EquippableCompat.hasEquippable(resultMeta)) {
+          EquippableCompat.setEquippable(baseMetaClone, eq);
+        }
+      }
+      if(resultMeta.hasLore()) {
+
+        java.util.List<Component> merged = new java.util.ArrayList<>();
+        java.util.List<Component> baseLore = baseMetaClone.lore();
+        if (baseLore != null && !baseLore.isEmpty()) merged.addAll(baseLore);
+        java.util.List<Component> resultLore = resultMeta.lore();
+        if (resultLore != null && !resultLore.isEmpty()) merged.addAll(resultLore);
+        baseMetaClone.lore(merged);
+      }
+      if(resultMeta.hasAttributeModifiers()) {
+        Multimap<Attribute, AttributeModifier> toAdd = resultMeta.getAttributeModifiers();
+        if (toAdd != null && !toAdd.isEmpty()){
+          Multimap<Attribute, AttributeModifier> merged =
+              baseMetaClone.getAttributeModifiers() == null
+                  ? HashMultimap.create()
+                  : HashMultimap.create(baseMetaClone.getAttributeModifiers());
+
+          merged.putAll(toAdd);
+          baseMetaClone.setAttributeModifiers(merged);
+        }
+      }
+
       resultMeta = baseMetaClone;
     }
 
