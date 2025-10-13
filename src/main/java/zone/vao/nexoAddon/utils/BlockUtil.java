@@ -123,7 +123,7 @@ public class BlockUtil {
 
     if(!NexoAddon.instance.getIsDecay()) return;
 
-    if (world == null || VersionUtil.nexoVersionLessThan("0.10.0")) {
+    if (world == null) {
       return;
     }
 
