@@ -104,13 +104,13 @@ public class BlockUtil {
           return;
         }
 
-        ItemDisplay oldFurniture = NexoFurniture.baseEntity(finalLocation);
+        ItemDisplay oldFurniture = newOne;
         ItemDisplay original = target.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
         if(FurnitureHelpers.furnitureDye(templateEntity) != null) {
           FurnitureHelpers.furnitureDye(original, FurnitureHelpers.furnitureDye(templateEntity));
         }
-        if(oldFurniture != null)
-          NexoFurniture.remove(oldFurniture);
+        if(oldFurniture != null && NexoFurniture.furnitureMechanic(newOne) != null)
+          NexoFurniture.furnitureMechanic(newOne).removeBaseEntity(oldFurniture);
         processedShiftblocks.remove(finalLocation);
         pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
       });
