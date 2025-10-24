@@ -12,6 +12,7 @@ import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -321,6 +322,30 @@ public class BlockUtil {
       if (mechanics == null || mechanics.getBlockAura() == null) return;
       Particle particle = mechanics.getBlockAura().particle();
       Location location = block.getLocation();
+      String xOffsetRange = mechanics.getBlockAura().xOffset();
+      String yOffsetRange = mechanics.getBlockAura().yOffset();
+      String zOffsetRange = mechanics.getBlockAura().zOffset();
+      int amount = mechanics.getBlockAura().amount();
+      double deltaX = mechanics.getBlockAura().deltaX();
+      double deltaY = mechanics.getBlockAura().deltaY();
+      double deltaZ = mechanics.getBlockAura().deltaZ();
+      double speed = mechanics.getBlockAura().speed();
+      boolean force = mechanics.getBlockAura().force();
+      BlockUtil.startBlockAura(particle, location, xOffsetRange, yOffsetRange, zOffsetRange, amount, deltaX, deltaY, deltaZ, speed, force);
+    }
+
+    for (Entity entity : chunk.getEntities()) {
+      PersistentDataContainer pdc = entity.getPersistentDataContainer();
+      if(!pdc.has(new NamespacedKey(NexoAddon.getInstance(), "blockAura"), PersistentDataType.STRING)) continue;
+      if(!NexoFurniture.isFurniture(entity)) continue;
+
+      if(NexoAddon.getInstance().getMechanics().isEmpty()) continue;
+
+      if(NexoAddon.getInstance().getParticleTasks().containsKey(entity.getLocation().getBlock().getLocation())) continue;
+      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(NexoBlocks.customBlockMechanic(entity.getLocation().getBlock().getLocation()).getItemID());
+      if (mechanics == null || mechanics.getBlockAura() == null) return;
+      Particle particle = mechanics.getBlockAura().particle();
+      Location location = entity.getLocation().getBlock().getLocation();
       String xOffsetRange = mechanics.getBlockAura().xOffset();
       String yOffsetRange = mechanics.getBlockAura().yOffset();
       String zOffsetRange = mechanics.getBlockAura().zOffset();
