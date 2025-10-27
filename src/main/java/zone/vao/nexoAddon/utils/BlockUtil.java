@@ -301,8 +301,10 @@ public class BlockUtil {
 
   public static void stopBlockAura(Location location) {
     WrappedTask task = NexoAddon.getInstance().getParticleTasks().remove(location);
-    CustomBlockData customBlockData =  new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
-    customBlockData.remove(new NamespacedKey(NexoAddon.getInstance(), "blockAura"));
+    if(NexoBlocks.isCustomBlock(location.getBlock())){
+      CustomBlockData customBlockData =  new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
+      customBlockData.remove(new NamespacedKey(NexoAddon.getInstance(), "blockAura"));
+    }
     if (task != null && task.isCancelled()) {
       task.cancel();
     }
@@ -321,7 +323,7 @@ public class BlockUtil {
 
       if(NexoAddon.getInstance().getParticleTasks().containsKey(block.getLocation())) continue;
       Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(NexoBlocks.customBlockMechanic(block.getLocation()).getItemID());
-      if (mechanics == null || mechanics.getBlockAura() == null) return;
+      if (mechanics == null || mechanics.getBlockAura() == null) continue;
       Particle particle = mechanics.getBlockAura().particle();
       Location location = block.getLocation();
       String xOffsetRange = mechanics.getBlockAura().xOffset();
@@ -343,11 +345,15 @@ public class BlockUtil {
 
       if(NexoAddon.getInstance().getMechanics().isEmpty()) continue;
 
-      if(NexoAddon.getInstance().getParticleTasks().containsKey(entity.getLocation().getBlock().getLocation())) continue;
-      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(NexoBlocks.customBlockMechanic(entity.getLocation().getBlock().getLocation()).getItemID());
-      if (mechanics == null || mechanics.getBlockAura() == null) return;
+      if(NexoAddon.getInstance().getParticleTasks().containsKey(entity.getLocation())) continue;
+
+      FurnitureMechanic furnitureMechanic = NexoFurniture.furnitureMechanic(entity);
+      if(furnitureMechanic == null) continue;
+
+      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(furnitureMechanic.getItemID());
+      if (mechanics == null || mechanics.getBlockAura() == null) continue;
       Particle particle = mechanics.getBlockAura().particle();
-      Location location = entity.getLocation().getBlock().getLocation();
+      Location location = entity.getLocation();
       String xOffsetRange = mechanics.getBlockAura().xOffset();
       String yOffsetRange = mechanics.getBlockAura().yOffset();
       String zOffsetRange = mechanics.getBlockAura().zOffset();
