@@ -270,27 +270,29 @@ public class BlockUtil {
     WrappedTask task = new WrappedBukkitTask(new BukkitRunnable() {
       @Override
       public void run() {
-        World world = location.getWorld();
-        if (!NexoBlocks.isCustomBlock(location.getBlock())) {
-          cancel();
-          stopBlockAura(location);
-          return;
-        }
-        if (world != null) {
-          double xOffset = RandomRangeUtil.parseAndGetRandomValue(xOffsetRange);
-          double yOffset = RandomRangeUtil.parseAndGetRandomValue(yOffsetRange);
-          double zOffset = RandomRangeUtil.parseAndGetRandomValue(zOffsetRange);
+        NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick((r) -> {
+          World world = location.getWorld();
+          if (!NexoBlocks.isCustomBlock(location.getBlock()) && !NexoFurniture.isFurniture(location)) {
+            cancel();
+            stopBlockAura(location);
+            return;
+          }
+          if (world != null) {
+            double xOffset = RandomRangeUtil.parseAndGetRandomValue(xOffsetRange);
+            double yOffset = RandomRangeUtil.parseAndGetRandomValue(yOffsetRange);
+            double zOffset = RandomRangeUtil.parseAndGetRandomValue(zOffsetRange);
 
-          world.spawnParticle(
-              particle,
-              location.clone().add(xOffset, yOffset, zOffset),
-              amount,
-              deltaX, deltaY, deltaZ,
-              speed,
-              null,
-              force
-          );
-        }
+            world.spawnParticle(
+                particle,
+                location.clone().add(xOffset, yOffset, zOffset),
+                amount,
+                deltaX, deltaY, deltaZ,
+                speed,
+                null,
+                force
+            );
+          }
+        });
       }
     }.runTaskTimerAsynchronously(NexoAddon.getInstance(), 0L, NexoAddon.getInstance().getGlobalConfig().getLong("aura_mechanic_delay", 10)));
 

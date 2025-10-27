@@ -8,6 +8,7 @@ import com.nexomc.nexo.api.events.furniture.NexoFurnitureBreakEvent;
 import com.nexomc.nexo.api.events.furniture.NexoFurniturePlaceEvent;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -78,7 +79,7 @@ public record BlockAura(Particle particle, String xOffset, String yOffset, Strin
       boolean force = mechanics.getBlockAura().force();
 
       FurnitureMechanic furnitureMechanic = event.getMechanic();
-      if (!event.isCancelled() && furnitureMechanic != null) {
+      if (furnitureMechanic != null) {
         BlockUtil.startBlockAura(particle, location, xOffsetRange, yOffsetRange, zOffsetRange, amount, deltaX, deltaY, deltaZ, speed, force);
         PersistentDataContainer pdc = event.getBaseEntity().getPersistentDataContainer();
         pdc.set(new NamespacedKey(NexoAddon.getInstance(), "blockAura"), PersistentDataType.STRING, furnitureMechanic.getItemID());
