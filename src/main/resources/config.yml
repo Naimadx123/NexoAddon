@@ -5,7 +5,6 @@ prevent_furniture_break_with_sword: true
 double_hit_destroy_mechanic: true           # Destroy furniture with double hit
 count_shears_as_silktouch: [ ]              # List of STRINGBLOCKs and CHORUSBLOCKs ids
 aura_mechanic_delay: 5                      # Delay of refreshing particles in ticks
-replace_chorus_plant: false                 # Replace chorus plant with one custom variation so it will display more accurate
 
 update_checker: true
 
