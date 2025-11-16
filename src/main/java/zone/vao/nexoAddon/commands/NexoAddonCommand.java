@@ -56,6 +56,7 @@ public class NexoAddonCommand extends BaseCommand {
       int processedChunks = 0;
 
       for (World world : targetWorlds) {
+        if (!NexoAddon.getInstance().worldPopulators.containsKey(world.getName())) continue;
         for (Chunk chunk : world.getLoadedChunks()) {
           if (!chunk.isGenerated()) continue;
 
