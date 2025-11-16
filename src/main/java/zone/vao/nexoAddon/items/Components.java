@@ -4,7 +4,10 @@ import lombok.Getter;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EquipmentSlot;
 import zone.vao.nexoAddon.NexoAddon;
-import zone.vao.nexoAddon.items.components.*;
+import zone.vao.nexoAddon.items.components.Equippable;
+import zone.vao.nexoAddon.items.components.Fertilizer;
+import zone.vao.nexoAddon.items.components.NoteBlockSound;
+import zone.vao.nexoAddon.items.components.SkullValue;
 
 import java.util.List;
 
@@ -13,7 +16,6 @@ public class Components {
 
   private final String id;
   private Equippable equippable;
-  private JukeboxPlayable playable;
   private Fertilizer fertilizer;
   private SkullValue skullValue;
   private NoteBlockSound noteBlockSound;
@@ -26,9 +28,6 @@ public class Components {
     this.equippable = new Equippable(slot);
   }
 
-  public void setPlayable(String songKey) {
-    this.playable = new JukeboxPlayable(songKey);
-  }
 
   public void setFertilizer(int growthSpeedup, List<String> usableOn, int cooldown) {this.fertilizer = new Fertilizer(growthSpeedup, usableOn,cooldown);}
 
@@ -42,7 +41,6 @@ public class Components {
 
     registerListener(new Fertilizer.FertilizerListener(), plugin);
 
-    registerListener(new JukeboxPlayable.JukeboxPlayableListener(), plugin);
   }
 
   private static void registerListener(Listener listener, NexoAddon plugin){

@@ -44,7 +44,6 @@ public class ItemConfigUtil {
                 .computeIfAbsent(itemId, Components::new);
 
         loadEquippableComponent(itemSection, component);
-        loadJukeboxPlayableComponent(itemSection, component);
         loadFertilizerComponent(itemSection, component);
         loadSkullValueComponent(itemSection, component);
         loadNoteBlockSoundComponent(itemSection, component);
@@ -60,13 +59,6 @@ public class ItemConfigUtil {
         );
         component.setEquippable(slot);
       } catch (IllegalArgumentException ignored) {}
-    }
-  }
-
-  private static void loadJukeboxPlayableComponent(ConfigurationSection section, Components component) {
-    if (section.contains("Components.jukebox_playable.song_key")) {
-      String songKey = section.getString("Components.jukebox_playable.song_key");
-      component.setPlayable(songKey);
     }
   }
 
