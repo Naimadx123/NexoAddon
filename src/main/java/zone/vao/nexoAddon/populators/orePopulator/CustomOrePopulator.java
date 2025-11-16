@@ -23,6 +23,8 @@ public class CustomOrePopulator extends BlockPopulator {
     this.orePopulator = orePopulator;
   }
 
+  public WorldInfo worldInfo;
+
   @Override
   public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull LimitedRegion limitedRegion) {
     for (Ore ore : orePopulator.getOres()) {
@@ -30,6 +32,7 @@ public class CustomOrePopulator extends BlockPopulator {
           || ore.getNexoFurniture() != null ||
           (!ore.worldNames.contains(worldInfo.getName()) && !ore.worldNames.contains("all"))
       ) continue;
+      if(this.worldInfo != worldInfo) this.worldInfo = worldInfo;
       if(ore.getIterations() instanceof Integer iterations && iterations < 0)
         replaceBlocks(worldInfo, random, chunkX, chunkZ, limitedRegion, ore);
       else
