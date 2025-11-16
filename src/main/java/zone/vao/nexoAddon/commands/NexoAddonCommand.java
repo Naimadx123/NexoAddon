@@ -63,7 +63,7 @@ public class NexoAddonCommand extends BaseCommand {
           NexoAddon.getInstance().worldPopulators.get(world.getName()).forEach(populator -> {
 
             LimitedRegion region = createLimitedRegion(world, chunk);
-            if(region == null) return;
+            if(region == null || populator.worldInfo == null) return;
             populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
           });
 
