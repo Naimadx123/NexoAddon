@@ -3,15 +3,12 @@ package zone.vao.nexoAddon.commands;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.WorldGenLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.generator.CraftLimitedRegion;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.LimitedRegion;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.utils.TotemUtil;
 
@@ -63,9 +60,10 @@ public class NexoAddonCommand extends BaseCommand {
           if (!chunk.isGenerated()) continue;
 
           NexoAddon.getInstance().worldPopulators.get(world.getName()).forEach(populator -> {
-            WorldGenLevel nmsWorld = (WorldGenLevel) ((CraftWorld) world).getHandle();
-            ChunkPos centerPos = new ChunkPos(chunk.getX(), chunk.getZ());
-            populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), new CraftLimitedRegion(nmsWorld, centerPos));
+
+            LimitedRegion region = createLimitedRegion(world, chunk);
+            if(region == null) return;
+            populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
           });
 
           processedChunks++;
@@ -105,4 +103,32 @@ public class NexoAddonCommand extends BaseCommand {
       sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>Played totem animation with Nexo item: " + input));
     }
   }
+
+  private LimitedRegion createLimitedRegion(World world, Chunk chunk) {
+    try {
+      Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
+
+      Class<?> chunkPosClass = Class.forName("net.minecraft.world.level.ChunkPos");
+      Object chunkPos = chunkPosClass
+          .getConstructor(int.class, int.class)
+          .newInstance(chunk.getX(), chunk.getZ());
+
+      Class<?> clrClass = Class.forName("org.bukkit.craftbukkit.generator.CraftLimitedRegion");
+      Object clr = clrClass
+          .getConstructor(
+              Class.forName("net.minecraft.world.level.WorldGenLevel"),
+              chunkPosClass
+          )
+          .newInstance(nmsWorld, chunkPos);
+
+      return (LimitedRegion) clr;
+    } catch (ClassNotFoundException e) {
+      NexoAddon.getInstance().getLogger().warning("LimitedRegion classes not found on this version: " + e.getMessage());
+    } catch (ReflectiveOperationException e) {
+      e.printStackTrace();
+      NexoAddon.getInstance().getLogger().warning("Failed to construct CraftLimitedRegion via reflection.");
+    }
+    return null;
+  }
+
 }
