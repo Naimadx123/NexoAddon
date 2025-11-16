@@ -1,6 +1,8 @@
 package zone.vao.nexoAddon.utils;
 
 import com.nexomc.nexo.api.NexoItems;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -9,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Components;
@@ -41,7 +44,6 @@ public class ItemConfigUtil {
                 .computeIfAbsent(itemId, Components::new);
 
         loadEquippableComponent(itemSection, component);
-        loadJukeboxPlayableComponent(itemSection, component);
         loadFertilizerComponent(itemSection, component);
         loadSkullValueComponent(itemSection, component);
         loadNoteBlockSoundComponent(itemSection, component);
@@ -57,13 +59,6 @@ public class ItemConfigUtil {
         );
         component.setEquippable(slot);
       } catch (IllegalArgumentException ignored) {}
-    }
-  }
-
-  private static void loadJukeboxPlayableComponent(ConfigurationSection section, Components component) {
-    if (section.contains("Components.jukebox_playable.song_key")) {
-      String songKey = section.getString("Components.jukebox_playable.song_key");
-      component.setPlayable(songKey);
     }
   }
 
@@ -113,17 +108,18 @@ public class ItemConfigUtil {
         loadDropExperienceMechanic(itemSection, mechanic);
         loadInfested(itemSection, mechanic);
         loadKillMessage(itemSection, mechanic);
-        loadStackableStringblockMechanic(itemSection, mechanic);
+        loadStackableMechanic(itemSection, mechanic);
         loadDecayMechanic(itemSection, mechanic);
         loadShiftBlockMechanic(itemSection, mechanic);
         loadBottledExpMechanic(itemSection, mechanic);
-        loadUnstackableStringblockMechanic(itemSection, mechanic);
+        loadUnstackableMechanic(itemSection, mechanic);
         loadBlockAuraMechanic(itemSection, mechanic);
         loadSignalMechanic(itemSection, mechanic);
         loadRememberMechanic(itemSection, mechanic);
         loadEnchantifyMechanic(itemSection, mechanic);
         loadAutoCatchMechanic(itemSection, mechanic);
         loadUniqueIdMechanic(itemSection, mechanic);
+        loadInventoryType(itemSection, mechanic);
       });
     }
   }
@@ -290,11 +286,11 @@ public class ItemConfigUtil {
     }
   }
 
-  private static void loadStackableStringblockMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.stackable.next")
-        && section.contains("Mechanics.custom_block.stackable.group")
+  private static void loadStackableMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (section.contains("Mechanics.stackable.next")
+        && section.contains("Mechanics.stackable.group")
     ) {
-      mechanic.setStackable(section.getString("Mechanics.custom_block.stackable.next"), section.getString("Mechanics.custom_block.stackable.group"));
+      mechanic.setStackable(section.getString("Mechanics.stackable.next"), section.getString("Mechanics.stackable.group"));
     }
   }
 
@@ -320,6 +316,7 @@ public class ItemConfigUtil {
         }
       }
       mechanic.setDecay(time, chance, baseFinal, nexoBaseFinal, radius);
+      NexoAddon.instance.setIsDecay(true);
     }
   }
 
@@ -349,11 +346,11 @@ public class ItemConfigUtil {
     }
   }
 
-  private static void loadUnstackableStringblockMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.unstackable.next")
-        && section.contains("Mechanics.custom_block.unstackable.give")
+  private static void loadUnstackableMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (section.contains("Mechanics.unstackable.next")
+        && section.contains("Mechanics.unstackable.give")
     ) {
-      List<String> rawItems = section.getStringList("Mechanics.custom_block.unstackable.items");
+      List<String> rawItems = section.getStringList("Mechanics.unstackable.items");
       List<Material> materials = new ArrayList<>();
       List<String> nexoIds = new ArrayList<>();
 
@@ -367,22 +364,22 @@ public class ItemConfigUtil {
         }
       }
 
-      mechanic.setUnstackable(section.getString("Mechanics.custom_block.unstackable.next"), section.getString("Mechanics.custom_block.unstackable.give"), materials, nexoIds);
+      mechanic.setUnstackable(section.getString("Mechanics.unstackable.next"), section.getString("Mechanics.unstackable.give"), materials, nexoIds);
     }
   }
 
   private static void loadBlockAuraMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.custom_block.block_aura.particle")) {
-      Particle particle = Particle.valueOf(section.getString("Mechanics.custom_block.block_aura.particle", "FLAME").toUpperCase());
-      String xOffset = section.getString("Mechanics.custom_block.block_aura.xOffset", "0.5");
-      String yOffset = section.getString("Mechanics.custom_block.block_aura.yOffset", "0.5");
-      String zOffset = section.getString("Mechanics.custom_block.block_aura.zOffset", "0.5");
-      int amount = section.getInt("Mechanics.custom_block.block_aura.amount", 10);
-      double deltaX = section.getDouble("Mechanics.custom_block.block_aura.deltaX", 0.6);
-      double deltaY = section.getDouble("Mechanics.custom_block.block_aura.deltaY", 0.6);
-      double deltaZ = section.getDouble("Mechanics.custom_block.block_aura.deltaZ", 0.6);
-      double speed = section.getDouble("Mechanics.custom_block.block_aura.speed", 0.05);
-      boolean force = section.getBoolean("Mechanics.custom_block.block_aura.force", true);
+    if (section.contains("Mechanics.block_aura.particle")) {
+      Particle particle = Particle.valueOf(section.getString("Mechanics.block_aura.particle", "FLAME").toUpperCase());
+      String xOffset = section.getString("Mechanics.block_aura.xOffset", "0.5");
+      String yOffset = section.getString("Mechanics.block_aura.yOffset", "0.5");
+      String zOffset = section.getString("Mechanics.block_aura.zOffset", "0.5");
+      int amount = section.getInt("Mechanics.block_aura.amount", 10);
+      double deltaX = section.getDouble("Mechanics.block_aura.deltaX", 0.6);
+      double deltaY = section.getDouble("Mechanics.block_aura.deltaY", 0.6);
+      double deltaZ = section.getDouble("Mechanics.block_aura.deltaZ", 0.6);
+      double speed = section.getDouble("Mechanics.block_aura.speed", 0.05);
+      boolean force = section.getBoolean("Mechanics.block_aura.force", true);
       mechanic.setBlockAura(particle, xOffset, yOffset, zOffset, amount, deltaX, deltaY, deltaZ, speed, force);
     }
   }
@@ -455,6 +452,32 @@ public class ItemConfigUtil {
         }
       }
     }
+  }
+
+  private static void loadInventoryType(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.inventoryType")) return;
+
+    InventoryType type = null;
+    try {
+      type = InventoryType.valueOf(section.getString("Mechanics.inventoryType.type", "WORKBENCH").toUpperCase());
+    } catch (IllegalArgumentException e) {
+      NexoAddon.getInstance().getLogger().warning("Invalid InventoryType: " + section.getString("Mechanics.inventoryType.type"));
+    }
+
+    if (type == null) {
+      NexoAddon.getInstance().getLogger().warning("Invalid InventoryType: " + section.getString("Mechanics.inventoryType.type"));
+      return;
+    }
+
+    String titleRaw = section.getString("Mechanics.inventoryType.title");
+    Component title = null;
+    if(titleRaw == null || titleRaw.isEmpty()){
+      title = type.defaultTitle();
+    } else {
+      title = MiniMessage.miniMessage().deserialize(titleRaw);
+    }
+
+    mechanic.setInventoryType(type, title);
   }
 
   private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

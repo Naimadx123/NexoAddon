@@ -12,6 +12,7 @@ import com.nexomc.protectionlib.ProtectionLib;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
@@ -39,9 +40,6 @@ import zone.vao.nexoAddon.populators.CustomChunkGenerator;
 import zone.vao.nexoAddon.populators.orePopulator.CustomOrePopulator;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
 import zone.vao.nexoAddon.populators.orePopulator.OrePopulator;
-import zone.vao.nexoAddon.populators.treePopulator.CustomTree;
-import zone.vao.nexoAddon.populators.treePopulator.CustomTreePopulator;
-import zone.vao.nexoAddon.populators.treePopulator.TreePopulator;
 import zone.vao.nexoAddon.utils.*;
 import zone.vao.nexoAddon.utils.handlers.BlockHardnessHandler;
 import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
@@ -65,10 +63,8 @@ public final class NexoAddon extends JavaPlugin {
   public FileConfiguration globalConfig;
   public PopulatorsConfigUtil populatorsConfig;
   public List<Ore> ores = new ArrayList<>();
-  public List<CustomTree> trees = new ArrayList<>();
   public final OrePopulator orePopulator = new OrePopulator();
-  public final TreePopulator treePopulator = new TreePopulator();
-  public Map<String, List<BlockPopulator>> worldPopulators = new HashMap<>();
+  public Map<String, List<CustomOrePopulator>> worldPopulators = new HashMap<>();
   public Map<String, String> jukeboxLocations = new HashMap<>();
   public Map<String, Integer> customBlockLights = new HashMap<>();
   public BlockHardnessHandler blockHardnessHandler;
@@ -78,6 +74,8 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  @Setter
+  private Boolean isDecay = false;
 
 
   @Override
@@ -179,7 +177,6 @@ public final class NexoAddon extends JavaPlugin {
   public void initializePopulators() {
     populatorsConfig = new PopulatorsConfigUtil(getDataFolder(), getClassLoader());
     initializeOres();
-    initializeTrees();
   }
 
   private void initializeOres() {
@@ -199,23 +196,6 @@ public final class NexoAddon extends JavaPlugin {
         worldPopulators.computeIfAbsent(world.getName(), k -> new ArrayList<>()).add(customOrePopulator);
         logPopulatorAdded("BlockPopulator", "all_ores", world);
       });
-    });
-  }
-
-  private void initializeTrees() {
-    trees = populatorsConfig.loadTreesFromConfig();
-    treePopulator.clearTrees();
-    trees.forEach(treePopulator::addTree);
-    treePopulator.getTrees().forEach(tree -> {
-      for (World world : tree.getWorlds()) {
-        CustomTreePopulator customTreePopulator = new CustomTreePopulator(treePopulator);
-        if(!worldPopulators.containsKey(world.getName())) {
-          worldPopulators.put(world.getName(), new ArrayList<>());
-        }
-        addPopulatorToWorld(world, customTreePopulator);
-        worldPopulators.get(world.getName()).add(customTreePopulator);
-        logPopulatorAdded("TreePopulator", tree.getId(), world);
-      }
     });
   }
 

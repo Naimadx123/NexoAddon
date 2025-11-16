@@ -24,6 +24,8 @@ import zone.vao.nexoAddon.items.Mechanics;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
+
 public record AutoCatch(boolean toggable, boolean recast) {
 
     private static final NamespacedKey autoCatchKey = new NamespacedKey(NexoAddon.getInstance(), "auto_catch_enabled");
@@ -55,7 +57,9 @@ public record AutoCatch(boolean toggable, boolean recast) {
             if ((event.getAction() != Action.LEFT_CLICK_BLOCK)
                 || event.getHand() == null
                 || !event.getHand().equals(EquipmentSlot.HAND)) return;
-
+          if(event.getClickedBlock() != null && isInteractable(event.getClickedBlock())){
+            return;
+          }
             Player player = event.getPlayer();
 
             String toolId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());

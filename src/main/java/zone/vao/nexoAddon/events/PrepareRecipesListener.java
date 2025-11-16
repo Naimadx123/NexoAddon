@@ -1,8 +1,13 @@
 package zone.vao.nexoAddon.events;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.nexomc.nexo.NexoPlugin;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.utils.VersionUtil;
+import zone.vao.nexoAddon.utils.handlers.EquippableCompat;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 
 import java.util.HashMap;
@@ -61,43 +67,143 @@ public class PrepareRecipesListener implements Listener {
 
     if (baseMeta == null || resultMeta == null) return;
 
-    resultMeta.displayName(baseMeta.hasDisplayName() ? baseMeta.displayName() : resultMeta.displayName());
-    if (!resultMeta.hasLore() && baseMeta.hasLore()) {
-      resultMeta.lore(baseMeta.lore());
-    }
-
-    boolean copyTrim = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_trim", false);
-    boolean copyPdc = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_pdc", false);
-    boolean copyEnchants = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_enchantments", true);
+    boolean copyTrim       = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_trim", false);
+    boolean copyPdc        = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_pdc", false);
+    boolean copyEnchants   = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_enchantments", true);
     boolean keepDurability = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".keep_durability", true);
-    boolean copyMeta = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_meta", false);
+    boolean copyMeta       = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_meta", false);
 
     if (copyMeta) {
-      resultMeta = baseMeta.clone();
+      resultMeta = buildCopiedMeta(baseMeta, resultMeta);
     }
 
     if (copyEnchants) {
-      ItemMeta finalResultMeta = resultMeta;
-      baseMeta.getEnchants().forEach((enchant, level) -> finalResultMeta.addEnchant(enchant, level, true));
+      copyEnchantments(baseMeta, resultMeta);
     }
 
-    if (copyTrim && baseMeta instanceof ArmorMeta baseArmorMeta) {
-      if (baseArmorMeta.hasTrim()) {
-        ((ArmorMeta) resultMeta).setTrim(baseArmorMeta.getTrim());
-      }
+    if (copyTrim) {
+      copyTrim(baseMeta, resultMeta);
     }
 
-    if(copyPdc){
-      baseMeta.getPersistentDataContainer().copyTo(resultMeta.getPersistentDataContainer(), false);
+    if (copyPdc) {
+      copyPdc(baseMeta, resultMeta);
     }
 
-    if(keepDurability && resultMeta instanceof Damageable damageable) {
-      if(baseMeta instanceof Damageable baseDamageable) {
-        damageable.setDamage(baseDamageable.getDamage());
-      }
+    if (keepDurability) {
+      copyDurability(baseMeta, resultMeta);
     }
 
     result.setItemMeta(resultMeta);
+  }
+
+  private ItemMeta buildCopiedMeta(ItemMeta baseMeta, ItemMeta resultMeta) {
+    ItemMeta baseMetaClone = baseMeta.clone();
+
+    copyNexoIdAndBasicFields(baseMetaClone, resultMeta);
+    copyDamageMeta(baseMetaClone, resultMeta);
+    copyEquippableMeta(baseMetaClone, resultMeta);
+    mergeLore(baseMetaClone, resultMeta);
+    mergeAttributes(baseMetaClone, resultMeta);
+
+    return baseMetaClone;
+  }
+
+  private void copyNexoIdAndBasicFields(ItemMeta target, ItemMeta source) {
+    String nexoId = source.getPersistentDataContainer()
+        .get(new NamespacedKey("nexo", "id"), PersistentDataType.STRING);
+    if (nexoId != null) {
+      target.getPersistentDataContainer()
+          .set(new NamespacedKey("nexo", "id"), PersistentDataType.STRING, nexoId);
+    }
+
+    if (source.hasCustomModelData()) {
+      target.setCustomModelData(source.getCustomModelData());
+    }
+    if (source.hasDisplayName()) {
+      target.setDisplayName(source.getDisplayName());
+    }
+    if (source.hasItemName()) {
+      target.itemName(source.itemName());
+    }
+  }
+
+  private void copyDamageMeta(ItemMeta target, ItemMeta source) {
+    if (!(source instanceof Damageable damageable) ||
+        !(target instanceof Damageable baseDamageable)) {
+      return;
+    }
+
+    if (damageable.hasMaxDamage()) {
+      baseDamageable.setMaxDamage(damageable.getMaxDamage());
+    }
+    if (damageable.hasDamage()) {
+      baseDamageable.setDamage(damageable.getDamage());
+    }
+  }
+
+  private void copyEquippableMeta(ItemMeta target, ItemMeta source) {
+    if (VersionUtil.isVersionLessThan("1.21.2")) return;
+
+    Object eq = EquippableCompat.getEquippable(source);
+    if (eq != null || EquippableCompat.hasEquippable(source)) {
+      EquippableCompat.setEquippable(target, eq);
+    }
+  }
+
+  private void mergeLore(ItemMeta target, ItemMeta source) {
+    if (!source.hasLore()) return;
+
+    java.util.List<Component> merged = new java.util.ArrayList<>();
+    java.util.List<Component> baseLore = target.lore();
+    if (baseLore != null && !baseLore.isEmpty()) {
+      merged.addAll(baseLore);
+    }
+    java.util.List<Component> resultLore = source.lore();
+    if (resultLore != null && !resultLore.isEmpty()) {
+      merged.addAll(resultLore);
+    }
+    target.lore(merged);
+  }
+
+  private void mergeAttributes(ItemMeta target, ItemMeta source) {
+    if (!source.hasAttributeModifiers()) return;
+
+    Multimap<Attribute, AttributeModifier> toAdd = source.getAttributeModifiers();
+    if (toAdd == null || toAdd.isEmpty()) return;
+
+    Multimap<Attribute, AttributeModifier> merged =
+        target.getAttributeModifiers() == null
+            ? HashMultimap.create()
+            : HashMultimap.create(target.getAttributeModifiers());
+
+    merged.putAll(toAdd);
+    target.setAttributeModifiers(merged);
+  }
+
+  private void copyEnchantments(ItemMeta from, ItemMeta to) {
+    from.getEnchants().forEach((enchant, level) ->
+        to.addEnchant(enchant, level, true));
+  }
+
+  private void copyTrim(ItemMeta baseMeta, ItemMeta resultMeta) {
+    if (!(baseMeta instanceof ArmorMeta baseArmorMeta)) return;
+    if (!baseArmorMeta.hasTrim()) return;
+    if (resultMeta instanceof ArmorMeta armorMeta) {
+      armorMeta.setTrim(baseArmorMeta.getTrim());
+    }
+  }
+
+  private void copyPdc(ItemMeta baseMeta, ItemMeta resultMeta) {
+    baseMeta.getPersistentDataContainer()
+        .copyTo(resultMeta.getPersistentDataContainer(), false);
+  }
+
+  private void copyDurability(ItemMeta baseMeta, ItemMeta resultMeta) {
+    if (!(resultMeta instanceof Damageable damageable) ||
+        !(baseMeta instanceof Damageable baseDamageable)) {
+      return;
+    }
+    damageable.setDamage(baseDamageable.getDamage());
   }
 
   private boolean matchesRecipe(SmithingTransformRecipe recipe, ItemStack template, ItemStack base, ItemStack addition) {

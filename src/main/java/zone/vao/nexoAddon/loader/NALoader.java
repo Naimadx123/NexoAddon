@@ -32,7 +32,8 @@ public class NALoader implements PluginLoader {
 
   private static final List<String> DEPENDS =
       List.of(
-          "com.nexomc:protectionlib:1.0.8"
+          "com.nexomc:protectionlib:1.0.8",
+          "net.objecthunter:exp4j:0.4.8"
       );
 
   @Override

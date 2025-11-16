@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
+
 public record BigMining(int radius, int depth, boolean switchable, List<Material> materials) {
 
   public static boolean isBigMiningTool(String toolId) {
@@ -141,7 +143,9 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
       String toolId = NexoItems.idFromItem(tool);
       if (!BigMining.isBigMiningTool(toolId) || event.getHand() != EquipmentSlot.HAND) return;
       if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-
+      if(event.getClickedBlock() != null && isInteractable(event.getClickedBlock())){
+        return;
+      }
       BigMining bigMiningMechanic = NexoAddon.getInstance()
           .getMechanics()
           .get(toolId)

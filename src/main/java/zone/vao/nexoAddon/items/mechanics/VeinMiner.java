@@ -26,6 +26,8 @@ import zone.vao.nexoAddon.utils.EventUtil;
 
 import java.util.*;
 
+import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
+
 public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, int limit, List<Material> materials, List<String> nexoIds) {
 
     public static boolean isVeinMinerTool(String toolId) {
@@ -181,6 +183,9 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             String toolId = NexoItems.idFromItem(tool);
             if (!VeinMiner.isVeinMinerTool(toolId) || event.getHand() != EquipmentSlot.HAND) return;
             if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+            if(event.getClickedBlock() != null && isInteractable(event.getClickedBlock())){
+              return;
+            }
 
             VeinMiner veinMinerMechanic = NexoAddon.getInstance()
                     .getMechanics()

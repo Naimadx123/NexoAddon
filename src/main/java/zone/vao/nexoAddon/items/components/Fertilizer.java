@@ -81,14 +81,14 @@ public record Fertilizer(int growthSpeedup, List<String> usableOn, int cooldown)
 
       container.set(EVOLUTION_KEY, PersistentDataType.INTEGER, evolutionTime);
 
-      if(NexoItems.itemFromId(component.getId()).getDurability() == null
-          || NexoItems.itemFromId(component.getId()).getDurability() <= 1
+      if(NexoItems.itemFromId(component.getId()).getMaxDamage() == null
+          || NexoItems.itemFromId(component.getId()).getMaxDamage() <= 1
           || ((Damageable) player.getInventory().getItemInMainHand().getItemMeta()).hasDamage()
-          && ((Damageable) player.getInventory().getItemInMainHand().getItemMeta()).getDamage() >= NexoItems.itemFromId(component.getId()).getDurability()
+          && ((Damageable) player.getInventory().getItemInMainHand().getItemMeta()).getDamage() >= NexoItems.itemFromId(component.getId()).getMaxDamage()
       ) {
         InventoryUtil.removePartialStack(player, player.getInventory().getItemInMainHand(), 1);
       }else{
-        int maxDurability = NexoItems.itemFromId(component.getId()).getDurability() != null ? NexoItems.itemFromId(component.getId()).getDurability() : NexoItems.itemFromId(component.getId()).build().getType().getMaxDurability();
+        int maxDurability = NexoItems.itemFromId(component.getId()).getMaxDamage() != null ? NexoItems.itemFromId(component.getId()).getMaxDamage() : NexoItems.itemFromId(component.getId()).build().getType().getMaxDurability();
         Damageable itemMeta = (Damageable) player.getInventory().getItemInMainHand().getItemMeta();
         itemMeta.setDamage(itemMeta.getDamage()+1);
         player.getInventory().getItemInMainHand().setItemMeta(itemMeta);
@@ -167,8 +167,8 @@ public record Fertilizer(int growthSpeedup, List<String> usableOn, int cooldown)
     }
 
     private static void handleItemDurability(Player player, Components component) {
-      int maxDurability = NexoItems.itemFromId(component.getId()).getDurability() != null
-          ? NexoItems.itemFromId(component.getId()).getDurability()
+      int maxDurability = NexoItems.itemFromId(component.getId()).getMaxDamage() != null
+          ? NexoItems.itemFromId(component.getId()).getMaxDamage()
           : 0;
 
       Damageable itemMeta = (Damageable) player.getInventory().getItemInMainHand().getItemMeta();

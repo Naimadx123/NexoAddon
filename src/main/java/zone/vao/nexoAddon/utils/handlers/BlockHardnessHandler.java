@@ -100,7 +100,7 @@ public class BlockHardnessHandler implements PacketListener {
 
               if(tool.getItemMeta() instanceof Damageable damageable){
                 damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
-                int maxDurability = NexoItems.itemFromId(toolId).getDurability() != null ? NexoItems.itemFromId(toolId).getDurability() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
+                int maxDurability = NexoItems.itemFromId(toolId).getMaxDamage() != null ? NexoItems.itemFromId(toolId).getMaxDamage() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
                 if(damageable.getDamage() >= maxDurability) {
                   player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
                   block.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
