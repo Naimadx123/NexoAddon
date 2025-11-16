@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
-import zone.vao.nexoAddon.populators.treePopulator.CustomTree;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -23,13 +22,11 @@ public class PopulatorsConfigUtil {
 
   private final File populatorsDir;
   private final File blocksDir;
-  private final File treesDir;
   private final ClassLoader pluginClassLoader;
 
   public PopulatorsConfigUtil(File pluginDirectory, ClassLoader pluginClassLoader) {
     this.populatorsDir = new File(pluginDirectory, "populators");
     this.blocksDir = new File(populatorsDir, "blocks");
-    this.treesDir = new File(populatorsDir, "trees");
     this.pluginClassLoader = pluginClassLoader;
     createPopulatorFiles();
   }
@@ -45,13 +42,7 @@ public class PopulatorsConfigUtil {
       return;
     }
 
-    if (!treesDir.exists() && !treesDir.mkdirs()) {
-      NexoAddon.getInstance().getLogger().severe("Failed to create trees directory.");
-      return;
-    }
-
     copyResourceIfAbsent("block_populator.yml", populatorsDir);
-    copyResourceIfAbsent("tree_populator.yml", populatorsDir);
   }
 
   private void copyResourceIfAbsent(String fileName, File targetDir) {
@@ -78,8 +69,6 @@ public class PopulatorsConfigUtil {
     configs.addAll(loadConfigsFromDirectory(populatorsDir));
 
     configs.addAll(loadConfigsFromDirectory(blocksDir));
-
-    configs.addAll(loadConfigsFromDirectory(treesDir));
 
     return configs;
   }
@@ -169,60 +158,6 @@ public class PopulatorsConfigUtil {
       } else {
         return new Ore(key, material, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly);
       }
-    } catch (IllegalArgumentException e) {
-      logError("Invalid custom block ID: " + key);
-      return null;
-    }
-  }
-
-  public List<CustomTree> loadTreesFromConfig() {
-    List<CustomTree> trees = new ArrayList<>();
-
-    FileConfiguration rootConfig = loadConfigFile("tree_populator.yml", populatorsDir);
-    if (rootConfig != null) {
-      trees.addAll(loadTreesFromConfig(rootConfig));
-    }
-
-    for (FileConfiguration config : loadConfigsFromDirectory(treesDir)) {
-      trees.addAll(loadTreesFromConfig(config));
-    }
-
-    return trees;
-  }
-
-  private List<CustomTree> loadTreesFromConfig(FileConfiguration config) {
-    return config.getKeys(false).stream()
-            .map(key -> parseTree(key, config))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-  }
-
-  private CustomTree parseTree(String key, FileConfiguration config) {
-    ConfigurationSection section = config.getConfigurationSection(key);
-
-    if (section == null || !section.contains("logs") || !section.contains("leaves")) return null;
-
-    String logs = section.getString("logs");
-    String leaves = section.getString("leaves");
-
-    if (!NexoBlocks.isCustomBlock(logs) || !NexoBlocks.isCustomBlock(leaves)) return null;
-
-    int minY = section.getInt("minY", 0);
-    int maxY = Math.max(section.getInt("maxY", 0), minY);
-    double chance = section.getDouble("chance", 0.1);
-
-    List<World> worlds = parseWorlds(section.getStringList("worlds"));
-    List<Biome> biomes = parseBiomes(worlds, section.getStringList("biomes"));
-    if (worlds.isEmpty()) return null;
-    if (biomes.isEmpty())
-      biomes = worlds.get(0).getBiomeProvider().getBiomes(worlds.get(0)).stream().toList();
-
-    try {
-      return new CustomTree(
-              key,
-              NexoBlocks.customBlockMechanic(logs),
-              NexoBlocks.customBlockMechanic(leaves),
-              minY, maxY, chance, worlds, biomes);
     } catch (IllegalArgumentException e) {
       logError("Invalid custom block ID: " + key);
       return null;
