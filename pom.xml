@@ -6,7 +6,7 @@
 
     <groupId>zone.vao</groupId>
     <artifactId>NexoAddon</artifactId>
-    <version>1.15.0</version>
+    <version>1.16.0-dev</version>
     <packaging>jar</packaging>
 
     <name>NexoAddon</name>
@@ -178,7 +178,7 @@
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.15.0-dev.8</version>
+            <version>1.16.0-dev.3</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
