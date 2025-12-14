@@ -67,6 +67,8 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
           && Boolean.FALSE.equals(pdc.get(new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable"), PersistentDataType.BOOLEAN))
       ) return;
 
+      if(!bigMiningMechanic.materials().isEmpty() && !bigMiningMechanic.materials().contains(event.getBlock().getType())) return;
+
       Block primaryBlock = targetBlocks.get(0);
       Block secondaryBlock = targetBlocks.get(1);
       BlockFace breakFace = secondaryBlock.getFace(primaryBlock);
@@ -130,7 +132,7 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
     }
 
     private static boolean isUnbreakableBlock(Player player, Material blockMaterial, Location blockLocation) {
-      return !blockMaterial.isSolid()
+      return blockLocation.getBlock().isLiquid()
           || BlockUtil.UNBREAKABLE_BLOCKS.contains(blockMaterial)
           || !ProtectionLib.canBreak(player, blockLocation);
     }
