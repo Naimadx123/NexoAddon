@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.items.recipes.RecipeInfo;
 import zone.vao.nexoAddon.utils.VersionUtil;
 import zone.vao.nexoAddon.utils.handlers.EquippableCompat;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
@@ -47,7 +48,7 @@ public class PrepareRecipesListener implements Listener {
 
     if (Stream.of(template, base, addition).anyMatch(Objects::isNull)) return;
 
-    RecipeManager.getRegisteredRecipes().stream()
+    RecipeManager.getRegisteredRecipes().keySet().stream()
         .sorted()
         .map(key -> (SmithingRecipe) NexoAddon.getInstance().getServer().getRecipe(key))
         .filter(Objects::nonNull)
@@ -67,11 +68,13 @@ public class PrepareRecipesListener implements Listener {
 
     if (baseMeta == null || resultMeta == null) return;
 
-    boolean copyTrim       = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_trim", false);
-    boolean copyPdc        = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_pdc", false);
-    boolean copyEnchants   = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_enchantments", true);
-    boolean keepDurability = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".keep_durability", true);
-    boolean copyMeta       = RecipeManager.getRecipeConfig().getBoolean(key.getKey() + ".copy_meta", false);
+    RecipeInfo recipeInfo = RecipeManager.getRegisteredRecipes().get(key);
+
+    boolean copyTrim = recipeInfo.isCopyTrim();
+    boolean copyPdc = recipeInfo.isCopyPdc();
+    boolean copyEnchants = recipeInfo.isCopyEnchants();
+    boolean keepDurability = recipeInfo.isKeepDurability();
+    boolean copyMeta = recipeInfo.isCopyMeta();
 
     if (copyMeta) {
       resultMeta = buildCopiedMeta(baseMeta, resultMeta);

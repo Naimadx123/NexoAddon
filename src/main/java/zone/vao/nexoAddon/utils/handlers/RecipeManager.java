@@ -10,22 +10,26 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingTransformRecipe;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.items.recipes.RecipeInfo;
+import zone.vao.nexoAddon.utils.exceptions.FailedRecipeLoadException;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
 public class RecipeManager {
     @Getter
-    private static final List<NamespacedKey> registeredRecipes = new ArrayList<>();
-    @Getter
-    @Setter
-    private static File recipeFile;
-    @Getter
-    @Setter
-    private static FileConfiguration recipeConfig;
+    private static final HashMap<NamespacedKey, RecipeInfo> registeredRecipes = new HashMap<>();
 
+    @Getter
+    @Setter
+    private static List<File> recipesFiles;
+
+    @Getter
+    @Setter
+    private static File exampleFile;
 
     public static void addSmithingTransformRecipe(String recipeId, FileConfiguration config) {
         ItemStack resultTemplate = parseItem(config, recipeId + ".result");
@@ -34,7 +38,7 @@ public class RecipeManager {
         RecipeChoice.ExactChoice addition = parseRecipeChoice(config, recipeId + ".addition");
 
         if (resultTemplate == null || template == null || base == null || addition == null) {
-            throw new IllegalArgumentException("Invalid recipe configuration for " + recipeId);
+            throw new FailedRecipeLoadException(recipeId,config.getName(),"Invalid recipe configuration");
         }
 
         NamespacedKey key = new NamespacedKey(NexoAddon.getInstance(), recipeId);
@@ -43,7 +47,7 @@ public class RecipeManager {
             NexoAddon.instance.foliaLib.getScheduler().runNextTick(registerRecipe -> {
                 SmithingTransformRecipe recipe = new SmithingTransformRecipe(key, resultTemplate, template, base, addition);
                 NexoAddon.getInstance().getServer().addRecipe(recipe);
-                registeredRecipes.add(key);
+                registeredRecipes.put(key, new RecipeInfo(config,recipeId));
                 NexoAddon.getInstance().getLogger().info("Registered smithing transform recipe: " + recipeId);
             });
         } else {
@@ -79,7 +83,7 @@ public class RecipeManager {
     public static void clearRegisteredRecipes() {
         if(registeredRecipes.isEmpty()) return;
 
-        for (NamespacedKey key : registeredRecipes) {
+        for (NamespacedKey key : registeredRecipes.keySet()) {
             NexoAddon.getInstance().getServer().removeRecipe(key);
             NexoAddon.getInstance().getLogger().info("Removed recipe: " + key.getKey());
         }
