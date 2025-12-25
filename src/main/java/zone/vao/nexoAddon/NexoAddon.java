@@ -74,6 +74,7 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  public boolean isDebug = false;
   @Setter
   private Boolean isDecay = false;
 
@@ -97,6 +98,7 @@ public final class NexoAddon extends JavaPlugin {
     ProtectionLib.init(this);
     saveDefaultConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib = new FoliaLib(this);
     initializeCommandManager();
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
@@ -140,6 +142,7 @@ public final class NexoAddon extends JavaPlugin {
   public void reload() {
     reloadConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib.getScheduler().runNextTick(init -> {
       clearPopulators();
       initializePopulators();
