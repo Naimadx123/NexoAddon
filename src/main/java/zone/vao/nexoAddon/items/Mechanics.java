@@ -72,8 +72,8 @@ public class Mechanics {
     this.spawnerBreak = new SpawnerBreak(probability, dropExperience);
   }
 
-  public void setDropExperience(double experience) {
-    this.dropExperience = new DropExperience(experience);
+  public void setDropExperience(double experience, String minimalTool, String bestTool) {
+    this.dropExperience = new DropExperience(experience, minimalTool, bestTool);
   }
 
   public void setInfested(List<EntityType> entities, List<String> mythicMobs, double probability, String selector, boolean particles, boolean drop, boolean safeSpawn) {
