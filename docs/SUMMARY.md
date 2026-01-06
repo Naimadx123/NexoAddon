@@ -20,6 +20,7 @@
 * [Custom Block Experience](mechanics/custom-block-experience.md)
 * [Decay](mechanics/decay.md)
 * [Infested](mechanics/infested.md)
+* [InventoryType](mechanics/infested-1.md)
 * [KillMessage](mechanics/killmessage.md)
 * [MiningTools](mechanics/miningtools.md)
 * [Remember](mechanics/remember.md)

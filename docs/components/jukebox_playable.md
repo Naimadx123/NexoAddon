@@ -2,6 +2,10 @@
 
 
 
+{% hint style="danger" %}
+This Component has been removed in NexoAddon v1.15
+{% endhint %}
+
 {% hint style="info" %}
 `jukebox_playable` Component is handling by NexoAddon on versions 1.20.4-1.21.1
 {% endhint %}

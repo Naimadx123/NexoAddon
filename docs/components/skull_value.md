@@ -4,6 +4,10 @@ description: Add skull with custom textures!
 
 # skull\_value
 
+{% hint style="danger" %}
+This Component has been removed in NexoAddon v1.16 favor of Nexo's **profile** Component
+{% endhint %}
+
 Decorate your world with player heads with custom textures!
 
 ### Hedgehog
