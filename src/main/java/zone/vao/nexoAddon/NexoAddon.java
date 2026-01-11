@@ -55,6 +55,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Getter
   public static NexoAddon instance;
+  public static boolean isDebug = false;
   public Set<File> nexoFiles = new HashSet<>();
   public Map<String, Components> components = new HashMap<>();
   public Map<String, Mechanics> mechanics = new HashMap<>();
@@ -74,7 +75,6 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
-  public boolean isDebug = false;
   @Setter
   private Boolean isDecay = false;
 
