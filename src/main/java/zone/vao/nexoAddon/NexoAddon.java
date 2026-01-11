@@ -49,6 +49,7 @@ import zone.vao.nexoAddon.utils.metrics.Metrics;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public final class NexoAddon extends JavaPlugin {
@@ -74,7 +75,7 @@ public final class NexoAddon extends JavaPlugin {
   private boolean packeteventsLoaded = false;
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
-  private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  private final Map<Location, WrappedTask> particleTasks = new ConcurrentHashMap<>();
   @Setter
   private Boolean isDecay = false;
 

@@ -267,36 +267,30 @@ public class BlockUtil {
   }
 
   public static void startBlockAura(Particle particle, Location location, String xOffsetRange, String yOffsetRange, String zOffsetRange, int amount, double deltaX, double deltaY, double deltaZ, double speed, boolean force) {
-    WrappedTask task = new WrappedBukkitTask(new BukkitRunnable() {
-      @Override
-      public void run() {
-        NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick((r) -> {
-          World world = location.getWorld();
-          if (!NexoBlocks.isCustomBlock(location.getBlock()) && !NexoFurniture.isFurniture(location)) {
-            cancel();
-            stopBlockAura(location);
-            return;
-          }
-          if (world != null) {
-            double xOffset = RandomRangeUtil.parseAndGetRandomValue(xOffsetRange);
-            double yOffset = RandomRangeUtil.parseAndGetRandomValue(yOffsetRange);
-            double zOffset = RandomRangeUtil.parseAndGetRandomValue(zOffsetRange);
-
-            world.spawnParticle(
-                particle,
-                location.clone().add(xOffset, yOffset, zOffset),
-                amount,
-                deltaX, deltaY, deltaZ,
-                speed,
-                null,
-                force
-            );
-          }
-        });
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocationTimer(location, (r) -> {
+      if (!NexoBlocks.isCustomBlock(location.getBlock()) && !NexoFurniture.isFurniture(location)) {
+        stopBlockAura(location);
+        return;
       }
-    }.runTaskTimerAsynchronously(NexoAddon.getInstance(), 0L, NexoAddon.getInstance().getGlobalConfig().getLong("aura_mechanic_delay", 10)));
+      NexoAddon.instance.getParticleTasks().put(location, r);
 
-    NexoAddon.getInstance().getParticleTasks().put(location, task);
+      World world = location.getWorld();
+      if (world != null) {
+        double xOffset = RandomRangeUtil.parseAndGetRandomValue(xOffsetRange);
+        double yOffset = RandomRangeUtil.parseAndGetRandomValue(yOffsetRange);
+        double zOffset = RandomRangeUtil.parseAndGetRandomValue(zOffsetRange);
+
+        world.spawnParticle(
+            particle,
+            location.clone().add(xOffset, yOffset, zOffset),
+            amount,
+            deltaX, deltaY, deltaZ,
+            speed,
+            null,
+            force
+        );
+      }
+    }, 0L, NexoAddon.instance.globalConfig.getLong("aura_mechanic_delay", 10));
   }
 
   public static void stopBlockAura(Location location) {
