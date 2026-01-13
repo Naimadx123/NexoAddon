@@ -29,7 +29,9 @@ public class SaplingPopulator {
 
     if (saplingPopulators.isEmpty() || ((!event.isNewChunk()) && event.getChunk().isGenerated())) return;
 
-    saplingPopulators.forEach(ore -> processOre(world, chunk, ore));
+    NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(chunk.getBlock(0, 0, 0).getLocation(), task -> {
+      saplingPopulators.forEach(ore -> processOre(world, chunk, ore));
+    });
   }
 
   private static void processOre(World world, Chunk chunk, Ore ore) {
