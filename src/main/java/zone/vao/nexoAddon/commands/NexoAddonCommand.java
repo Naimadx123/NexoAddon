@@ -26,9 +26,9 @@ public class NexoAddonCommand extends BaseCommand {
   }
 
   @Subcommand("repopulate")
-  @Syntax("[world] <knowTheExperimentalFeature>")
+  @Syntax("[worldName|#all] <knowTheExperimentalFeature>")
   @CommandCompletion("@worlds")
-  public void onRepopulate(CommandSender sender, @Optional String worldName, Boolean knowTheExperimentalFeature) {
+  public void onRepopulate(CommandSender sender, @Optional String worldName, @Optional Boolean knowTheExperimentalFeature) {
 
     if(knowTheExperimentalFeature == null || !knowTheExperimentalFeature){
       sender.sendMessage(MiniMessage.miniMessage()
@@ -37,7 +37,7 @@ public class NexoAddonCommand extends BaseCommand {
     }
 
     List<World> targetWorlds;
-    if (worldName == null) {
+    if (worldName == null || worldName.equalsIgnoreCase("#all")) {
       targetWorlds = Bukkit.getWorlds();
     } else {
       World world = Bukkit.getWorld(worldName);
@@ -56,15 +56,34 @@ public class NexoAddonCommand extends BaseCommand {
       int processedChunks = 0;
 
       for (World world : targetWorlds) {
-        if (!NexoAddon.getInstance().worldPopulators.containsKey(world.getName())) continue;
+        if(NexoAddon.isDebug){
+          NexoAddon.getInstance().getLogger().info("[debug] Repopulating world: " + world.getName());
+        }
+        if (!NexoAddon.getInstance().worldPopulators.containsKey(world.getName())) {
+          if(NexoAddon.isDebug){
+            NexoAddon.getInstance().getLogger().info("[debug]   Skipping world: " + world.getName() + " because it has no populators.");
+          }
+          continue;
+        }
         for (Chunk chunk : world.getLoadedChunks()) {
           if (!chunk.isGenerated()) continue;
 
           NexoAddon.getInstance().worldPopulators.get(world.getName()).forEach(populator -> {
+            if(NexoAddon.isDebug){
+              NexoAddon.getInstance().getLogger().info("[debug]  Repopulating chunk: " + chunk.getX() + ", " + chunk.getZ());
+            }
 
             LimitedRegion region = createLimitedRegion(world, chunk);
-            if(region == null) return;
+            if(region == null || populator.worldInfo == null) {
+              if(NexoAddon.isDebug){
+                NexoAddon.getInstance().getLogger().info("[debug]    Region or worldInfo is null. Cancelling repopulation for this chunk.");
+              }
+              return;
+            }
             populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
+            if(NexoAddon.isDebug){
+              NexoAddon.getInstance().getLogger().info("[debug]    Chunk repopulated.");
+            }
           });
 
           processedChunks++;

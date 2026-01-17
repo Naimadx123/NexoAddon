@@ -20,3 +20,5 @@ messages:
   autocatch:
     enabled: "<gray>AutoCatch is now <green>enabled<gray>."
     disabled: "<gray>AutoCatch is now <red>disabled<gray>."
+
+debug: false

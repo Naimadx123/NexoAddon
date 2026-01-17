@@ -305,7 +305,7 @@ public class BlockUtil {
       CustomBlockData customBlockData =  new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
       customBlockData.remove(new NamespacedKey(NexoAddon.getInstance(), "blockAura"));
     }
-    if (task != null && task.isCancelled()) {
+    if (task != null) {
       task.cancel();
     }
   }

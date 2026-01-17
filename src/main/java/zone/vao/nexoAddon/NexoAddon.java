@@ -55,6 +55,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Getter
   public static NexoAddon instance;
+  public static boolean isDebug = false;
   public Set<File> nexoFiles = new HashSet<>();
   public Map<String, Components> components = new HashMap<>();
   public Map<String, Mechanics> mechanics = new HashMap<>();
@@ -97,6 +98,7 @@ public final class NexoAddon extends JavaPlugin {
     ProtectionLib.init(this);
     saveDefaultConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib = new FoliaLib(this);
     initializeCommandManager();
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
@@ -140,6 +142,7 @@ public final class NexoAddon extends JavaPlugin {
   public void reload() {
     reloadConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib.getScheduler().runNextTick(init -> {
       clearPopulators();
       initializePopulators();

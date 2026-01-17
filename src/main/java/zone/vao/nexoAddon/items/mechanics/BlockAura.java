@@ -114,7 +114,7 @@ public record BlockAura(Particle particle, String xOffset, String yOffset, Strin
     @EventHandler
     public static void onLoad(ChunkLoadEvent event){
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(r -> {
+      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(event.getChunk().getBlock(0, 0, 0).getLocation(), r -> {
 
         BlockUtil.restartBlockAura(event.getChunk());
       }, 3L);

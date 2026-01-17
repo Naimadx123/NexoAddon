@@ -25,7 +25,7 @@ public record SpawnerBreak(double probability, boolean dropExperience) {
 
     private static final String SPAWNER_TYPE_KEY = "spawnerType";
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public static void onBlockBreak(BlockBreakEvent e) {
       if (e.getBlock().getType() != Material.SPAWNER) return;
 
