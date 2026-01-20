@@ -121,14 +121,37 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
       Location blockLocation = block.getLocation().clone();
       boolean canBreak = ProtectionLib.canBreak(player, blockLocation);
 
-      // Asynchronously attempts to break the target block
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(attempt -> {
-        if (isUnbreakableBlock(player, blockMaterial, blockLocation, isLiquid, canBreak)) return;
+      if (NexoAddon.getInstance().getFoliaLib().isFolia()) {
+        NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(blockLocation, attempt -> {
+          handleAttemptBlockBreak(player, block, tool, mechanic, blockMaterial, isLiquid, canBreak, blockLocation);
+        });
+      } else {
+        // Asynchronously attempts to break the target block
+        NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(attempt -> {
+          handleAttemptBlockBreak(player, block, tool, mechanic, blockMaterial, isLiquid, canBreak, blockLocation);
+        });
+      }
 
-        activeBlockBreaks.incrementAndGet();
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
 
-        // Runs block break logic on next tick
+    }
+
+    private static void handleAttemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic, Material blockMaterial, boolean isLiquid, boolean canBreak, Location blockLocation) {
+      if (isUnbreakableBlock(player, blockMaterial, blockLocation, isLiquid, canBreak)) return;
+
+      activeBlockBreaks.incrementAndGet();
+      BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+
+      if(NexoAddon.getInstance().getFoliaLib().isFolia()) {
+        // Cancels break if event fails or material invalid
+        if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;
+
+        if (blockBreakEvent.isDropItems()) {
+          block.breakNaturally(tool, true, true);
+        } else {
+          block.setType(Material.AIR);
+        }
+      }
+      else {
         NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(attemptEvent -> {
           // Cancels break if event fails or material invalid
           if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;
@@ -139,7 +162,7 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
             block.setType(Material.AIR);
           }
         });
-      });
+      }
     }
 
     private static boolean isUnbreakableBlock(Player player, Material blockMaterial, Location blockLocation, boolean isLiquid, boolean canBreak) {
