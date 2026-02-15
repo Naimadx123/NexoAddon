@@ -14,19 +14,19 @@ public class TallStringBlocksHandler {
   public static boolean isStringBlock(Block block) {
     return NexoBlocks.isNexoStringBlock(block)
         || (NexoBlocks.isNexoStringBlock(block.getRelative(BlockFace.DOWN))
-        && NexoBlocks.stringMechanic(block.getRelative(BlockFace.DOWN)).isTall());
+        && NexoBlocks.stringMechanic(block.getRelative(BlockFace.DOWN)).getTall());
   }
 
   public static void removeStringBlock(Block block, boolean dropLoot) {
     if (NexoBlocks.isNexoStringBlock(block)) {
-      if (NexoBlocks.stringMechanic(block).isTall()) {
+      if (NexoBlocks.stringMechanic(block).getTall()) {
         removeTallStringBlock(block, dropLoot);
       } else {
         NexoBlocks.remove(block.getLocation());
       }
     } else {
       Block bottomBlock = block.getRelative(BlockFace.DOWN);
-      if (NexoBlocks.isNexoStringBlock(bottomBlock) && NexoBlocks.stringMechanic(bottomBlock).isTall()) {
+      if (NexoBlocks.isNexoStringBlock(bottomBlock) && NexoBlocks.stringMechanic(bottomBlock).getTall()) {
         removeTallStringBlock(bottomBlock, dropLoot);
       }
     }
