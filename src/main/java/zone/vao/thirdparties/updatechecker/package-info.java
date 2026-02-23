@@ -1,0 +1,1 @@
+package zone.vao.thirdparties.updatechecker;

@@ -4,8 +4,6 @@ import co.aikar.commands.PaperCommandManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.jeff_media.customblockdata.CustomBlockData;
-import com.jeff_media.updatechecker.UpdateCheckSource;
-import com.jeff_media.updatechecker.UpdateChecker;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
@@ -46,6 +44,8 @@ import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 import zone.vao.nexoAddon.utils.hooks.PacketEventsHook;
 import zone.vao.nexoAddon.utils.metrics.Metrics;
+import zone.vao.thirdparties.updatechecker.UpdateCheckSource;
+import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
