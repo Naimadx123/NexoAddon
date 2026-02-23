@@ -15,6 +15,9 @@ import zone.vao.nexoAddon.utils.TotemUtil;
 import java.util.List;
 import java.util.Random;
 
+import static zone.vao.nexoAddon.events.chunk.FurniturePopulator.furniturePopulators;
+import static zone.vao.nexoAddon.events.chunk.FurniturePopulator.processOre;
+
 @CommandAlias("nexoaddon")
 @CommandPermission("nexoaddon.admin")
 public class NexoAddonCommand extends BaseCommand {
@@ -86,6 +89,9 @@ public class NexoAddonCommand extends BaseCommand {
             }
           });
 
+          NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
+                furniturePopulators.forEach(ore -> processOre(world, chunk, ore));
+              });
           processedChunks++;
         }
       }
