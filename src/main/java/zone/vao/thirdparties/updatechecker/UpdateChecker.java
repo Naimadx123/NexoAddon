@@ -103,6 +103,11 @@ public class UpdateChecker {
         instance = this;
     }
 
+    @Deprecated
+    public static UpdateChecker getInstance() {
+        return instance;
+    }
+
     public UpdateChecker(@NotNull JavaPlugin plugin, @NotNull VersionSupplier supplier) {
         this.plugin = plugin;
         this.apiLink = null;
