@@ -83,7 +83,9 @@ public class NexoAddonCommand extends BaseCommand {
               }
               return;
             }
-            populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
+            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
+              populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
+            });
             if(NexoAddon.isDebug){
               NexoAddon.getInstance().getLogger().info("[debug]    Chunk repopulated.");
             }
