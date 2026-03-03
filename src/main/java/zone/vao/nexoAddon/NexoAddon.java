@@ -54,6 +54,11 @@ import java.util.*;
 @Getter
 public final class NexoAddon extends JavaPlugin {
 
+    // TODO: Shrink and grow mechanics
+    // TODO: Insta Obsidian mechanic
+    // TODO: Infinite water bucket mechanic / lava bucket / ender pearl
+    // TODO: Poke Balls
+
     @Getter
     private static NexoAddon instance;
     public Set<File> nexoFiles = new HashSet<>();

@@ -44,6 +44,7 @@ public class Mechanics {
     private LifeSteal lifeSteal;
     private Dash dash;
     private GlassBreaker glassBreaker;
+    private SandSmelt sandSmelt;
 
     public Mechanics(String id) {
         this.id = id;
@@ -150,8 +151,8 @@ public class Mechanics {
         this.inventoryType = new InventoryType(inventoryType, title);
     }
 
-    public void setTelekinesis(boolean enabled) {
-        this.telekinesis = new Telekinesis(enabled);
+    public void setTelekinesis(boolean enabled, List<Material> materials, List<String> nexoIds) {
+        this.telekinesis = new Telekinesis(enabled, materials, nexoIds);
     }
 
     public void setLifeSteal(double percentage, double minHeal, double maxHeal, boolean affectUndead) {
@@ -159,14 +160,19 @@ public class Mechanics {
     }
 
     public void setDash(double power, double verticalBoost, int cooldown, boolean requireSneaking,
-                        String particleType, int particleAmount, String soundType, float soundVolume,
-                        float soundPitch, String cooldownMessage, int durabilityCost) {
+        String particleType, int particleAmount, String soundType, float soundVolume,
+        float soundPitch, String cooldownMessage, int durabilityCost) {
         this.dash = new Dash(power, verticalBoost, cooldown, requireSneaking, particleType, particleAmount,
             soundType, soundVolume, soundPitch, cooldownMessage, durabilityCost);
     }
 
-    public void setGlassBreaker(List<Material> glassTypes, List<String> nexoGlassTypes, boolean enabled, int durabilityCost) {
+    public void setGlassBreaker(List<Material> glassTypes, List<String> nexoGlassTypes, boolean enabled,
+        int durabilityCost) {
         this.glassBreaker = new GlassBreaker(glassTypes, nexoGlassTypes, enabled, durabilityCost);
+    }
+
+    public void setSandSmelt(List<Material> sandTypes, boolean enabled, double probability) {
+        this.sandSmelt = new SandSmelt(sandTypes, enabled, probability);
     }
 
     public static void registerListeners(NexoAddon plugin) {
@@ -210,6 +216,7 @@ public class Mechanics {
 
         registerListener(new Signal.SignalListener(), plugin);
         registerListener(new VeinMiner.VeinMinerListener(), plugin);
+        registerListener(new SandSmelt.SandSmeltListener(), plugin);
     }
 
     private static void registerListener(Listener listener, NexoAddon plugin) {

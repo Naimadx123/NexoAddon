@@ -1,6 +1,9 @@
 package zone.vao.nexoAddon.items.mechanics;
 
+import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
+import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,8 +16,9 @@ import zone.vao.nexoAddon.items.Mechanics;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
-public record Telekinesis(boolean enabled) {
+public record Telekinesis(boolean enabled, List<Material> materials, List<String> nexoIds) {
 
     public static boolean hasTelekinesis(String toolId) {
         if (toolId == null) {
@@ -33,17 +37,34 @@ public record Telekinesis(boolean enabled) {
             ItemStack tool = player.getInventory().getItemInMainHand();
             String toolId = NexoItems.idFromItem(tool);
 
-            // Prüfe ob das Tool Telekinese hat
             if (!hasTelekinesis(toolId)) {
                 return;
             }
 
-            // Prüfe ob Drops aktiviert sind
             if (!event.isDropItems()) {
                 return;
             }
 
             Block block = event.getBlock();
+            Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(toolId);
+            Telekinesis telekinesis = mechanics.getTelekinesis();
+
+            // Whitelist: Wenn materials oder nexoIds konfiguriert sind,
+            // darf Telekinesis nur für Blöcke auf der Liste greifen.
+            if (!telekinesis.materials().isEmpty() || !telekinesis.nexoIds().isEmpty()) {
+                boolean allowed = telekinesis.materials().contains(block.getType());
+
+                if (!allowed && !telekinesis.nexoIds().isEmpty()) {
+                    CustomBlockMechanic blockMechanic = NexoBlocks.customBlockMechanic(block);
+                    if (blockMechanic != null) {
+                        allowed = telekinesis.nexoIds().contains(blockMechanic.getItemID());
+                    }
+                }
+
+                if (!allowed) {
+                    return;
+                }
+            }
 
             // Verhindere normale Drops
             event.setDropItems(false);

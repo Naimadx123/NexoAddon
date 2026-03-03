@@ -131,6 +131,7 @@ public class ItemConfigUtil {
                 loadLifeStealMechanic(itemSection, mechanic);
                 loadDashMechanic(itemSection, mechanic);
                 loadGlassBreakerMechanic(itemSection, mechanic);
+                loadSandSmeltMechanic(itemSection, mechanic);
             });
         }
     }
@@ -552,7 +553,17 @@ public class ItemConfigUtil {
             return;
         }
 
-        mechanic.setTelekinesis(section.getBoolean("Mechanics.telekinesis.enabled", true));
+        boolean enabled = section.getBoolean("Mechanics.telekinesis.enabled", true);
+
+        List<Material> materials = section.getStringList("Mechanics.telekinesis.materials")
+            .stream()
+            .map(s -> Material.matchMaterial(s.toUpperCase()))
+            .filter(java.util.Objects::nonNull)
+            .collect(java.util.stream.Collectors.toList());
+
+        List<String> nexoIds = section.getStringList("Mechanics.telekinesis.nexo_ids");
+
+        mechanic.setTelekinesis(enabled, materials, nexoIds);
     }
 
     private static void loadLifeStealMechanic(ConfigurationSection section, Mechanics mechanic) {
@@ -606,6 +617,33 @@ public class ItemConfigUtil {
         }
 
         mechanic.setGlassBreaker(glassTypes, nexoGlassTypes, enabled, durabilityCost);
+    }
+
+    private static void loadSandSmeltMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.sandsmelt")) {
+            return;
+        }
+
+        boolean enabled = section.getBoolean("Mechanics.sandsmelt.enabled", true);
+        double probability = section.getDouble("Mechanics.sandsmelt.probability", 1.0);
+
+        List<Material> sandTypes = new ArrayList<>();
+
+        if (section.contains("Mechanics.sandsmelt.sand_types")) {
+            for (String raw : section.getStringList("Mechanics.sandsmelt.sand_types")) {
+                Material mat = Material.matchMaterial(raw);
+                if (mat != null) {
+                    sandTypes.add(mat);
+                }
+            }
+        }
+
+        if (sandTypes.isEmpty()) {
+            sandTypes.add(Material.SAND);
+            sandTypes.add(Material.RED_SAND);
+        }
+
+        mechanic.setSandSmelt(sandTypes, enabled, probability);
     }
 
     private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

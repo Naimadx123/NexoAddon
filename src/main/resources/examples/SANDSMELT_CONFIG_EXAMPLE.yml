@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────
+#  SandSmelt – Mechanic Example Config
+#  Baut in dein Nexo-Item-File ein (z. B. items/tools.yml).
+# ─────────────────────────────────────────────────────────────
+
+my_sand_shovel:          # <-- deine Nexo-Item-ID
+  displayname: "<gold>Sand-Schmelzer"
+  material: DIAMOND_SHOVEL
+  Components: {}
+  Mechanics:
+    sandsmelt:
+      # Mechanic aktivieren?
+      enabled: true
+
+      # Wahrscheinlichkeit, dass Glas gedroppt wird (0.0 – 1.0).
+      # 1.0 = immer, 0.5 = 50 % Chance
+      probability: 1.0
+
+      # Welche Blöcke als "Sand" gelten und zu Glas schmelzen.
+      # Leer lassen → Standard: SAND + RED_SAND
+      sand_types:
+        - SAND
+        - RED_SAND
+        # - SOUL_SAND   # beliebige weitere Vanilla-Materialien
+
+# ─────────────────────────────────────────────────────────────
+#  Hinweise:
+#  • Silk Touch am Tool unterdrückt den Glas-Drop.
+#  • RED_SAND droppt ebenfalls normales GLASS.
+#  • Spieler im CREATIVE-Modus sind ausgenommen.
+# ─────────────────────────────────────────────────────────────
+

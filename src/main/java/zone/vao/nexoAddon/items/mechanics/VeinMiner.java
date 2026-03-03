@@ -28,10 +28,12 @@ import java.util.*;
 
 import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
 
-public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, int limit, List<Material> materials, List<String> nexoIds) {
+public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, int limit, List<Material> materials,
+                        List<String> nexoIds) {
 
     public static boolean isVeinMinerTool(String toolId) {
-        return toolId != null && NexoAddon.getInstance().getMechanics().containsKey(toolId) && NexoAddon.getInstance().getMechanics().get(toolId).getVeinMiner() != null;
+        return toolId != null && NexoAddon.getInstance().getMechanics().containsKey(toolId)
+               && NexoAddon.getInstance().getMechanics().get(toolId).getVeinMiner() != null;
     }
 
     public static class VeinMinerListener implements Listener {
@@ -44,7 +46,9 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             ItemStack tool = player.getInventory().getItemInMainHand();
 
             String toolId = NexoItems.idFromItem(tool);
-            if (!VeinMiner.isVeinMinerTool(toolId)) return;
+            if (!VeinMiner.isVeinMinerTool(toolId)) {
+                return;
+            }
 
             if (activeBlockBreaks > 0) {
                 activeBlockBreaks--;
@@ -52,21 +56,25 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             }
 
             VeinMiner veinMinerMechanic = NexoAddon.getInstance()
-                    .getMechanics()
-                    .get(toolId)
-                    .getVeinMiner();
-            if (veinMinerMechanic == null) return;
+                .getMechanics()
+                .get(toolId)
+                .getVeinMiner();
+            if (veinMinerMechanic == null) {
+                return;
+            }
 
             PersistentDataContainer pdc = tool.getItemMeta().getPersistentDataContainer();
 
             if (veinMinerMechanic.toggleable()
-                    && pdc.has(key, PersistentDataType.BOOLEAN)
-                    && Boolean.FALSE.equals(pdc.get(key, PersistentDataType.BOOLEAN))) {
+                && pdc.has(key, PersistentDataType.BOOLEAN)
+                && Boolean.FALSE.equals(pdc.get(key, PersistentDataType.BOOLEAN))) {
                 return;
             }
 
             Block originBlock = event.getBlock();
-            if (!isValidBlock(veinMinerMechanic, originBlock)) return;
+            if (!isValidBlock(veinMinerMechanic, originBlock)) {
+                return;
+            }
 
             mineVein(player, originBlock, veinMinerMechanic, tool);
             activeBlockBreaks = 0;
@@ -74,7 +82,9 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
 
         private static boolean isValidBlock(VeinMiner veinMiner, Block block) {
             Material material = block.getType();
-            if (veinMiner.materials().contains(material)) return true;
+            if (veinMiner.materials().contains(material)) {
+                return true;
+            }
 
             CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block);
             if (mechanic != null) {
@@ -97,7 +107,8 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
 
             while (!blocksToCheck.isEmpty() && veinBlocks.size() < mechanic.limit()) {
                 Block current = blocksToCheck.poll();
-                processAdjacentBlocks(current, veinBlocks, blocksToCheck, originLoc, maxDistanceSquared, originMaterial, originNexoId, mechanic);
+                processAdjacentBlocks(current, veinBlocks, blocksToCheck, originLoc, maxDistanceSquared, originMaterial,
+                    originNexoId, mechanic);
             }
 
             breakVeinBlocks(player, origin, veinBlocks, tool);
@@ -109,10 +120,14 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         }
 
         private static void processAdjacentBlocks(Block current, Set<Block> veinBlocks, Queue<Block> blocksToCheck,
-                                                  Location originLoc, int maxDistanceSquared, Material originMaterial, String originNexoId, VeinMiner mechanic) {
+            Location originLoc, int maxDistanceSquared, Material originMaterial, String originNexoId,
+            VeinMiner mechanic) {
             for (Block relative : getAdjacentBlocks(current)) {
-                if (veinBlocks.size() >= mechanic.limit()) break;
-                if (shouldAddBlock(relative, veinBlocks, originLoc, maxDistanceSquared, originMaterial, originNexoId, mechanic)) {
+                if (veinBlocks.size() >= mechanic.limit()) {
+                    break;
+                }
+                if (shouldAddBlock(relative, veinBlocks, originLoc, maxDistanceSquared, originMaterial, originNexoId,
+                    mechanic)) {
                     veinBlocks.add(relative);
                     blocksToCheck.add(relative);
                 }
@@ -120,34 +135,59 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         }
 
         private static boolean shouldAddBlock(Block block, Set<Block> veinBlocks, Location originLoc,
-                                              int maxDistanceSquared, Material originMaterial, String originNexoId, VeinMiner mechanic) {
-            if (veinBlocks.contains(block)) return false;
-            if (block.getLocation().distanceSquared(originLoc) > maxDistanceSquared) return false;
-            if (!isValidBlock(mechanic, block)) return false;
+            int maxDistanceSquared, Material originMaterial, String originNexoId, VeinMiner mechanic) {
+            if (veinBlocks.contains(block)) {
+                return false;
+            }
+            if (block.getLocation().distanceSquared(originLoc) > maxDistanceSquared) {
+                return false;
+            }
+            if (!isValidBlock(mechanic, block)) {
+                return false;
+            }
 
             if (mechanic.sameMaterial()) {
                 Material blockMaterial = block.getType();
                 String blockNexoId = getNexoId(block);
                 return (originNexoId != null && originNexoId.equals(blockNexoId)) ||
-                        (originMaterial == blockMaterial && originNexoId == null);
+                       (originMaterial == blockMaterial && originNexoId == null);
             }
             return true;
         }
 
         private static void breakVeinBlocks(Player player, Block origin, Set<Block> veinBlocks, ItemStack tool) {
             for (Block block : veinBlocks) {
-                if (block.equals(origin)) continue;
+                if (block.equals(origin)) {
+                    continue;
+                }
                 attemptBlockBreak(player, block, tool);
             }
         }
 
         private static void attemptBlockBreak(Player player, Block block, ItemStack tool) {
-            if (isUnbreakableBlock(player, block)) return;
+            if (isUnbreakableBlock(player, block)) {
+                return;
+            }
+
+            String toolId = NexoItems.idFromItem(tool);
+            if (toolId != null) {
+                zone.vao.nexoAddon.items.Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(toolId);
+                if (mechanics != null && mechanics.getMiningTools() != null) {
+                    MiningTools miningTools = mechanics.getMiningTools();
+                    boolean toolAllowed = miningTools.materials().contains(tool.getType())
+                                          || miningTools.nexoIds().contains(toolId);
+                    if (!toolAllowed) {
+                        return;
+                    }
+                }
+            }
 
             activeBlockBreaks++;
             BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
 
-            if (!EventUtil.callEvent(blockBreakEvent)) return;
+            if (!EventUtil.callEvent(blockBreakEvent)) {
+                return;
+            }
 
             if (blockBreakEvent.isDropItems()) {
                 block.breakNaturally(tool, true, true);
@@ -161,7 +201,9 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <= 1; y++) {
                     for (int z = -1; z <= 1; z++) {
-                        if (x == 0 && y == 0 && z == 0) continue;
+                        if (x == 0 && y == 0 && z == 0) {
+                            continue;
+                        }
                         adjacent.add(block.getRelative(x, y, z));
                     }
                 }
@@ -171,8 +213,8 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
 
         private static boolean isUnbreakableBlock(Player player, Block block) {
             return block.isLiquid()
-                    || BlockUtil.UNBREAKABLE_BLOCKS.contains(block.getType())
-                    || !ProtectionLib.canBreak(player, block.getLocation());
+                   || BlockUtil.UNBREAKABLE_BLOCKS.contains(block.getType())
+                   || !ProtectionLib.canBreak(player, block.getLocation());
         }
 
         @EventHandler
@@ -181,18 +223,24 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             ItemStack tool = player.getInventory().getItemInMainHand();
 
             String toolId = NexoItems.idFromItem(tool);
-            if (!VeinMiner.isVeinMinerTool(toolId) || event.getHand() != EquipmentSlot.HAND) return;
-            if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-            if(event.getClickedBlock() != null && isInteractable(event.getClickedBlock())){
-              return;
+            if (!VeinMiner.isVeinMinerTool(toolId) || event.getHand() != EquipmentSlot.HAND) {
+                return;
+            }
+            if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+                return;
+            }
+            if (event.getClickedBlock() != null && isInteractable(event.getClickedBlock())) {
+                return;
             }
 
             VeinMiner veinMinerMechanic = NexoAddon.getInstance()
-                    .getMechanics()
-                    .get(toolId)
-                    .getVeinMiner();
+                .getMechanics()
+                .get(toolId)
+                .getVeinMiner();
 
-            if (!veinMinerMechanic.toggleable() || tool.getItemMeta() == null) return;
+            if (!veinMinerMechanic.toggleable() || tool.getItemMeta() == null) {
+                return;
+            }
 
             var meta = tool.getItemMeta();
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
@@ -217,13 +265,15 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         private static void turnOff(final Player player, PersistentDataContainer pdc) {
             pdc.set(key, PersistentDataType.BOOLEAN, false);
             Audience.audience(player)
-                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.disabled", "<red>VeinMiner disabled")));
+                .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig()
+                    .getString("messages.veinminer.disabled", "<red>VeinMiner disabled")));
         }
 
         private static void turnOn(final Player player, PersistentDataContainer pdc) {
             pdc.set(key, PersistentDataType.BOOLEAN, true);
             Audience.audience(player)
-                    .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.veinminer.enabled", "<green>VeinMiner enabled")));
+                .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig()
+                    .getString("messages.veinminer.enabled", "<green>VeinMiner enabled")));
         }
     }
 }
