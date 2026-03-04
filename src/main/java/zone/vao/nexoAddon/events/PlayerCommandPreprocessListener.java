@@ -13,21 +13,20 @@ public class PlayerCommandPreprocessListener implements Listener {
   public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
     Player player = event.getPlayer();
     String command = event.getMessage().toLowerCase();
-
+    
     if((!player.hasPermission("nexo.command.reload")) && !player.isOp()) return;
 
-    if (command.equals("/nexo rl recipes")
-        || command.equals("/nexo reload recipes")
-        || command.equals("/n rl recipes")
-        || command.equals("/n reload recipes")
-        || command.equals("/n rl all")
-        || command.equals("/n reload all")
-        || command.equals("/nexo rl all")
-        || command.equals("/nexo reload all")
-        || command.equals("/n rl")
-        || command.equals("/n reload")
-        || command.equals("/nexo rl")
-        || command.equals("/nexo reload")
+    boolean isNexoReload = command.startsWith("/nexo ") || command.startsWith("/n ");
+    if (!isNexoReload) return;
+
+    String subCommand = command.replaceFirst("^/(nexo|n|nx)\\s+", "");
+    
+    if (subCommand.equals("rl recipes")
+        || subCommand.equals("reload recipes")
+        || subCommand.equals("rl all")
+        || subCommand.equals("reload all")
+        || subCommand.equals("rl")
+        || subCommand.equals("reload")
     ) {
       RecipeManager.clearRegisteredRecipes();
       RecipesUtil.loadRecipes();
