@@ -166,7 +166,7 @@
         <dependency>
             <groupId>ca.bkaw</groupId>
             <artifactId>paper-nms</artifactId>
-            <version>1.21.10-SNAPSHOT</version>
+            <version>1.21.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -215,6 +215,7 @@
             <artifactId>exp4j</artifactId>
             <version>0.4.8</version>
             <scope>provided</scope>
+
         </dependency>
         <dependency>
             <groupId>io.lumine</groupId>
