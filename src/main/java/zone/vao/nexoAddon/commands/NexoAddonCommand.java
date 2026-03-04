@@ -8,15 +8,12 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.LimitedRegion;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.commands.repopulate.BlockRepopulator;
+import zone.vao.nexoAddon.commands.repopulate.FurnitureRepopulator;
 import zone.vao.nexoAddon.utils.TotemUtil;
 
 import java.util.List;
-import java.util.Random;
-
-import static zone.vao.nexoAddon.events.chunk.FurniturePopulator.furniturePopulators;
-import static zone.vao.nexoAddon.events.chunk.FurniturePopulator.processOre;
 
 @CommandAlias("nexoaddon")
 @CommandPermission("nexoaddon.admin")
@@ -71,29 +68,9 @@ public class NexoAddonCommand extends BaseCommand {
         for (Chunk chunk : world.getLoadedChunks()) {
           if (!chunk.isGenerated()) continue;
 
-          NexoAddon.getInstance().worldPopulators.get(world.getName()).forEach(populator -> {
-            if(NexoAddon.isDebug){
-              NexoAddon.getInstance().getLogger().info("[debug]  Repopulating chunk: " + chunk.getX() + ", " + chunk.getZ());
-            }
+          BlockRepopulator.repopulate(world, chunk);
+          FurnitureRepopulator.repopulate(world, chunk);
 
-            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
-              LimitedRegion region = createLimitedRegion(world, chunk);
-              if(region == null || populator.worldInfo == null) {
-                if(NexoAddon.isDebug){
-                  NexoAddon.getInstance().getLogger().info("[debug]    Region or worldInfo is null. Cancelling repopulation for this chunk.");
-                }
-                return;
-              }
-              populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
-            });
-            if(NexoAddon.isDebug){
-              NexoAddon.getInstance().getLogger().info("[debug]    Chunk repopulated.");
-            }
-          });
-
-          NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
-                furniturePopulators.forEach(ore -> processOre(world, chunk, ore));
-              });
           processedChunks++;
         }
       }
@@ -131,32 +108,4 @@ public class NexoAddonCommand extends BaseCommand {
       sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>Played totem animation with Nexo item: " + input));
     }
   }
-
-  private LimitedRegion createLimitedRegion(World world, Chunk chunk) {
-    try {
-      Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
-
-      Class<?> chunkPosClass = Class.forName("net.minecraft.world.level.ChunkPos");
-      Object chunkPos = chunkPosClass
-          .getConstructor(int.class, int.class)
-          .newInstance(chunk.getX(), chunk.getZ());
-
-      Class<?> clrClass = Class.forName("org.bukkit.craftbukkit.generator.CraftLimitedRegion");
-      Object clr = clrClass
-          .getConstructor(
-              Class.forName("net.minecraft.world.level.WorldGenLevel"),
-              chunkPosClass
-          )
-          .newInstance(nmsWorld, chunkPos);
-
-      return (LimitedRegion) clr;
-    } catch (ClassNotFoundException e) {
-      NexoAddon.getInstance().getLogger().warning("LimitedRegion classes not found on this version: " + e.getMessage());
-    } catch (ReflectiveOperationException e) {
-      e.printStackTrace();
-      NexoAddon.getInstance().getLogger().warning("Failed to construct CraftLimitedRegion via reflection.");
-    }
-    return null;
-  }
-
 }
