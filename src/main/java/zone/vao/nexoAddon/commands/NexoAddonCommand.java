@@ -76,14 +76,14 @@ public class NexoAddonCommand extends BaseCommand {
               NexoAddon.getInstance().getLogger().info("[debug]  Repopulating chunk: " + chunk.getX() + ", " + chunk.getZ());
             }
 
-            LimitedRegion region = createLimitedRegion(world, chunk);
-            if(region == null || populator.worldInfo == null) {
-              if(NexoAddon.isDebug){
-                NexoAddon.getInstance().getLogger().info("[debug]    Region or worldInfo is null. Cancelling repopulation for this chunk.");
-              }
-              return;
-            }
             NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
+              LimitedRegion region = createLimitedRegion(world, chunk);
+              if(region == null || populator.worldInfo == null) {
+                if(NexoAddon.isDebug){
+                  NexoAddon.getInstance().getLogger().info("[debug]    Region or worldInfo is null. Cancelling repopulation for this chunk.");
+                }
+                return;
+              }
               populator.populate(populator.worldInfo, new Random(), chunk.getX(), chunk.getZ(), region);
             });
             if(NexoAddon.isDebug){
