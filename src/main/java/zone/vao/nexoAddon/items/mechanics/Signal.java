@@ -3,7 +3,6 @@ package zone.vao.nexoAddon.items.mechanics;
 import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
 import com.nexomc.nexo.mechanics.furniture.FurnitureFactory;
-import com.nexomc.nexo.mechanics.furniture.FurnitureHelpers;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
 import com.nexomc.nexo.mechanics.furniture.IFurniturePacketManager;
 import org.bukkit.Location;
@@ -74,8 +73,8 @@ public record Signal(int radius, double channel, String role) {
         private static void toggleLightState(ItemDisplay baseEntity, FurnitureMechanic mechanic) {
             if (baseEntity == null) return;
 
-            boolean isLightOn = FurnitureHelpers.lightState(baseEntity);
-            FurnitureHelpers.toggleLight(baseEntity, !isLightOn);
+            boolean isLightOn = NexoFurniture.lightState(baseEntity);
+          NexoFurniture.toggleLight(baseEntity, !isLightOn);
             IFurniturePacketManager packetManager = FurnitureFactory.Companion.instance().packetManager();
 
             if (isLightOn) {

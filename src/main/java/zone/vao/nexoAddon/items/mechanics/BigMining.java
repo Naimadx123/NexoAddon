@@ -31,6 +31,9 @@ import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
 
 public record BigMining(int radius, int depth, boolean switchable, List<Material> materials) {
 
+  /**
+   * Determines if tool id corresponds to big mining tool
+   */
   public static boolean isBigMiningTool(String toolId) {
     return toolId != null && NexoAddon.getInstance().getMechanics().containsKey(toolId) && NexoAddon.getInstance().getMechanics().get(toolId).getBigMining() != null;
   }
@@ -62,10 +65,14 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
 
       PersistentDataContainer pdc = tool.getItemMeta().getPersistentDataContainer();
 
+      // Returns if big mining is disabled
       if(bigMiningMechanic.switchable()
           && pdc.has(new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable"), PersistentDataType.BOOLEAN)
           && Boolean.FALSE.equals(pdc.get(new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable"), PersistentDataType.BOOLEAN))
       ) return;
+
+      // Returns if block material is invalid
+      if(!bigMiningMechanic.materials().isEmpty() && !bigMiningMechanic.materials().contains(event.getBlock().getType())) return;
 
       Block primaryBlock = targetBlocks.get(0);
       Block secondaryBlock = targetBlocks.get(1);
@@ -109,13 +116,44 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
     }
 
     private static void attemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic) {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(attempt -> {
-        if (isUnbreakableBlock(player, block)) return;
+      Material blockMaterial = block.getType();
+      boolean isLiquid = block.isLiquid();
+      Location blockLocation = block.getLocation().clone();
+      boolean canBreak = ProtectionLib.canBreak(player, blockLocation);
 
-        activeBlockBreaks.incrementAndGet();
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+      if (NexoAddon.getInstance().getFoliaLib().isFolia()) {
+        NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(blockLocation, attempt -> {
+          handleAttemptBlockBreak(player, block, tool, mechanic, blockMaterial, isLiquid, canBreak, blockLocation);
+        });
+      } else {
+        // Asynchronously attempts to break the target block
+        NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(attempt -> {
+          handleAttemptBlockBreak(player, block, tool, mechanic, blockMaterial, isLiquid, canBreak, blockLocation);
+        });
+      }
 
+
+    }
+
+    private static void handleAttemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic, Material blockMaterial, boolean isLiquid, boolean canBreak, Location blockLocation) {
+      if (isUnbreakableBlock(player, blockMaterial, blockLocation, isLiquid, canBreak)) return;
+
+      activeBlockBreaks.incrementAndGet();
+      BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+
+      if(NexoAddon.getInstance().getFoliaLib().isFolia()) {
+        // Cancels break if event fails or material invalid
+        if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;
+
+        if (blockBreakEvent.isDropItems()) {
+          block.breakNaturally(tool, true, true);
+        } else {
+          block.setType(Material.AIR);
+        }
+      }
+      else {
         NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(attemptEvent -> {
+          // Cancels break if event fails or material invalid
           if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;
 
           if (blockBreakEvent.isDropItems()) {
@@ -124,17 +162,20 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
             block.setType(Material.AIR);
           }
         });
-      });
+      }
     }
 
-    private static boolean isUnbreakableBlock(Player player, Block block) {
-      return block.isLiquid()
-          || BlockUtil.UNBREAKABLE_BLOCKS.contains(block.getType())
-          || !ProtectionLib.canBreak(player, block.getLocation());
+    private static boolean isUnbreakableBlock(Player player, Material blockMaterial, Location blockLocation, boolean isLiquid, boolean canBreak) {
+      return isLiquid
+          || BlockUtil.UNBREAKABLE_BLOCKS.contains(blockMaterial)
+          || !canBreak;
     }
 
     private final static NamespacedKey key = new NamespacedKey(NexoAddon.getInstance(), "bigMiningSwitchable");
 
+    /**
+     * Toggles big mining based on tool interaction
+     */
     @EventHandler
     public static void onToggle(final PlayerInteractEvent event) {
       Player player = event.getPlayer();
@@ -173,12 +214,18 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
       tool.setItemMeta(meta);
     }
 
+    /**
+     * Persists disabled state; sends actionbar message
+     */
     private static void turnOff(final Player player, PersistentDataContainer pdc) {
       pdc.set(key, PersistentDataType.BOOLEAN, false);
       Audience.audience(player)
           .sendActionBar(MiniMessage.miniMessage().deserialize(NexoAddon.getInstance().getGlobalConfig().getString("messages.bigmining.disabled", "<red>BigMining disabled")));
     }
 
+    /**
+     * Persists enabled state; sends actionbar message
+     */
     private static void turnOn(final Player player, PersistentDataContainer pdc) {
       pdc.set(key, PersistentDataType.BOOLEAN, true);
 

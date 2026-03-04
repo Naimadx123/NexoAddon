@@ -4,8 +4,6 @@ import co.aikar.commands.PaperCommandManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.jeff_media.customblockdata.CustomBlockData;
-import com.jeff_media.updatechecker.UpdateCheckSource;
-import com.jeff_media.updatechecker.UpdateChecker;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
@@ -46,6 +44,8 @@ import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 import zone.vao.nexoAddon.utils.hooks.PacketEventsHook;
 import zone.vao.nexoAddon.utils.metrics.Metrics;
+import zone.vao.thirdparties.updatechecker.UpdateCheckSource;
+import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
@@ -55,6 +55,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Getter
   public static NexoAddon instance;
+  public static boolean isDebug = false;
   public Set<File> nexoFiles = new HashSet<>();
   public Map<String, Components> components = new HashMap<>();
   public Map<String, Mechanics> mechanics = new HashMap<>();
@@ -97,6 +98,7 @@ public final class NexoAddon extends JavaPlugin {
     ProtectionLib.init(this);
     saveDefaultConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib = new FoliaLib(this);
     initializeCommandManager();
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
@@ -140,6 +142,7 @@ public final class NexoAddon extends JavaPlugin {
   public void reload() {
     reloadConfig();
     globalConfig = getConfig();
+    isDebug = globalConfig.getBoolean("debug", false);
     foliaLib.getScheduler().runNextTick(init -> {
       clearPopulators();
       initializePopulators();

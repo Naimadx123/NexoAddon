@@ -144,6 +144,7 @@ public class PrepareRecipesListener implements Listener {
   private void copyEquippableMeta(ItemMeta target, ItemMeta source) {
     if (VersionUtil.isVersionLessThan("1.21.2")) return;
 
+    if(!(source instanceof ArmorMeta sourceArmorMeta) || !sourceArmorMeta.hasEquippable()) return;
     Object eq = EquippableCompat.getEquippable(source);
     if (eq != null || EquippableCompat.hasEquippable(source)) {
       EquippableCompat.setEquippable(target, eq);

@@ -5,7 +5,6 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
-import com.nexomc.nexo.mechanics.furniture.FurnitureHelpers;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
 import com.tcoded.folialib.wrapper.task.WrappedBukkitTask;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
@@ -84,8 +83,8 @@ public class BlockUtil {
     if(!newOne.getLocation().equals(finalLocation)) {
       newOne.teleport(finalLocation);
     }
-    if(FurnitureHelpers.furnitureDye(templateEntity) != null) {
-      FurnitureHelpers.furnitureDye(newOne, FurnitureHelpers.furnitureDye(templateEntity));
+    if(NexoFurniture.furnitureDye(templateEntity) != null) {
+      NexoFurniture.furnitureDye(newOne, NexoFurniture.furnitureDye(templateEntity));
     }
     NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
       previous.removeBaseEntity(itemDisplay);
@@ -107,8 +106,8 @@ public class BlockUtil {
 
         ItemDisplay oldFurniture = newOne;
         ItemDisplay original = target.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
-        if(FurnitureHelpers.furnitureDye(templateEntity) != null) {
-          FurnitureHelpers.furnitureDye(original, FurnitureHelpers.furnitureDye(templateEntity));
+        if(NexoFurniture.furnitureDye(templateEntity) != null) {
+          NexoFurniture.furnitureDye(original, NexoFurniture.furnitureDye(templateEntity));
         }
         if(oldFurniture != null && NexoFurniture.furnitureMechanic(newOne) != null)
           NexoFurniture.furnitureMechanic(newOne).removeBaseEntity(oldFurniture);
@@ -305,7 +304,7 @@ public class BlockUtil {
       CustomBlockData customBlockData =  new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
       customBlockData.remove(new NamespacedKey(NexoAddon.getInstance(), "blockAura"));
     }
-    if (task != null && task.isCancelled()) {
+    if (task != null) {
       task.cancel();
     }
   }
