@@ -245,7 +245,10 @@ public class ItemConfigUtil {
   private static void loadDropExperienceMechanic(ConfigurationSection section, Mechanics mechanic) {
     if (section.contains("Mechanics.custom_block.drop.experience")) {
       double experience = section.getDouble("Mechanics.custom_block.drop.experience", 0.0);
-      mechanic.setDropExperience(experience);
+      String minimalTool = section.getString("Mechanics.custom_block.drop.minimal_type", null);
+      String bestTool = section.getString("Mechanics.custom_block.drop.best_tool", null);
+
+      mechanic.setDropExperience(experience, minimalTool, bestTool);
     }
   }
 
