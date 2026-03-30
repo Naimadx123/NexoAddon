@@ -142,7 +142,9 @@ public class BlockHardnessHandler implements PacketListener {
       try {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, newDigging);
       } catch (Exception e) {
-        e.printStackTrace();
+        if(NexoAddon.isDebug){
+          NexoAddon.getInstance().getLogger().warning("Failed to send block break animation to player.\n" + e.getMessage() + "\n" + e.getStackTrace());
+        }
       }
     }
   }
