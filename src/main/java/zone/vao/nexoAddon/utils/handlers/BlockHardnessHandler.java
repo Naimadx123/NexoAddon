@@ -69,6 +69,7 @@ public class BlockHardnessHandler implements PacketListener {
 
     int hardness = bedrockBreak.hardness();
     double probability = bedrockBreak.probability();
+    Sound sound = bedrockBreak.sound();
 
     BukkitScheduler scheduler = Bukkit.getScheduler();
     breakingTasks.put(location, scheduler.runTaskTimer(NexoAddon.getInstance(), new Runnable() {
@@ -97,6 +98,9 @@ public class BlockHardnessHandler implements PacketListener {
               if(Math.random() <= probability)
                 block.getWorld().dropItemNaturally(location, new ItemStack(Material.BEDROCK));
               block.breakNaturally();
+              if(sound != null) {
+                block.getWorld().playSound(player.getLocation(), sound, 1f, 1f);
+              }
 
               if(tool.getItemMeta() instanceof Damageable damageable){
                 damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());

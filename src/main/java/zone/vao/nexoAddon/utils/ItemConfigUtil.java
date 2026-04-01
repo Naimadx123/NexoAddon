@@ -3,10 +3,7 @@ package zone.vao.nexoAddon.utils;
 import com.nexomc.nexo.api.NexoItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
-import org.bukkit.Registry;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -172,6 +169,8 @@ public class ItemConfigUtil {
         if(material != null) materials.add(material);
       }
 
+      String soundRaw = section.getString("Mechanics.bigmining.sound", "block.stone.break");
+
       mechanic.setBigMining(radius, depth, switchable, materials);
     }
   }
@@ -205,7 +204,9 @@ public class ItemConfigUtil {
       double probability = section.getDouble("Mechanics.bedrockbreak.probability");
       int durabilityCost = section.getInt("Mechanics.bedrockbreak.durability_cost", 1);
       boolean disableOnFirstLayer = section.getBoolean("Mechanics.bedrockbreak.disable_on_first_layer", true);
-      mechanic.setBedrockBreak(hardness, probability, durabilityCost, disableOnFirstLayer);
+      String soundRaw = section.getString("Mechanics.bedrockbreak.sound", "block.stone.break");
+      Sound sound = Registry.SOUNDS.get(soundRaw.contains(":") ? NamespacedKey.fromString(soundRaw) : NamespacedKey.minecraft(soundRaw));
+      mechanic.setBedrockBreak(hardness, probability, durabilityCost, disableOnFirstLayer, sound);
     }
   }
 
