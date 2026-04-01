@@ -9,6 +9,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.mechanics.*;
+import zone.vao.nexoAddon.items.mechanics.InfiniteBucket;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,9 @@ public class Mechanics {
     private Dash dash;
     private GlassBreaker glassBreaker;
     private SandSmelt sandSmelt;
+    private InfiniteBucket infiniteBucket;
+    private InfiniteFood infiniteFood;
+    private WideHoe wideHoe;
 
     public Mechanics(String id) {
         this.id = id;
@@ -175,6 +179,18 @@ public class Mechanics {
         this.sandSmelt = new SandSmelt(sandTypes, enabled, probability);
     }
 
+    public void setInfiniteBucket(boolean enabled, int uses) {
+        this.infiniteBucket = new InfiniteBucket(enabled, uses);
+    }
+
+    public void setInfiniteFood(boolean enabled, int uses) {
+        this.infiniteFood = new InfiniteFood(enabled, uses);
+    }
+
+    public void setWideHoe(int radius, boolean switchable, boolean tillGrass, int durabilityCost) {
+        this.wideHoe = new WideHoe(radius, switchable, tillGrass, durabilityCost);
+    }
+
     public static void registerListeners(NexoAddon plugin) {
 
         registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -217,6 +233,9 @@ public class Mechanics {
         registerListener(new Signal.SignalListener(), plugin);
         registerListener(new VeinMiner.VeinMinerListener(), plugin);
         registerListener(new SandSmelt.SandSmeltListener(), plugin);
+        registerListener(new InfiniteBucket.InfiniteBucketListener(), plugin);
+        registerListener(new InfiniteFood.InfiniteFoodListener(), plugin);
+        registerListener(new WideHoe.WideHoeListener(), plugin);
     }
 
     private static void registerListener(Listener listener, NexoAddon plugin) {

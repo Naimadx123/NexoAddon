@@ -1,0 +1,61 @@
+# WideHoe Mechanic - Example Configuration
+
+# The WideHoe mechanic lets a hoe till dirt/grass blocks in a configurable area
+# around the block the player right-clicks.
+# A radius of 3 = 3x3 (9 blocks), radius of 5 = 5x5 (25 blocks), etc.
+# Odd numbers are recommended; even values are automatically rounded up to the next odd number.
+
+# ── 3x3 Diamond Hoe ──────────────────────────────────────────────────────────
+diamond_hoe_3x3:
+  material: DIAMOND_HOE
+  Mechanics:
+    widehoe:
+      radius: 3             # Area size: 3 = 3x3, 5 = 5x5, 7 = 7x7 …
+      switchable: true      # Players can toggle the mechanic on/off (right-click air)
+      till_grass: true      # Also till grass blocks, mycelium and podzol
+      durability_cost: 1    # Extra durability consumed per additional block tilled
+                            # (the clicked block costs durability via vanilla logic)
+
+# ── 5x5 Golden Hoe ───────────────────────────────────────────────────────────
+golden_hoe_5x5:
+  material: GOLDEN_HOE
+  Mechanics:
+    widehoe:
+      radius: 5
+      switchable: false     # Always active – no toggle
+      till_grass: true
+      durability_cost: 2    # Higher cost because more blocks are tilled
+
+# ── 7x7 Netherite Hoe ────────────────────────────────────────────────────────
+netherite_hoe_7x7:
+  material: NETHERITE_HOE
+  Mechanics:
+    widehoe:
+      radius: 7
+      switchable: true
+      till_grass: false     # Only tills dirt variants, not grass blocks
+      durability_cost: 1
+
+# ── Custom Nexo Hoe ──────────────────────────────────────────────────────────
+my_nexo_hoe:
+  material: IRON_HOE
+  Mechanics:
+    widehoe:
+      radius: 3
+      switchable: true
+      till_grass: true
+      durability_cost: 1
+
+# How it works:
+# 1. The player right-clicks a dirt/grass block with the WideHoe tool.
+# 2. All tillable blocks in the configured square radius are converted to farmland.
+# 3. Blocks with a solid block directly above them are skipped (can't till under obstacles).
+# 4. Protection plugins (WorldGuard, GriefPrevention, etc.) are fully respected.
+# 5. If switchable is true, the player can right-click air to toggle the wide tilling on/off.
+
+# Toggle messages can be customised in config.yml:
+# messages:
+#   widehoe:
+#     enabled: "<green>WideHoe on"
+#     disabled: "<red>WideHoe off"
+

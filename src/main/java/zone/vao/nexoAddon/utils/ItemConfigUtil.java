@@ -132,6 +132,9 @@ public class ItemConfigUtil {
                 loadDashMechanic(itemSection, mechanic);
                 loadGlassBreakerMechanic(itemSection, mechanic);
                 loadSandSmeltMechanic(itemSection, mechanic);
+                loadInfiniteBucketMechanic(itemSection, mechanic);
+                loadInfiniteFoodMechanic(itemSection, mechanic);
+                loadWideHoeMechanic(itemSection, mechanic);
             });
         }
     }
@@ -644,6 +647,43 @@ public class ItemConfigUtil {
         }
 
         mechanic.setSandSmelt(sandTypes, enabled, probability);
+    }
+
+    private static void loadInfiniteBucketMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.infinite_bucket")) {
+            return;
+        }
+
+        boolean enabled = section.getBoolean("Mechanics.infinite_bucket.enabled", true);
+        int uses = section.getInt("Mechanics.infinite_bucket.uses", -1);
+        mechanic.setInfiniteBucket(enabled, uses);
+    }
+
+    private static void loadInfiniteFoodMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.infinite_food")) {
+            return;
+        }
+
+        boolean enabled = section.getBoolean("Mechanics.infinite_food.enabled", true);
+        int uses = section.getInt("Mechanics.infinite_food.uses", -1);
+        mechanic.setInfiniteFood(enabled, uses);
+    }
+
+    private static void loadWideHoeMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.widehoe")) {
+            return;
+        }
+
+        int radius = section.getInt("Mechanics.widehoe.radius", 3);
+        // Ensure radius is always odd so it forms a centred square
+        if (radius % 2 == 0) {
+            radius += 1;
+        }
+        boolean switchable = section.getBoolean("Mechanics.widehoe.switchable", false);
+        boolean tillGrass = section.getBoolean("Mechanics.widehoe.till_grass", true);
+        int durabilityCost = section.getInt("Mechanics.widehoe.durability_cost", 1);
+
+        mechanic.setWideHoe(radius, switchable, tillGrass, durabilityCost);
     }
 
     private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

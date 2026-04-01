@@ -23,3 +23,6 @@ messages:
   autocatch:
     enabled: "<gray>AutoCatch is now <green>enabled<gray>."
     disabled: "<gray>AutoCatch is now <red>disabled<gray>."
+  widehoe:
+    enabled: <green>WideHoe on
+    disabled: <red>WideHoe off

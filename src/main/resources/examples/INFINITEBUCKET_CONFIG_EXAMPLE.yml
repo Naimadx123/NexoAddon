@@ -1,0 +1,31 @@
+# InfiniteBucket Mechanic Configuration Example
+# Allows a Nexo item to place water or lava infinitely without consuming the bucket.
+# The liquid type is automatically determined by the item's material (WATER_BUCKET or LAVA_BUCKET).
+# The player simply right-clicks as with a normal bucket.
+
+# ── Infinite Water Bucket (truly infinite) ───────────────────────────────────
+my_infinite_water_bucket:
+  Mechanics:
+    infinite_bucket:
+      # Enable / disable the mechanic without removing the config
+      # Default: true
+      enabled: true
+      # Maximum number of uses before the bucket behaves like a normal one.
+      # -1 = truly infinite (default), any positive integer = limited uses.
+      # The remaining uses are stored in the item's PersistentDataContainer
+      # and shown as a lore line on the item.
+      uses: -1
+
+# ── Limited-use Water Bucket (20 uses) ───────────────────────────────────────
+my_limited_water_bucket:
+  Mechanics:
+    infinite_bucket:
+      enabled: true
+      uses: 20
+
+# ── Infinite Lava Bucket ─────────────────────────────────────────────────────
+my_infinite_lava_bucket:
+  Mechanics:
+    infinite_bucket:
+      enabled: true
+      uses: -1

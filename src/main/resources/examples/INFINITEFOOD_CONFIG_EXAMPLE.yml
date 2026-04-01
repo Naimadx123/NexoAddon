@@ -1,0 +1,31 @@
+# InfiniteFood Mechanic Configuration Example
+# The food item is eaten normally (hunger & saturation are restored, all vanilla effects apply),
+# but the item is NOT consumed – it stays in the player's inventory afterwards.
+
+# ── Infinite Steak (truly infinite) ──────────────────────────────────────────
+my_infinite_steak:
+  Mechanics:
+    infinite_food:
+      # Enable / disable the mechanic without removing the config
+      # Default: true
+      enabled: true
+      # Maximum number of uses before the food is consumed normally.
+      # -1 = truly infinite (default), any positive integer = limited uses.
+      # The remaining uses are stored in the item's PersistentDataContainer
+      # and shown as a lore line on the item.
+      uses: -1
+
+# ── Limited-use Golden Apple (5 uses) ────────────────────────────────────────
+my_limited_golden_apple:
+  Mechanics:
+    infinite_food:
+      enabled: true
+      uses: 5
+
+# ── Infinite Golden Apple ────────────────────────────────────────────────────
+my_infinite_golden_apple:
+  Mechanics:
+    infinite_food:
+      enabled: true
+      uses: -1
+
