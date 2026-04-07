@@ -163,15 +163,16 @@ public class ItemConfigUtil {
       int radius = section.getInt("Mechanics.bigmining.radius", 1);
       int depth = section.getInt("Mechanics.bigmining.depth", 1);
       boolean switchable = section.getBoolean("Mechanics.bigmining.switchable", false);
+      String soundRaw = section.getString("Mechanics.bigmining.sound", "block.stone.break");
       List<Material> materials = new ArrayList<>();
       for (String s : section.getStringList("Mechanics.bigmining.materials")) {
         Material material = Material.matchMaterial(s);
         if(material != null) materials.add(material);
       }
 
-      String soundRaw = section.getString("Mechanics.bigmining.sound", "block.stone.break");
+      Sound sound = Registry.SOUNDS.get(soundRaw.contains(":") ? NamespacedKey.fromString(soundRaw) : NamespacedKey.minecraft(soundRaw));
 
-      mechanic.setBigMining(radius, depth, switchable, materials);
+      mechanic.setBigMining(radius, depth, switchable, materials, sound);
     }
   }
 

@@ -7,6 +7,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static zone.vao.nexoAddon.utils.BlockUtil.isInteractable;
 
-public record BigMining(int radius, int depth, boolean switchable, List<Material> materials) {
+public record BigMining(int radius, int depth, boolean switchable, List<Material> materials, Sound sound) {
 
   /**
    * Determines if tool id corresponds to big mining tool
@@ -93,6 +94,10 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
       double radius = mechanic.radius();
       double depth = mechanic.depth();
 
+      if (mechanic.sound() != null) {
+        player.playSound(origin, mechanic.sound(), 1.0f, 1.0f);
+      }
+
       for (double xOffset = -radius; xOffset <= radius; xOffset++) {
         for (double yOffset = -radius; yOffset <= radius; yOffset++) {
           for (double zOffset = 0; zOffset < depth; zOffset++) {
@@ -131,7 +136,6 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
           handleAttemptBlockBreak(player, block, tool, mechanic, blockMaterial, isLiquid, canBreak, blockLocation);
         });
       }
-
 
     }
 
