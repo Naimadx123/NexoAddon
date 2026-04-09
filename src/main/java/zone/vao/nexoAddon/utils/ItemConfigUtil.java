@@ -135,6 +135,7 @@ public class ItemConfigUtil {
                 loadInfiniteBucketMechanic(itemSection, mechanic);
                 loadInfiniteFoodMechanic(itemSection, mechanic);
                 loadWideHoeMechanic(itemSection, mechanic);
+                loadMagnetMechanic(itemSection, mechanic);
             });
         }
     }
@@ -684,6 +685,26 @@ public class ItemConfigUtil {
         int durabilityCost = section.getInt("Mechanics.widehoe.durability_cost", 1);
 
         mechanic.setWideHoe(radius, switchable, tillGrass, durabilityCost);
+    }
+
+    private static void loadMagnetMechanic(ConfigurationSection section, Mechanics mechanic) {
+        if (!section.contains("Mechanics.magnet")) {
+            return;
+        }
+
+        boolean enabled = section.getBoolean("Mechanics.magnet.enabled", true);
+        int radius = section.getInt("Mechanics.magnet.radius", 5);
+        double pullSpeed = section.getDouble("Mechanics.magnet.pull_speed", 0.3);
+        String particleType = section.getString("Mechanics.magnet.particle.type", "");
+        int particleAmount = section.getInt("Mechanics.magnet.particle.amount", 3);
+        String soundType = section.getString("Mechanics.magnet.sound.type", "");
+        float soundVolume = (float) section.getDouble("Mechanics.magnet.sound.volume", 0.3);
+        float soundPitch = (float) section.getDouble("Mechanics.magnet.sound.pitch", 1.5);
+        String activeLore = section.getString("Mechanics.magnet.active_lore", "<green>Magnet: AN");
+        String inactiveLore = section.getString("Mechanics.magnet.inactive_lore", "<red>Magnet: AUS");
+
+        mechanic.setMagnet(enabled, radius, pullSpeed, particleType, particleAmount,
+            soundType, soundVolume, soundPitch, activeLore, inactiveLore);
     }
 
     private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

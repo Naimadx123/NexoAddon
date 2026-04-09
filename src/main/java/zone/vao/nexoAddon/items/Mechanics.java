@@ -49,6 +49,7 @@ public class Mechanics {
     private InfiniteBucket infiniteBucket;
     private InfiniteFood infiniteFood;
     private WideHoe wideHoe;
+    private Magnet magnet;
 
     public Mechanics(String id) {
         this.id = id;
@@ -191,6 +192,13 @@ public class Mechanics {
         this.wideHoe = new WideHoe(radius, switchable, tillGrass, durabilityCost);
     }
 
+    public void setMagnet(boolean enabled, int radius, double pullSpeed,
+        String particleType, int particleAmount, String soundType, float soundVolume, float soundPitch,
+        String activeLore, String inactiveLore) {
+        this.magnet = new Magnet(enabled, radius, pullSpeed, particleType, particleAmount,
+            soundType, soundVolume, soundPitch, activeLore, inactiveLore);
+    }
+
     public static void registerListeners(NexoAddon plugin) {
 
         registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -236,6 +244,10 @@ public class Mechanics {
         registerListener(new InfiniteBucket.InfiniteBucketListener(), plugin);
         registerListener(new InfiniteFood.InfiniteFoodListener(), plugin);
         registerListener(new WideHoe.WideHoeListener(), plugin);
+
+        Magnet.MagnetListener magnetListener = new Magnet.MagnetListener();
+        registerListener(magnetListener, plugin);
+        Magnet.MagnetListener.startMagnetTask();
     }
 
     private static void registerListener(Listener listener, NexoAddon plugin) {

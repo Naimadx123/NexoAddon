@@ -1,0 +1,92 @@
+# Magnet Mechanic Configuration Example
+# Der Magnet zieht automatisch alle Items im Umkreis zum Spieler,
+# solange er sich irgendwo im Inventar befindet.
+# Per Rechtsklick (Item in der Hand) lässt sich der Magnet an- und ausschalten.
+# Der aktuelle Status wird in der Lore des Items angezeigt.
+
+magnet_ring:
+  # Nexo-Lore des Items — eine Zeile sollte dem active_lore- oder inactive_lore-Wert entsprechen,
+  # damit der Status direkt beim Aufnehmen sichtbar ist.
+  lore:
+    - "<green>Magnet: AN"
+  Mechanics:
+    magnet:
+      # Enable oder disable die gesamte Mechanic
+      # Default: true
+      enabled: true
+
+      # Radius in Blöcken, in dem Items angezogen werden
+      # Default: 5
+      radius: 8
+
+      # Ziehgeschwindigkeit pro 2 Ticks (ca. 10x pro Sekunde)
+      # Höhere Werte = Items rasen schneller heran
+      # Default: 0.3
+      pull_speed: 0.4
+
+      # Lore-Zeile die angezeigt wird wenn der Magnet AKTIV ist
+      # Unterstützt MiniMessage-Format (https://docs.advntr.dev/minimessage/format.html)
+      # Default: "<green>Magnet: AN"
+      active_lore: "<green>⚡ Magnet: <bold>AN</bold>"
+
+      # Lore-Zeile die angezeigt wird wenn der Magnet INAKTIV ist
+      # Default: "<red>Magnet: AUS"
+      inactive_lore: "<red>⚡ Magnet: <bold>AUS</bold>"
+
+      # Optional: Partikel-Effekt der an jedem angezogenen Item erscheint
+      particle:
+        # Partikel-Typ (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html)
+        # Leer lassen um Partikel zu deaktivieren
+        # Empfehlungen: END_ROD, CRIT, ENCHANT, ELECTRIC_SPARK
+        # Default: "" (deaktiviert)
+        type: "END_ROD"
+
+        # Anzahl Partikel pro Item pro Tick
+        # Default: 3
+        amount: 2
+
+      # Optional: Sound der abgespielt wird solange Items gezogen werden
+      sound:
+        # Sound-Typ (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html)
+        # Leer lassen um Sound zu deaktivieren
+        # Default: "" (deaktiviert)
+        type: ""
+
+        # Lautstärke
+        # Default: 0.3
+        volume: 0.3
+
+        # Tonhöhe (0.5 – 2.0)
+        # Default: 1.5
+        pitch: 1.5
+
+# Einfacher Magnet — großer Radius, keine Effekte
+powerful_magnet:
+  lore:
+    - "<green>Magnet: AN"
+  Mechanics:
+    magnet:
+      enabled: true
+      radius: 15
+      pull_speed: 0.6
+      active_lore: "<green>Magnet: AN"
+      inactive_lore: "<red>Magnet: AUS"
+
+# Magnet mit Partikel und Sound-Feedback
+fancy_magnet_amulet:
+  lore:
+    - "<green>⚡ Magnet: <bold>AN</bold>"
+  Mechanics:
+    magnet:
+      enabled: true
+      radius: 6
+      pull_speed: 0.35
+      active_lore: "<green>⚡ Magnet: <bold>AN</bold>"
+      inactive_lore: "<red>⚡ Magnet: <bold>AUS</bold>"
+      particle:
+        type: "ELECTRIC_SPARK"
+        amount: 3
+      sound:
+        type: "BLOCK_AMETHYST_BLOCK_HIT"
+        volume: 0.2
+        pitch: 2.0
