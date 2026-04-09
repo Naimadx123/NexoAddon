@@ -49,6 +49,7 @@ import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public final class NexoAddon extends JavaPlugin {
@@ -174,6 +175,13 @@ public final class NexoAddon extends JavaPlugin {
     manager.getCommandCompletions().registerCompletion("nexoItems", c -> {
       Set<String> itemNames = NexoItems.itemNames();
       return new ArrayList<>(itemNames);
+    });
+
+    manager.getCommandCompletions().registerCompletion("sounds", c -> {
+
+      return Registry.SOUNDS.keyStream()
+          .map(NamespacedKey::toString)
+          .toList();
     });
   }
 
