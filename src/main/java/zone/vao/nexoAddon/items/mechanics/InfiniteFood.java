@@ -110,30 +110,15 @@ public record InfiniteFood(boolean enabled, int uses) {
                 applyLore(meta, newRemaining);
                 liveStack.setItemMeta(meta);
 
-                final ItemStack restore = liveStack.clone();
-                NexoAddon.getInstance().getServer().getScheduler().runTask(NexoAddon.getInstance(), () -> {
-                    if (hand == EquipmentSlot.HAND) {
-                        player.getInventory().setItemInMainHand(restore);
-                    } else {
-                        player.getInventory().setItemInOffHand(restore);
-                    }
-                    player.updateInventory();
-                });
+                event.setReplacement(liveStack.clone());
                 return;
             }
 
-            final ItemStack restore = liveStack.clone();
-            NexoAddon.getInstance().getServer().getScheduler().runTask(NexoAddon.getInstance(), () -> {
-                if (hand == EquipmentSlot.HAND) {
-                    player.getInventory().setItemInMainHand(restore);
-                } else {
-                    player.getInventory().setItemInOffHand(restore);
-                }
-                player.updateInventory();
-            });
+            // Infinite uses (uses < 0): restore the item synchronously via setReplacement.
+            // This avoids any race condition with Velocity server switches, where a next-tick
+            // scheduler task may run after the player's inventory state has already been
+            // captured for transfer to the new backend server.
+            event.setReplacement(liveStack.clone());
         }
     }
 }
-
-
-
