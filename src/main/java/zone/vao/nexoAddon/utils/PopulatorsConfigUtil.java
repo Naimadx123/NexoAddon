@@ -150,7 +150,7 @@ public class PopulatorsConfigUtil {
         boolean isTall = false;
         StringBlockMechanic stringMechanic = NexoBlocks.stringMechanic(block.getItemID());
         if (stringMechanic != null) {
-          isTall = stringMechanic.isTall();
+          isTall = stringMechanic.getTall();
         }
         return new Ore(key, block, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, isTall, veinSize, clusterChance, airOnly);
       } else if (furniture != null) {

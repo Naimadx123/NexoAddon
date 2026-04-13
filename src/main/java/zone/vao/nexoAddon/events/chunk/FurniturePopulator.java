@@ -8,16 +8,19 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class FurniturePopulator {
 
+  public static List<Ore> furniturePopulators = new ArrayList<>();
+
   public static void onLoad(ChunkLoadEvent event){
     World world = event.getWorld();
     Chunk chunk = event.getChunk();
 
-    List<Ore> furniturePopulators = NexoAddon.getInstance()
+    furniturePopulators = NexoAddon.getInstance()
         .getOrePopulator()
         .getOres()
         .stream()
@@ -29,7 +32,11 @@ public class FurniturePopulator {
     furniturePopulators.forEach(ore -> processOre(world, chunk, ore));
   }
 
-  private static void processOre(World world, Chunk chunk, Ore ore) {
+  public static void processOre(
+      World world,
+      Chunk chunk,
+      Ore ore
+  ) {
     if (!ore.getWorlds().contains(world) && !ore.getWorldNames().contains("all")) return;
 
     NexoAddon.getInstance().foliaLib.getScheduler().runAsync(populate -> {

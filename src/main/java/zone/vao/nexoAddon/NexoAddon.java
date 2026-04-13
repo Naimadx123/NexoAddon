@@ -47,6 +47,8 @@ import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 import zone.vao.nexoAddon.utils.hooks.PacketEventsHook;
 import zone.vao.nexoAddon.utils.metrics.Metrics;
+import zone.vao.thirdparties.updatechecker.UpdateCheckSource;
+import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
