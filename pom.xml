@@ -6,7 +6,7 @@
 
     <groupId>zone.vao</groupId>
     <artifactId>NexoAddon</artifactId>
-    <version>1.17.0</version>
+    <version>1.18.0</version>
     <packaging>jar</packaging>
 
     <name>NexoAddon</name>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>ca.bkaw</groupId>
             <artifactId>paper-nms</artifactId>
-            <version>26.1.2.build.59-stable-SNAPSHOT</version>
+            <version>26.1.2.build.63-stable-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -184,7 +184,7 @@
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.22.0-dev.7</version>
+            <version>1.25.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -213,7 +213,7 @@
         <dependency>
             <groupId>com.github.retrooper</groupId>
             <artifactId>packetevents-spigot</artifactId>
-            <version>2.12.1</version>
+            <version>2.13.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

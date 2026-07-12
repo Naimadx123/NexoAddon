@@ -14,6 +14,7 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
+import zone.vao.nexoAddon.NexoAddon;
 
 public class TotemUtil {
 
@@ -51,20 +52,29 @@ public class TotemUtil {
                 (byte) 35
         );
 
-      Sound sound1 = Sounds.getByNameOrCreate(sound);
+        if(sound != null) {
+            Sound sound1 = Sounds.getByNameOrCreate(sound);
 
-      WrapperPlayServerSoundEffect soundEffectPacket = new WrapperPlayServerSoundEffect(
-          sound1,
-          SoundCategory.AMBIENT,
-          new Vector3i(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()),
-          1f,
-          1f
-      );
+            WrapperPlayServerSoundEffect soundEffectPacket = new WrapperPlayServerSoundEffect(
+                    sound1,
+                    SoundCategory.AMBIENT,
+                    new Vector3i(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()),
+                    1f,
+                    1f
+            );
 
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player, soundEffectPacket);
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player, soundEffectPacket);
+        }
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, setSlotPacket);
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player, entityStatusPacket);
 
-        player.updateInventory();
+        if (NexoAddon.getInstance().getGlobalConfig().getBoolean("enable_totem_delay", false)) {
+            NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+                PacketEvents.getAPI().getPlayerManager().sendPacket(player, entityStatusPacket);
+                player.updateInventory();
+            }, 2L);
+        } else {
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player, entityStatusPacket);
+            player.updateInventory();
+        }
     }
 }

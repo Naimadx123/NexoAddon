@@ -17,9 +17,11 @@ public class SaplingPopulator {
 
 
   public static void onLoad(ChunkLoadEvent event){
-    World world = event.getWorld();
-    Chunk chunk = event.getChunk();
+    if (((!event.isNewChunk()) && event.getChunk().isGenerated())) return;
+    populate(event.getWorld(), event.getChunk());
+  }
 
+  public static void populate(World world, Chunk chunk) {
     List<Ore> saplingPopulators = NexoAddon.getInstance()
         .getOrePopulator()
         .getOres()
@@ -27,7 +29,7 @@ public class SaplingPopulator {
         .filter(ore -> ore.nexoBlocks != null && NexoBlocks.isNexoStringBlock(ore.nexoBlocks.getItemID()) && NexoBlocks.stringMechanic(ore.nexoBlocks.getItemID()).isSapling())
         .toList();
 
-    if (saplingPopulators.isEmpty() || ((!event.isNewChunk()) && event.getChunk().isGenerated())) return;
+    if (saplingPopulators.isEmpty()) return;
 
     saplingPopulators.forEach(ore -> processOre(world, chunk, ore));
   }

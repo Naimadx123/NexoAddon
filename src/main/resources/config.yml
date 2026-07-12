@@ -6,6 +6,9 @@ double_hit_destroy_mechanic: true           # Destroy furniture with double hit
 count_shears_as_silktouch: [ ]              # List of STRINGBLOCKs and CHORUSBLOCKs ids
 aura_mechanic_delay: 5                      # Delay of refreshing particles in ticks
 
+default_totem_sound: minecraft:entity.totem.use # Default sound for totem (useful if you wanna use /nexoaddon totem command)
+enable_totem_delay: false                   # Adds a 2 tick delay before the totem animation packet (fixes animation on some clients/versions)
+
 update_checker: true
 
 messages:

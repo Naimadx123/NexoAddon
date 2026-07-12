@@ -59,7 +59,7 @@ Designed as a feature-rich addon for servers using Nexo, NexoAddon enhances your
 * Seamless compatibility with Nexo item system.
 
 ### 📥 **Downloads & Docs:**  
-Available on [Polymart](<https://polymart.org/resource/nexoaddon.6950>), [Spigot](<https://www.spigotmc.org/resources/nexoaddon.121241/>), and [GitHub](<https://github.com/Naimadx123/NexoAddon>).  
+Available on [Polymart/voxel.shop](<https://voxel.shop/product/6950/nexoaddon>), [Spigot](<https://www.spigotmc.org/resources/nexoaddon.121241/>), and [GitHub](<https://github.com/Naimadx123/NexoAddon>).  
 [Join our Discord](https://discord.gg/aSRYxqSjVJ) for support, tutorials, and feature previews!
 [Documentation](<https://nexoaddon.gitbook.io/docs>)
 

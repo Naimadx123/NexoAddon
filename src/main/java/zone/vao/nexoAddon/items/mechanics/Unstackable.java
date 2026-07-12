@@ -122,7 +122,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
     private static boolean checkIfAllowed(Mechanics mechanic, Player player) {
       String itemId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());
       Mechanics itemInHand = NexoAddon.getInstance().getMechanics().get(itemId);
-      if(itemId != null && itemInHand.getStackable() != null && mechanic.getStackable() != null &&
+      if(itemId != null && itemInHand != null && itemInHand.getStackable() != null && mechanic.getStackable() != null &&
           itemInHand.getStackable().group().equalsIgnoreCase(mechanic.getStackable().group())) return false;
 
       boolean bothListsEmpty = mechanic.getUnstackable().materials().isEmpty()

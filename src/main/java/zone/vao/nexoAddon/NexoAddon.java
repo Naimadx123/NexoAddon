@@ -32,6 +32,7 @@ import zone.vao.nexoAddon.events.nexo.NexoPackUploadListener;
 import zone.vao.nexoAddon.events.nexo.furnitures.NexoFurnitureBreakListener;
 import zone.vao.nexoAddon.events.nexo.furnitures.NexoFurnitureInteractListener;
 import zone.vao.nexoAddon.events.player.PlayerMovementListener;
+import zone.vao.nexoAddon.events.player.TotemSound;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.populators.CustomChunkGenerator;
@@ -220,6 +221,7 @@ public final class NexoAddon extends JavaPlugin {
     registerEvent(new PlayerCommandPreprocessListener());
     registerEvent(new WorldLoadListener());
     registerEvent(new NexoPackUploadListener());
+    registerEvent(new TotemSound());
 
     Mechanics.registerListeners(this);
     Components.registerListeners(this);

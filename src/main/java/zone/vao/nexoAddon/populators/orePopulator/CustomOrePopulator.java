@@ -11,6 +11,7 @@ import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.LimitedRegion;
 import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
+import zone.vao.nexoAddon.NexoAddon;
 
 import java.util.*;
 
@@ -58,6 +59,9 @@ public class CustomOrePopulator extends BlockPopulator {
           if (toReplace.contains(currentMaterial)) {
             PlacementPosition position = new PlacementPosition(worldInfo, x, y, z, currentMaterial, limitedRegion.getBiome(x, y, z), limitedRegion);
             placeBlock(position, ore, worldInfo, limitedRegion);
+            if(NexoAddon.isDebug){
+              NexoAddon.getInstance().getLogger().info("Replacing "+currentMaterial+" at "+position.getLocation()+" to "+ore.getId());
+            }
           }
         }
       }
@@ -226,11 +230,11 @@ public class CustomOrePopulator extends BlockPopulator {
   }
 
   private void placeBlock(PlacementPosition position, Ore ore, WorldInfo worldInfo, LimitedRegion limitedRegion) {
-    if (ore.getNexoBlocks() != null && ore.getNexoBlocks().getBlockData() != null) {
+    if (ore.getNexoBlocks() != null && ore.getNexoBlocks().getBlockData() != null && limitedRegion.isInRegion(position.x(), position.y(), position.z())) {
       if(ore.isTall()) {
         limitedRegion.setBlockData(position.x(), position.y(), position.z(), ore.getNexoBlocks().getBlockData());
         World world = Bukkit.getWorld(worldInfo.getUID());
-        if(limitedRegion.getType(new Location(world, position.x(), position.y()+1, position.z())).isAir())
+        if(limitedRegion.getType(new Location(world, position.x(), position.y()+1, position.z())).isAir() && limitedRegion.isInRegion(position.x(), position.y()+1, position.z()))
           limitedRegion.setBlockData(position.x(), position.y()+1, position.z(), Material.TRIPWIRE.createBlockData());
       }else{
         limitedRegion.setBlockData(position.x(), position.y(), position.z(), ore.getNexoBlocks().getBlockData());
@@ -243,6 +247,9 @@ public class CustomOrePopulator extends BlockPopulator {
       if (belowPosition.blockType.equals(Material.GRASS_BLOCK) && !limitedRegion.getBlockData(belowPosition.x, belowPosition.y, belowPosition.z).equals(Material.GRASS_BLOCK.createBlockData())) {
         limitedRegion.setBlockData(belowPosition.x(), belowPosition.y(), belowPosition.z(), Material.GRASS_BLOCK.createBlockData());
       }
+    }
+    if(NexoAddon.isDebug){
+      NexoAddon.getInstance().getLogger().info("Replacing at "+position.getLocation()+" to "+ore.getId());
     }
   }
 

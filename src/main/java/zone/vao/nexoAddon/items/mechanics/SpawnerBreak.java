@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
@@ -47,6 +48,8 @@ public record SpawnerBreak(double probability, boolean dropExperience) {
       EntityType entityType = getValidEntityType(spawner.getSpawnedType());
 
       ItemStack spawnerItem = createSpawnerItem(entityType);
+      PersistentDataContainer spawnerItemData = spawnerItem.getItemMeta().getPersistentDataContainer();
+      spawnerItemData.set(new NamespacedKey(NexoAddon.getInstance(), SPAWNER_TYPE_KEY), PersistentDataType.STRING, entityType.name());
 
       if (Math.random() <= probability) {
         block.getWorld().dropItemNaturally(block.getLocation(), spawnerItem);
@@ -83,7 +86,7 @@ public record SpawnerBreak(double probability, boolean dropExperience) {
       ItemStack item = event.getItemInHand();
       ItemMeta meta = item.getItemMeta();
 
-      if (meta == null) return;
+      if (meta == null || !meta.getPersistentDataContainer().has(new NamespacedKey(NexoAddon.getInstance(), SPAWNER_TYPE_KEY), PersistentDataType.STRING)) return;
 
       EntityType entityType = getEntityTypeFromMeta(meta);
       CreatureSpawner spawner = (CreatureSpawner) block.getState();

@@ -40,6 +40,7 @@ public class Mechanics {
   private AutoCatch autoCatch;
   private UniqueId uniqueId;
   private InventoryType inventoryType;
+  private Lifesteal lifesteal;
 
   public Mechanics(String id) {
     this.id = id;
@@ -121,7 +122,13 @@ public class Mechanics {
       this.uniqueId = new UniqueId(enabled);
   }
 
-  public void setInventoryType(org.bukkit.event.inventory.InventoryType inventoryType, Component title) { this.inventoryType = new InventoryType(inventoryType, title); }
+  public void setInventoryType(org.bukkit.event.inventory.InventoryType inventoryType, Component title) {
+    this.inventoryType = new InventoryType(inventoryType, title);
+  }
+
+  public void setLifesteal(int amount, double cooldown) {
+    this.lifesteal = new Lifesteal(amount, cooldown);
+  }
 
   public static void registerListeners(NexoAddon plugin){
 
@@ -140,6 +147,8 @@ public class Mechanics {
     registerListener(new InventoryType.InventoryTypeListener(), plugin);
 
     registerListener(new KillMessage.KillMessageListener(), plugin);
+
+    registerListener(new Lifesteal.LifestealListener(), plugin);
 
     registerListener(new MiningTools.MiningToolsListener(), plugin);
 

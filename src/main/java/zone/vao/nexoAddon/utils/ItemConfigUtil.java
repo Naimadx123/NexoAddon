@@ -117,6 +117,7 @@ public class ItemConfigUtil {
         loadAutoCatchMechanic(itemSection, mechanic);
         loadUniqueIdMechanic(itemSection, mechanic);
         loadInventoryType(itemSection, mechanic);
+        loadLifesteal(itemSection, mechanic);
       });
     }
   }
@@ -480,6 +481,12 @@ public class ItemConfigUtil {
     }
 
     mechanic.setInventoryType(type, title);
+  }
+
+  private static void loadLifesteal(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.lifesteal")) return;
+
+    mechanic.setLifesteal(section.getInt("Mechanics.lifesteal.amount", 1), section.getDouble("Mechanics.lifesteal.cooldown", 0.0));
   }
 
   private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {
