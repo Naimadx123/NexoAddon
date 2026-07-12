@@ -47,3 +47,16 @@ Mechanics:
     materials:       # List of whitelisted materials
     - STONE
 ```
+
+### Custom break sound
+
+```yaml
+# Example
+
+Mechanics:
+  bigmining:
+    radius: 1
+    depth: 3
+    sound: block.stone.break  # Sound played when blocks are broken, defaults to block.stone.break.
+                              # Accepts a namespaced key (e.g. minecraft:block.stone.break or namespace:key).
+```

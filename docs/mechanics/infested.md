@@ -28,6 +28,7 @@ Mechanics:
       selector: random     # entity selection method (all|random) all makes all entities spawn, random makes 1 of them spawn, optional, defaults to all.
       particles: true      # If breaking the block should spawn particles. optional, defaults to false
       drop-loot: false     # If the entity spawns, the loot won't drop, defaults to true
+      safe-spawn: true     # If true, entities are placed at a safe nearby location instead of directly at the broken block. optional, defaults to false
 ```
 
 ### A custom block infested with SkeletalKnights and Wither Skeletons

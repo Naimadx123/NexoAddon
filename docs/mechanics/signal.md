@@ -16,11 +16,10 @@ The Signal mechanic lets you control light sources of nearby furniture using jus
 ```yaml
 Mechanics:
   furniture:
-    furniture:
-      signal:
-        radius: 15         # Can be any integer (1, 2, 48594, 2147483647) DON'T MAKE THIS VALUE HIGH.
-        channel: 1.00      # Can be any double (1, 1.00, 0.001, 12.34, 3.657).
-        role: TRANSMITTER  # TRANSMITTER makes it be the "controller".
+    signal:
+      radius: 15         # Can be any integer (1, 2, 48594, 2147483647) DON'T MAKE THIS VALUE HIGH. Defaults to 16.
+      channel: 1.00      # Can be any double (1, 1.00, 0.001, 12.34, 3.657).
+      role: TRANSMITTER  # TRANSMITTER makes it be the "controller".
 ```
 
 ### Light that gets toggled if it's in the range of a channel 1.00 transmitter
@@ -28,8 +27,7 @@ Mechanics:
 ```yaml
 Mechanics:
   furniture:
-    furniture:
-      signal:
-        channel: 1.00   # Same channel as the TRANSMITTER (Light switch) above.
-        role: RECEIVER  # RECEIVER makes it receive.
+    signal:
+      channel: 1.00   # Same channel as the TRANSMITTER (Light switch) above.
+      role: RECEIVER  # RECEIVER makes it receive.
 ```

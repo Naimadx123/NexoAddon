@@ -49,3 +49,17 @@ Mechanics:
     durability_cost: 1
     disable_on_first_layer: false         # Allow to break last layer of the bedrock
 ```
+
+### Custom break sound
+
+```yaml
+# Example
+
+Mechanics:
+  bedrockbreak:
+    hardness: 60
+    probability: 1
+    durability_cost: 1
+    sound: block.stone.break              # Sound played when the block breaks, defaults to block.stone.break.
+                                          # Accepts a namespaced key (e.g. minecraft:block.stone.break or namespace:key).
+```

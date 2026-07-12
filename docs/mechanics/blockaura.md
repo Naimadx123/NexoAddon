@@ -4,7 +4,11 @@ description: BlockAura mechanic.
 
 # BlockAura
 
-The Block Aura Mechanic allows you to add particle effects to your block like the Campfire or the Cherry Blossom
+The Block Aura Mechanic allows you to add particle effects to your custom block or furniture like the Campfire or the Cherry Blossom
+
+{% hint style="info" %}
+Works on both **custom blocks** and **furniture**. The particle effect is spawned when the block/furniture is placed, restored automatically on chunk load, and removed when it is broken.
+{% endhint %}
 
 ### Example of a campfire effect:
 
