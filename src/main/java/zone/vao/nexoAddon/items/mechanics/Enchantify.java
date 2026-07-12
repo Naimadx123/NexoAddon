@@ -32,16 +32,19 @@ public record Enchantify(Map<Enchantment, Integer> enchants, Map<Enchantment, In
 
       event.setCancelled(true);
 
-      enchantItem(player, cursorItem, currentItem, enchantifyItemId);
+      boolean enchanted = enchantItem(player, cursorItem, currentItem, enchantifyItemId);
+      if (!enchanted) return;
+
       updatePlayerInventory(player, currentItem, cursorItem, event);
     }
 
-    private static void enchantItem(Player player, ItemStack cursorItem, ItemStack currentItem, String enchantifyItemId) {
+    private static boolean enchantItem(Player player, ItemStack cursorItem, ItemStack currentItem, String enchantifyItemId) {
       Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(enchantifyItemId);
       Map<Enchantment, Integer> enchants = mechanic.getEnchantify().enchants();
       Map<Enchantment, Integer> limits = mechanic.getEnchantify().limits();
 
       ItemMeta meta = currentItem.getItemMeta();
+      boolean changed = false;
       for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
         Enchantment enchant = entry.getKey();
         int addLevel = entry.getValue();
@@ -54,11 +57,16 @@ public record Enchantify(Map<Enchantment, Integer> enchants, Map<Enchantment, In
 
         if (newLevel > existingLevel) {
           meta.addEnchant(enchant, newLevel, true);
+          changed = true;
         }
       }
+
+      if (!changed) return false;
+
       currentItem.setItemMeta(meta);
 
       reduceCursorItemAmount(cursorItem);
+      return true;
     }
 
     private static boolean isValidClick(InventoryClickEvent event) {
