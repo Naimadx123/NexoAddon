@@ -95,6 +95,20 @@ public class BlockHardnessHandler implements PacketListener {
           stopBreaking(location, digging);
           if (EventUtil.callEvent(new BlockBreakEvent(block, player)) && ProtectionLib.canBreak(player, location)) {
             Bukkit.getScheduler().runTask(NexoAddon.getInstance(), () -> {
+              ItemStack currentTool = player.getInventory().getItemInMainHand();
+              if(!toolId.equals(NexoItems.idFromItem(currentTool))) return;
+
+              boolean toolBroke = false;
+              if(currentTool.getItemMeta() instanceof Damageable damageable){
+                damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
+                int maxDurability = NexoItems.itemFromId(toolId).getMaxDamage() != null ? NexoItems.itemFromId(toolId).getMaxDamage() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
+                if(damageable.getDamage() >= maxDurability) {
+                  toolBroke = true;
+                } else {
+                  currentTool.setItemMeta(damageable);
+                }
+              }
+
               if(Math.random() <= probability)
                 block.getWorld().dropItemNaturally(location, new ItemStack(Material.BEDROCK));
               block.breakNaturally();
@@ -102,15 +116,9 @@ public class BlockHardnessHandler implements PacketListener {
                 block.getWorld().playSound(player.getLocation(), sound, 1f, 1f);
               }
 
-              if(tool.getItemMeta() instanceof Damageable damageable){
-                damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
-                int maxDurability = NexoItems.itemFromId(toolId).getMaxDamage() != null ? NexoItems.itemFromId(toolId).getMaxDamage() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
-                if(damageable.getDamage() >= maxDurability) {
-                  player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                  block.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
-                  return;
-                }
-                player.getInventory().getItemInMainHand().setItemMeta(damageable);
+              if(toolBroke) {
+                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                block.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
               }
             });
           }
