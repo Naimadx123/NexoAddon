@@ -50,6 +50,7 @@ import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public final class NexoAddon extends JavaPlugin {
@@ -76,8 +77,11 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  private final Map<Location, WrappedTask> spreadTasks = new ConcurrentHashMap<>();
   @Setter
   private Boolean isDecay = false;
+  @Setter
+  private Boolean isSpread = false;
 
 
   @Override
@@ -133,6 +137,8 @@ public final class NexoAddon extends JavaPlugin {
     }
     particleTasks.values().forEach(WrappedTask::cancel);
     particleTasks.clear();
+    spreadTasks.values().forEach(WrappedTask::cancel);
+    spreadTasks.clear();
   }
 
   @Override
@@ -159,10 +165,14 @@ public final class NexoAddon extends JavaPlugin {
       particleEffectManager.startAuraEffectTask();
     }, 2L);
 
+    spreadTasks.values().forEach(WrappedTask::cancel);
+    spreadTasks.clear();
+
     foliaLib.getScheduler().runLater(() -> {
       for (World world : Bukkit.getWorlds()) {
         for (Chunk chunk : world.getLoadedChunks()) {
           BlockUtil.restartBlockAura(chunk);
+          BlockUtil.restartSpread(chunk);
         }
       }
     }, 10L);

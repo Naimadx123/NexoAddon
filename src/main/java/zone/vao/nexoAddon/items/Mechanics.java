@@ -41,6 +41,7 @@ public class Mechanics {
   private UniqueId uniqueId;
   private InventoryType inventoryType;
   private Lifesteal lifesteal;
+  private Spread spread;
 
   public Mechanics(String id) {
     this.id = id;
@@ -130,6 +131,10 @@ public class Mechanics {
     this.lifesteal = new Lifesteal(amount, cooldown);
   }
 
+  public void setSpread(int interval, double chance, int radius, List<Material> replace, boolean requiresAirAbove, int maxNearby, int lightMin, int lightMax, List<String> biomes, String result) {
+    this.spread = new Spread(interval, chance, radius, replace, requiresAirAbove, maxNearby, lightMin, lightMax, biomes, result);
+  }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -164,6 +169,7 @@ public class Mechanics {
     registerListener(new Unstackable.UnstackableListener(), plugin);
 
     registerListener(new Signal.SignalListener(), plugin);
+    registerListener(new Spread.SpreadListener(), plugin);
     registerListener(new VeinMiner.VeinMinerListener(), plugin);
   }
 

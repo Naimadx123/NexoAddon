@@ -118,6 +118,7 @@ public class ItemConfigUtil {
         loadUniqueIdMechanic(itemSection, mechanic);
         loadInventoryType(itemSection, mechanic);
         loadLifesteal(itemSection, mechanic);
+        loadSpreadMechanic(itemSection, mechanic);
       });
     }
   }
@@ -487,6 +488,43 @@ public class ItemConfigUtil {
     if (!section.contains("Mechanics.lifesteal")) return;
 
     mechanic.setLifesteal(section.getInt("Mechanics.lifesteal.amount", 1), section.getDouble("Mechanics.lifesteal.cooldown", 0.0));
+  }
+
+  private static void loadSpreadMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.custom_block.spread")) return;
+    if (!section.getBoolean("Mechanics.custom_block.spread.enabled", true)) return;
+
+    int interval = Math.max(1, section.getInt("Mechanics.custom_block.spread.interval", 100));
+    double chance = section.getDouble("Mechanics.custom_block.spread.chance", 0.15);
+    int radius = Math.max(1, section.getInt("Mechanics.custom_block.spread.radius", 1));
+    boolean requiresAirAbove = section.getBoolean("Mechanics.custom_block.spread.requires_air_above", false);
+    int maxNearby = section.getInt("Mechanics.custom_block.spread.max_nearby", 64);
+    int lightMin = section.getInt("Mechanics.custom_block.spread.conditions.light_min", 0);
+    int lightMax = section.getInt("Mechanics.custom_block.spread.conditions.light_max", 15);
+    String result = section.getString("Mechanics.custom_block.spread.result", "self");
+
+    List<Material> replace = new ArrayList<>();
+    for (String raw : section.getStringList("Mechanics.custom_block.spread.replace")) {
+      Material material = Material.matchMaterial(raw);
+      if (material != null) {
+        replace.add(material);
+      } else {
+        NexoAddon.getInstance().getLogger().warning("Invalid material in spread.replace: " + raw);
+      }
+    }
+
+    List<String> biomes = new ArrayList<>();
+    for (String raw : section.getStringList("Mechanics.custom_block.spread.conditions.biome")) {
+      biomes.add(raw.toLowerCase());
+    }
+
+    if (replace.isEmpty()) {
+      NexoAddon.getInstance().getLogger().warning("Spread mechanic has no valid `replace` materials. Skipping.");
+      return;
+    }
+
+    mechanic.setSpread(interval, chance, radius, replace, requiresAirAbove, maxNearby, lightMin, lightMax, biomes, result);
+    NexoAddon.instance.setIsSpread(true);
   }
 
   private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

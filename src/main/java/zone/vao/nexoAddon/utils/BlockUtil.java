@@ -10,6 +10,7 @@ import com.tcoded.folialib.wrapper.task.WrappedBukkitTask;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
@@ -19,11 +20,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.Decay;
+import zone.vao.nexoAddon.items.mechanics.Spread;
 
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class BlockUtil {
 
@@ -397,5 +398,147 @@ public class BlockUtil {
            RESPAWN_ANCHOR -> true;
       default -> false;
     };
+  }
+
+  private static NamespacedKey spreadKey() {
+    return new NamespacedKey(NexoAddon.getInstance(), "spread");
+  }
+
+  public static void startSpread(Location location) {
+    if (location == null || location.getWorld() == null) return;
+    if (!NexoAddon.instance.getIsSpread()) return;
+    if (NexoAddon.getInstance().getSpreadTasks().containsKey(location)) return;
+
+    Block block = location.getBlock();
+    if (!NexoBlocks.isCustomBlock(block)) return;
+
+    CustomBlockMechanic customBlockMechanic = NexoBlocks.customBlockMechanic(location);
+    if (customBlockMechanic == null) return;
+
+    Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(customBlockMechanic.getItemID());
+    if (mechanic == null || mechanic.getSpread() == null) return;
+
+    Spread spread = mechanic.getSpread();
+    String sourceId = customBlockMechanic.getItemID();
+
+    CustomBlockData customBlockData = new CustomBlockData(block, NexoAddon.getInstance());
+    customBlockData.set(spreadKey(), PersistentDataType.STRING, sourceId);
+
+    WrappedTask task = NexoAddon.instance.foliaLib.getScheduler().runAtLocationTimer(location, () -> {
+      Block current = location.getBlock();
+      CustomBlockMechanic mechanicNow = NexoBlocks.isCustomBlock(current) ? NexoBlocks.customBlockMechanic(location) : null;
+      if (mechanicNow == null || !sourceId.equals(mechanicNow.getItemID())) {
+        stopSpread(location);
+        return;
+      }
+      trySpread(current, spread, sourceId);
+    }, spread.interval(), spread.interval());
+
+    NexoAddon.getInstance().getSpreadTasks().put(location, task);
+  }
+
+  public static void stopSpread(Location location) {
+    if (location == null) return;
+    WrappedTask task = NexoAddon.getInstance().getSpreadTasks().remove(location);
+    if (task != null) task.cancel();
+
+    if (location.getWorld() == null) return;
+    CustomBlockData customBlockData = new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
+    customBlockData.remove(spreadKey());
+  }
+
+  public static void restartSpread(Chunk chunk) {
+    if (!NexoAddon.instance.getIsSpread()) return;
+    if (NexoAddon.getInstance().getMechanics().isEmpty()) return;
+
+    for (Block block : CustomBlockData.getBlocksWithCustomData(NexoAddon.getInstance(), chunk)) {
+      CustomBlockData customBlockData = new CustomBlockData(block, NexoAddon.getInstance());
+      if (!customBlockData.has(spreadKey(), PersistentDataType.STRING)) continue;
+
+      if (!NexoBlocks.isCustomBlock(block)) {
+        customBlockData.remove(spreadKey());
+        continue;
+      }
+      if (NexoAddon.getInstance().getSpreadTasks().containsKey(block.getLocation())) continue;
+
+      startSpread(block.getLocation());
+    }
+  }
+
+  private static void trySpread(Block source, Spread spread, String sourceId) {
+    if (ThreadLocalRandom.current().nextDouble() > spread.chance()) return;
+
+    String resultId = "self".equalsIgnoreCase(spread.result()) ? sourceId : spread.result();
+    int radius = spread.radius();
+
+    int nearby = 0;
+    List<Block> candidates = new ArrayList<>();
+
+    for (int x = -radius; x <= radius; x++) {
+      for (int y = -radius; y <= radius; y++) {
+        for (int z = -radius; z <= radius; z++) {
+          if (x == 0 && y == 0 && z == 0) continue;
+
+          Block relative = source.getRelative(x, y, z);
+
+          if (isResultBlock(relative, resultId)) {
+            nearby++;
+            continue;
+          }
+
+          if (spread.replace().contains(relative.getType()) && matchesConditions(relative, spread)) {
+            candidates.add(relative);
+          }
+        }
+      }
+    }
+
+    if (nearby >= spread.maxNearby()) return;
+    if (candidates.isEmpty()) return;
+
+    Block target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+    convert(target, resultId);
+  }
+
+  private static void convert(Block target, String resultId) {
+    Location location = target.getLocation();
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location, r -> {
+      target.setType(Material.AIR);
+      NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
+        NexoBlocks.place(resultId, location);
+        startSpread(location);
+      }, 1L);
+    });
+  }
+
+  private static boolean matchesConditions(Block block, Spread spread) {
+    if (spread.requiresAirAbove() && !block.getRelative(BlockFace.UP).getType().isAir()) {
+      return false;
+    }
+
+    int light = block.getLightLevel();
+    if (light < spread.lightMin() || light > spread.lightMax()) {
+      return false;
+    }
+
+    if (!spread.biomes().isEmpty() && !spread.biomes().contains(biomeName(block))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private static boolean isResultBlock(Block block, String resultId) {
+    if (!NexoBlocks.isCustomBlock(block)) return false;
+    CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block.getLocation());
+    return mechanic != null && resultId.equals(mechanic.getItemID());
+  }
+
+  private static String biomeName(Block block) {
+    try {
+      return block.getBiome().getKey().getKey().toLowerCase();
+    } catch (Throwable ignored) {
+      return block.getBiome().toString().toLowerCase();
+    }
   }
 }
