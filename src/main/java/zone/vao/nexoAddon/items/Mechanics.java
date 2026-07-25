@@ -42,6 +42,7 @@ public class Mechanics {
   private InventoryType inventoryType;
   private Lifesteal lifesteal;
   private Spread spread;
+  private Thor thor;
 
   public Mechanics(String id) {
     this.id = id;
@@ -135,6 +136,10 @@ public class Mechanics {
     this.spread = new Spread(interval, chance, radius, replace, requiresAirAbove, maxNearby, lightMin, lightMax, biomes, result);
   }
 
+  public void setThor(int lightningBoltsAmount, double randomLocationVariation, int delay) {
+    this.thor = new Thor(lightningBoltsAmount, randomLocationVariation, delay);
+  }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -170,6 +175,7 @@ public class Mechanics {
 
     registerListener(new Signal.SignalListener(), plugin);
     registerListener(new Spread.SpreadListener(), plugin);
+    registerListener(new Thor.ThorListener(), plugin);
     registerListener(new VeinMiner.VeinMinerListener(), plugin);
   }
 

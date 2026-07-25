@@ -119,6 +119,7 @@ public class ItemConfigUtil {
         loadInventoryType(itemSection, mechanic);
         loadLifesteal(itemSection, mechanic);
         loadSpreadMechanic(itemSection, mechanic);
+        loadThorMechanic(itemSection, mechanic);
       });
     }
   }
@@ -488,6 +489,16 @@ public class ItemConfigUtil {
     if (!section.contains("Mechanics.lifesteal")) return;
 
     mechanic.setLifesteal(section.getInt("Mechanics.lifesteal.amount", 1), section.getDouble("Mechanics.lifesteal.cooldown", 0.0));
+  }
+
+  private static void loadThorMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.thor")) return;
+
+    int lightningBoltsAmount = Math.max(1, section.getInt("Mechanics.thor.lightning_bolts_amount", 1));
+    double randomLocationVariation = Math.max(0.0, section.getDouble("Mechanics.thor.random_location_variation", 1.5));
+    int delay = Math.max(0, section.getInt("Mechanics.thor.delay", 0));
+
+    mechanic.setThor(lightningBoltsAmount, randomLocationVariation, delay);
   }
 
   private static void loadSpreadMechanic(ConfigurationSection section, Mechanics mechanic) {

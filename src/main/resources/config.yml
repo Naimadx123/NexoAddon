@@ -26,5 +26,7 @@ messages:
   autocatch:
     enabled: "<gray>AutoCatch is now <green>enabled<gray>."
     disabled: "<gray>AutoCatch is now <red>disabled<gray>."
+  thor:
+    cooldown: "<red>You must wait <time>s before calling the storm again."
 
 debug: false
