@@ -11,6 +11,9 @@ enable_totem_delay: false                   # Adds a 2 tick delay before the tot
 
 update_checker: true
 
+spread:
+  max_per_tick: 40                          # Max spread attempts processed server-wide per tick. Lower = lighter on TPS, slower spreading.
+
 messages:
   bigmining:
     enabled: <green>Bigmining on

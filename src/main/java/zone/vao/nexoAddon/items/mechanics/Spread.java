@@ -6,9 +6,11 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.utils.BlockUtil;
+import zone.vao.nexoAddon.utils.SpreadScheduler;
 
 import java.util.List;
 
@@ -54,6 +56,14 @@ public record Spread(
           r -> BlockUtil.restartSpread(event.getChunk()),
           3L
       );
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent event) {
+      if (!NexoAddon.getInstance().getIsSpread()) return;
+
+      SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+      if (scheduler != null) scheduler.forgetChunk(event.getChunk());
     }
   }
 }

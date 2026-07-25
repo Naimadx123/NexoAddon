@@ -50,7 +50,6 @@ import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public final class NexoAddon extends JavaPlugin {
@@ -77,7 +76,7 @@ public final class NexoAddon extends JavaPlugin {
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
   private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
-  private final Map<Location, WrappedTask> spreadTasks = new ConcurrentHashMap<>();
+  private SpreadScheduler spreadScheduler;
   @Setter
   private Boolean isDecay = false;
   @Setter
@@ -105,6 +104,7 @@ public final class NexoAddon extends JavaPlugin {
     globalConfig = getConfig();
     isDebug = globalConfig.getBoolean("debug", false);
     foliaLib = new FoliaLib(this);
+    spreadScheduler = new SpreadScheduler(globalConfig.getInt("spread.max_per_tick", 40));
     initializeCommandManager();
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
         Bukkit.getPluginManager().getPlugin("MythicMobs").isEnabled())
@@ -137,8 +137,7 @@ public final class NexoAddon extends JavaPlugin {
     }
     particleTasks.values().forEach(WrappedTask::cancel);
     particleTasks.clear();
-    spreadTasks.values().forEach(WrappedTask::cancel);
-    spreadTasks.clear();
+    if (spreadScheduler != null) spreadScheduler.stop();
   }
 
   @Override
@@ -165,8 +164,10 @@ public final class NexoAddon extends JavaPlugin {
       particleEffectManager.startAuraEffectTask();
     }, 2L);
 
-    spreadTasks.values().forEach(WrappedTask::cancel);
-    spreadTasks.clear();
+    if (spreadScheduler != null) {
+      spreadScheduler.stop();
+      spreadScheduler.setMaxPerTick(globalConfig.getInt("spread.max_per_tick", 40));
+    }
 
     foliaLib.getScheduler().runLater(() -> {
       for (World world : Bukkit.getWorlds()) {

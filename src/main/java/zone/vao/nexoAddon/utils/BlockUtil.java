@@ -400,14 +400,12 @@ public class BlockUtil {
     };
   }
 
-  private static NamespacedKey spreadKey() {
-    return new NamespacedKey(NexoAddon.getInstance(), "spread");
-  }
-
   public static void startSpread(Location location) {
     if (location == null || location.getWorld() == null) return;
     if (!NexoAddon.instance.getIsSpread()) return;
-    if (NexoAddon.getInstance().getSpreadTasks().containsKey(location)) return;
+
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler == null || scheduler.isRegistered(location)) return;
 
     Block block = location.getBlock();
     if (!NexoBlocks.isCustomBlock(block)) return;
@@ -418,58 +416,50 @@ public class BlockUtil {
     Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(customBlockMechanic.getItemID());
     if (mechanic == null || mechanic.getSpread() == null) return;
 
-    Spread spread = mechanic.getSpread();
-    String sourceId = customBlockMechanic.getItemID();
-
-    CustomBlockData customBlockData = new CustomBlockData(block, NexoAddon.getInstance());
-    customBlockData.set(spreadKey(), PersistentDataType.STRING, sourceId);
-
-    WrappedTask task = NexoAddon.instance.foliaLib.getScheduler().runAtLocationTimer(location, () -> {
-      Block current = location.getBlock();
-      CustomBlockMechanic mechanicNow = NexoBlocks.isCustomBlock(current) ? NexoBlocks.customBlockMechanic(location) : null;
-      if (mechanicNow == null || !sourceId.equals(mechanicNow.getItemID())) {
-        stopSpread(location);
-        return;
-      }
-      trySpread(current, spread, sourceId);
-    }, spread.interval(), spread.interval());
-
-    NexoAddon.getInstance().getSpreadTasks().put(location, task);
+    scheduler.register(location, mechanic.getSpread(), customBlockMechanic.getItemID());
   }
 
   public static void stopSpread(Location location) {
     if (location == null) return;
-    WrappedTask task = NexoAddon.getInstance().getSpreadTasks().remove(location);
-    if (task != null) task.cancel();
-
-    if (location.getWorld() == null) return;
-    CustomBlockData customBlockData = new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
-    customBlockData.remove(spreadKey());
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler != null) scheduler.unregister(location);
   }
 
   public static void restartSpread(Chunk chunk) {
     if (!NexoAddon.instance.getIsSpread()) return;
     if (NexoAddon.getInstance().getMechanics().isEmpty()) return;
 
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler == null) return;
+
     for (Block block : CustomBlockData.getBlocksWithCustomData(NexoAddon.getInstance(), chunk)) {
       CustomBlockData customBlockData = new CustomBlockData(block, NexoAddon.getInstance());
-      if (!customBlockData.has(spreadKey(), PersistentDataType.STRING)) continue;
+      if (!customBlockData.has(SpreadScheduler.spreadKey(), PersistentDataType.STRING)) continue;
+
+      Location location = block.getLocation();
+      if (scheduler.isRegistered(location)) continue;
 
       if (!NexoBlocks.isCustomBlock(block)) {
-        customBlockData.remove(spreadKey());
+        customBlockData.remove(SpreadScheduler.spreadKey());
         continue;
       }
-      if (NexoAddon.getInstance().getSpreadTasks().containsKey(block.getLocation())) continue;
 
-      startSpread(block.getLocation());
+      CustomBlockMechanic customBlockMechanic = NexoBlocks.customBlockMechanic(location);
+      Mechanics mechanic = customBlockMechanic == null ? null
+          : NexoAddon.getInstance().getMechanics().get(customBlockMechanic.getItemID());
+      if (mechanic == null || mechanic.getSpread() == null) {
+        customBlockData.remove(SpreadScheduler.spreadKey());
+        continue;
+      }
+
+      scheduler.register(location, mechanic.getSpread(), customBlockMechanic.getItemID(), false);
     }
   }
 
-  private static void trySpread(Block source, Spread spread, String sourceId) {
-    if (ThreadLocalRandom.current().nextDouble() > spread.chance()) return;
-
+  static void trySpread(Block source, Spread spread, String sourceId) {
     String resultId = "self".equalsIgnoreCase(spread.result()) ? sourceId : spread.result();
     int radius = spread.radius();
+    int maxNearby = spread.maxNearby();
 
     int nearby = 0;
     List<Block> candidates = new ArrayList<>();
@@ -481,19 +471,19 @@ public class BlockUtil {
 
           Block relative = source.getRelative(x, y, z);
 
-          if (isResultBlock(relative, resultId)) {
-            nearby++;
+          if (spread.replace().contains(relative.getType())) {
+            if (matchesConditions(relative, spread)) candidates.add(relative);
             continue;
           }
 
-          if (spread.replace().contains(relative.getType()) && matchesConditions(relative, spread)) {
-            candidates.add(relative);
+          if (isResultBlock(relative, resultId)) {
+            nearby++;
+            if (nearby >= maxNearby) return;
           }
         }
       }
     }
 
-    if (nearby >= spread.maxNearby()) return;
     if (candidates.isEmpty()) return;
 
     Block target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
