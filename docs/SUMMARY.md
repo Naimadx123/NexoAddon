@@ -24,6 +24,7 @@
 * [InventoryType](mechanics/infested-1.md)
 * [KillMessage](mechanics/killmessage.md)
 * [Lifesteal](mechanics/lifesteal.md)
+* [Liquid](mechanics/liquid.md)
 * [MiningTools](mechanics/miningtools.md)
 * [Remember](mechanics/remember.md)
 * [Repair](mechanics/repair.md)
@@ -34,6 +35,10 @@
 * [UniqueId](mechanics/uniqueid.md)
 * [Unstackable](mechanics/unstackable.md)
 * [VeinMiner](mechanics/veinminer.md)
+
+## Biomes
+
+* [Custom Biomes](biomes/custom-biomes.md)
 
 ## Populators
 
