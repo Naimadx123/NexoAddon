@@ -18,6 +18,7 @@ import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.Liquid;
+import zone.vao.nexoAddon.items.mechanics.Spread;
 
 import java.io.File;
 import java.util.*;
@@ -624,40 +625,130 @@ public class ItemConfigUtil {
   }
 
   private static void loadSpreadMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (!section.contains("Mechanics.custom_block.spread")) return;
-    if (!section.getBoolean("Mechanics.custom_block.spread.enabled", true)) return;
+    ConfigurationSection spread = section.getConfigurationSection("Mechanics.custom_block.spread");
+    if (spread == null || !spread.getBoolean("enabled", true)) return;
 
-    int interval = Math.max(1, section.getInt("Mechanics.custom_block.spread.interval", 100));
-    double chance = section.getDouble("Mechanics.custom_block.spread.chance", 0.15);
-    int radius = Math.max(1, section.getInt("Mechanics.custom_block.spread.radius", 1));
-    boolean requiresAirAbove = section.getBoolean("Mechanics.custom_block.spread.requires_air_above", false);
-    int maxNearby = section.getInt("Mechanics.custom_block.spread.max_nearby", 64);
-    int lightMin = section.getInt("Mechanics.custom_block.spread.conditions.light_min", 0);
-    int lightMax = section.getInt("Mechanics.custom_block.spread.conditions.light_max", 15);
-    String result = section.getString("Mechanics.custom_block.spread.result", "self");
+    String itemId = mechanic.getId();
 
-    List<Material> replace = new ArrayList<>();
-    for (String raw : section.getStringList("Mechanics.custom_block.spread.replace")) {
-      Material material = Material.matchMaterial(raw);
-      if (material != null) {
-        replace.add(material);
-      } else {
-        NexoAddon.getInstance().getLogger().warning("Invalid material in spread.replace: " + raw);
-      }
+    int interval = Math.max(1, spread.getInt("interval", 100));
+    double chance = spread.getDouble("chance", 0.15);
+    int radius = Math.max(1, spread.getInt("radius", 1));
+    boolean requiresAirAbove = spread.getBoolean("requires_air_above", false);
+    int maxNearby = spread.getInt("max_nearby", 64);
+    int lightMin = spread.getInt("conditions.light_min", 0);
+    int lightMax = spread.getInt("conditions.light_max", 15);
+    String defaultResult = spread.getString("result", "self");
+    boolean protectionEnabled = spread.getBoolean("protection.enabled", false);
+    boolean respectClaims = spread.getBoolean("protection.respect_claims", true);
+
+    Spread.Mode mode = Spread.Mode.SINGLE;
+    String rawMode = spread.getString("mode", "SINGLE");
+    try {
+      mode = Spread.Mode.valueOf(rawMode.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException exception) {
+      NexoAddon.getInstance().getLogger().warning("Unknown spread `mode` `" + rawMode
+          + "` on `" + itemId + "`. Falling back to SINGLE.");
     }
 
-    List<String> biomes = new ArrayList<>();
-    for (String raw : section.getStringList("Mechanics.custom_block.spread.conditions.biome")) {
-      biomes.add(raw.toLowerCase());
+    List<Spread.Rule> rules = new ArrayList<>();
+    for (Map<?, ?> raw : spread.getMapList("rules")) {
+      Object result = raw.get("result");
+      Spread.Rule rule = buildSpreadRule(
+          flattenStrings(raw.get("replace")),
+          result instanceof String string && !string.isBlank() ? string : defaultResult,
+          itemId
+      );
+      if (rule != null) rules.add(rule);
     }
 
-    if (replace.isEmpty()) {
-      NexoAddon.getInstance().getLogger().warning("Spread mechanic has no valid `replace` materials. Skipping.");
+    Spread.Rule legacy = buildSpreadRule(spread.getStringList("replace"), defaultResult, itemId);
+    if (legacy != null) rules.add(legacy);
+
+    if (rules.isEmpty()) {
+      NexoAddon.getInstance().getLogger().warning("Spread mechanic on `" + itemId
+          + "` has no valid `rules` or `replace` entries. Skipping.");
       return;
     }
 
-    mechanic.setSpread(interval, chance, radius, replace, requiresAirAbove, maxNearby, lightMin, lightMax, biomes, result);
+    List<String> biomes = new ArrayList<>();
+    for (String raw : spread.getStringList("conditions.biome")) {
+      biomes.add(raw.toLowerCase(Locale.ROOT));
+    }
+
+    mechanic.setSpread(new Spread(interval, chance, radius, requiresAirAbove, maxNearby,
+        lightMin, lightMax, biomes, mode, protectionEnabled, respectClaims, List.copyOf(rules)));
     NexoAddon.instance.setIsSpread(true);
+  }
+
+  private static List<String> flattenStrings(Object raw) {
+    if (raw == null) return List.of();
+    if (raw instanceof List<?> list) {
+      List<String> values = new ArrayList<>(list.size());
+      for (Object entry : list) {
+        if (entry != null) values.add(String.valueOf(entry));
+      }
+      return values;
+    }
+    return List.of(String.valueOf(raw));
+  }
+
+  private static Spread.Rule buildSpreadRule(List<String> entries, String result, String itemId) {
+    boolean wildcard = false;
+    Set<Material> materials = EnumSet.noneOf(Material.class);
+    List<Tag<Material>> tags = new ArrayList<>();
+
+    for (String raw : entries) {
+      if (raw == null || raw.isBlank()) continue;
+
+      String value = raw.trim();
+      if (value.equals("*") || value.equalsIgnoreCase("all") || value.equalsIgnoreCase("any")) {
+        wildcard = true;
+        continue;
+      }
+
+      boolean forcedTag = value.startsWith("#");
+      if (forcedTag) value = value.substring(1);
+
+      if (!forcedTag) {
+        Material material = Material.matchMaterial(value);
+        if (material != null) {
+          materials.add(material);
+          continue;
+        }
+      }
+
+      Tag<Material> tag = matchBlockTag(value);
+      if (tag != null) {
+        tags.add(tag);
+        continue;
+      }
+
+      NexoAddon.getInstance().getLogger().warning("Unknown material or block tag `" + raw
+          + "` in spread rules on `" + itemId + "`. Skipping it.");
+    }
+
+    if (!wildcard && materials.isEmpty() && tags.isEmpty()) return null;
+    return new Spread.Rule(wildcard, Collections.unmodifiableSet(materials), List.copyOf(tags), result);
+  }
+
+  private static Tag<Material> matchBlockTag(String value) {
+    NamespacedKey key;
+    try {
+      key = value.indexOf(':') >= 0
+          ? NamespacedKey.fromString(value.toLowerCase(Locale.ROOT))
+          : NamespacedKey.minecraft(value.toLowerCase(Locale.ROOT));
+    } catch (Throwable ignored) {
+      return null;
+    }
+    if (key == null) return null;
+
+    try {
+      Tag<Material> blocks = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+      if (blocks != null) return blocks;
+      return Bukkit.getTag(Tag.REGISTRY_ITEMS, key, Material.class);
+    } catch (Throwable ignored) {
+      return null;
+    }
   }
 
   private static void parseItemList(List<String> rawItems, List<Material> materials, List<String> nexoIds) {

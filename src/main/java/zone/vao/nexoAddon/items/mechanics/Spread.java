@@ -3,6 +3,7 @@ package zone.vao.nexoAddon.items.mechanics;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockPlaceEvent;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -12,21 +13,71 @@ import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.utils.BlockUtil;
 import zone.vao.nexoAddon.utils.SpreadScheduler;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public record Spread(
     int interval,
     double chance,
     int radius,
-    List<Material> replace,
     boolean requiresAirAbove,
     int maxNearby,
     int lightMin,
     int lightMax,
     List<String> biomes,
-    String result
+    Mode mode,
+    boolean protectionEnabled,
+    boolean respectClaims,
+    List<Rule> rules
 ) {
+
+  public enum Mode {
+    SINGLE,
+    MULTI
+  }
+
+  public record Rule(
+      boolean wildcard,
+      Set<Material> materials,
+      List<Tag<Material>> tags,
+      String result
+  ) {
+
+    public boolean matches(Material material) {
+      if (wildcard) return true;
+      if (materials.contains(material)) return true;
+
+      for (Tag<Material> tag : tags) {
+        if (tag.isTagged(material)) return true;
+      }
+      return false;
+    }
+  }
+
+  public Rule ruleFor(Material material) {
+    for (Rule rule : rules) {
+      if (rule.matches(material)) return rule;
+    }
+    return null;
+  }
+
+  public boolean hasNearbyLimit() {
+    return maxNearby > 0;
+  }
+
+  public Set<String> resultIds(String sourceId) {
+    Set<String> ids = new LinkedHashSet<>();
+    for (Rule rule : rules) {
+      ids.add(resolveResult(rule.result(), sourceId));
+    }
+    return ids;
+  }
+
+  public static String resolveResult(String result, String sourceId) {
+    return result == null || "self".equalsIgnoreCase(result) ? sourceId : result;
+  }
 
   public static class SpreadListener implements Listener {
 

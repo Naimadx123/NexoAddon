@@ -133,8 +133,8 @@ public class Mechanics {
     this.lifesteal = new Lifesteal(amount, cooldown);
   }
 
-  public void setSpread(int interval, double chance, int radius, List<Material> replace, boolean requiresAirAbove, int maxNearby, int lightMin, int lightMax, List<String> biomes, String result) {
-    this.spread = new Spread(interval, chance, radius, replace, requiresAirAbove, maxNearby, lightMin, lightMax, biomes, result);
+  public void setSpread(Spread spread) {
+    this.spread = spread;
   }
 
   public void setThor(int lightningBoltsAmount, double randomLocationVariation, int delay) {

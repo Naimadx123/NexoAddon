@@ -11,9 +11,11 @@ import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -456,13 +458,16 @@ public class BlockUtil {
     }
   }
 
+  private record SpreadCandidate(Block block, String resultId) {}
+
   static void trySpread(Block source, Spread spread, String sourceId) {
-    String resultId = "self".equalsIgnoreCase(spread.result()) ? sourceId : spread.result();
     int radius = spread.radius();
     int maxNearby = spread.maxNearby();
+    boolean limitNearby = spread.hasNearbyLimit();
+    Set<String> resultIds = spread.resultIds(sourceId);
 
     int nearby = 0;
-    List<Block> candidates = new ArrayList<>();
+    List<SpreadCandidate> candidates = new ArrayList<>();
 
     for (int x = -radius; x <= radius; x++) {
       for (int y = -radius; y <= radius; y++) {
@@ -470,35 +475,61 @@ public class BlockUtil {
           if (x == 0 && y == 0 && z == 0) continue;
 
           Block relative = source.getRelative(x, y, z);
+          Material type = relative.getType();
 
-          if (spread.replace().contains(relative.getType())) {
-            if (matchesConditions(relative, spread)) candidates.add(relative);
+          Spread.Rule rule = spread.ruleFor(type);
+          if (rule != null && rule.wildcard() && UNBREAKABLE_BLOCKS.contains(type)) continue;
+          if (rule == null && !limitNearby) continue;
+
+          if (isResultBlock(relative, resultIds)) {
+            nearby++;
+            if (limitNearby && nearby >= maxNearby) return;
             continue;
           }
 
-          if (isResultBlock(relative, resultId)) {
-            nearby++;
-            if (nearby >= maxNearby) return;
-          }
+          if (rule == null || !matchesConditions(relative, spread)) continue;
+
+          candidates.add(new SpreadCandidate(relative, Spread.resolveResult(rule.result(), sourceId)));
         }
       }
     }
 
     if (candidates.isEmpty()) return;
 
-    Block target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
-    convert(target, resultId);
+    if (spread.mode() == Spread.Mode.MULTI) {
+      for (SpreadCandidate candidate : candidates) {
+        convert(source, candidate.block(), candidate.resultId(), spread);
+      }
+      return;
+    }
+
+    SpreadCandidate target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+    convert(source, target.block(), target.resultId(), spread);
   }
 
-  private static void convert(Block target, String resultId) {
+  private static void convert(Block source, Block target, String resultId, Spread spread) {
     Location location = target.getLocation();
     NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location, r -> {
+      if (!allowSpread(source, target, spread)) return;
+
       target.setType(Material.AIR);
       NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
         NexoBlocks.place(resultId, location);
         startSpread(location);
       }, 1L);
     });
+  }
+
+  private static boolean allowSpread(Block source, Block target, Spread spread) {
+    if (!spread.protectionEnabled() || !spread.respectClaims()) return true;
+
+    try {
+      BlockState newState = target.getState();
+      newState.setBlockData(source.getBlockData());
+      return EventUtil.callEvent(new BlockSpreadEvent(target, source, newState));
+    } catch (Throwable ignored) {
+      return true;
+    }
   }
 
   private static boolean matchesConditions(Block block, Spread spread) {
@@ -518,10 +549,10 @@ public class BlockUtil {
     return true;
   }
 
-  private static boolean isResultBlock(Block block, String resultId) {
+  private static boolean isResultBlock(Block block, Set<String> resultIds) {
     if (!NexoBlocks.isCustomBlock(block)) return false;
     CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block.getLocation());
-    return mechanic != null && resultId.equals(mechanic.getItemID());
+    return mechanic != null && resultIds.contains(mechanic.getItemID());
   }
 
   private static String biomeName(Block block) {
