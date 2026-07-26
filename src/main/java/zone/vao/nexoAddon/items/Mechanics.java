@@ -43,6 +43,7 @@ public class Mechanics {
   private Lifesteal lifesteal;
   private Spread spread;
   private Thor thor;
+  private Liquid liquid;
 
   public Mechanics(String id) {
     this.id = id;
@@ -140,6 +141,10 @@ public class Mechanics {
     this.thor = new Thor(lightningBoltsAmount, randomLocationVariation, delay);
   }
 
+  public void setLiquid(Liquid liquid) {
+    this.liquid = liquid;
+  }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -159,6 +164,7 @@ public class Mechanics {
     registerListener(new KillMessage.KillMessageListener(), plugin);
 
     registerListener(new Lifesteal.LifestealListener(), plugin);
+    registerListener(new Liquid.LiquidListener(), plugin);
 
     registerListener(new MiningTools.MiningToolsListener(), plugin);
 

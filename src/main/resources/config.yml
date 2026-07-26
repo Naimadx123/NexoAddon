@@ -14,6 +14,24 @@ update_checker: true
 spread:
   max_per_tick: 40                          # Max spread attempts processed server-wide per tick. Lower = lighter on TPS, slower spreading.
 
+liquid:
+  refresh_chunks: true                      # Resend affected chunks so clients re-render a liquid's tint without relogging
+  refresh_cooldown_ticks: 20                # Per-chunk debounce for that resend (a resend is a FULL chunk packet per viewer).
+                                            # Flowing water paints new cells as it spreads, so a short
+                                            # value here means a chunk resend several times per second.
+  max_place_radius: 4                       # Hard cap on Mechanics.liquid.place.radius.
+                                            # Biomes are stored per 4x4x4 cell, so any radius above 0
+                                            # paints neighbouring cells too and will recolour a liquid
+                                            # placed next to this one. Leave place.radius at 0.
+
+custom_biomes:
+  enabled: true                             # Generate + register biomes from custom_biomes/*.yml. Read at STARTUP.
+                                            # Emergency off-switch needing no file edit: -Dnexoaddon.biomes=off
+  namespace: nexoaddon                      # Default namespace for ids written without one
+  default_inherit: minecraft:the_void        # Base biome copied from the server jar (neutral: no mobs/features/music)
+  prune_orphans: false                      # true = delete generated biomes with no YAML source.
+                                            # DANGEROUS: chunks already painted with them will fail to load.
+
 messages:
   bigmining:
     enabled: <green>Bigmining on

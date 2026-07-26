@@ -5,6 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.events.player.movements.FurnituresRaytrace;
+import zone.vao.nexoAddon.events.player.movements.LiquidEnter;
 
 public class PlayerMovementListener implements Listener {
 
@@ -13,5 +14,7 @@ public class PlayerMovementListener implements Listener {
 
     if(NexoAddon.getInstance().getGlobalConfig().getBoolean("boss_bar", true))
       FurnituresRaytrace.onFurnituresRaytrace(event);
+
+    LiquidEnter.onLiquidEnter(event);
   }
 }

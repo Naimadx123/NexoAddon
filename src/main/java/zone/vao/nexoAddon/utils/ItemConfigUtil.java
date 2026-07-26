@@ -4,15 +4,20 @@ import com.nexomc.nexo.api.NexoItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
+import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.items.mechanics.Liquid;
 
 import java.io.File;
 import java.util.*;
@@ -84,6 +89,9 @@ public class ItemConfigUtil {
 
   public static void loadMechanics() {
     NexoAddon.getInstance().getMechanics().clear();
+    LiquidUtil.clear();
+    CooldownUtil.clearAll();
+    NexoAddon.getInstance().setIsLiquid(false);
 
     for (File itemFile : getItemFiles()) {
       YamlConfiguration config = YamlConfiguration.loadConfiguration(itemFile);
@@ -120,6 +128,7 @@ public class ItemConfigUtil {
         loadLifesteal(itemSection, mechanic);
         loadSpreadMechanic(itemSection, mechanic);
         loadThorMechanic(itemSection, mechanic);
+        loadLiquidMechanic(itemSection, mechanic);
       });
     }
   }
@@ -489,6 +498,119 @@ public class ItemConfigUtil {
     if (!section.contains("Mechanics.lifesteal")) return;
 
     mechanic.setLifesteal(section.getInt("Mechanics.lifesteal.amount", 1), section.getDouble("Mechanics.lifesteal.cooldown", 0.0));
+  }
+
+  private static void loadLiquidMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.liquid")) return;
+    if (!section.getBoolean("Mechanics.liquid.enabled", true)) return;
+
+    String itemId = mechanic.getId();
+    String biomeKey = section.getString("Mechanics.liquid.biome");
+    if (biomeKey == null || biomeKey.isBlank()) {
+      NexoAddon.getInstance().getLogger().warning("Liquid mechanic on `" + itemId + "` has no `biome`. Skipping.");
+      return;
+    }
+
+    Biome biome = LiquidUtil.resolveBiome(biomeKey);
+    if (biome == null) {
+      NexoAddon.getInstance().getLogger().warning(liquidBiomeError(itemId, biomeKey));
+      return;
+    }
+    if (!biomeKey.contains(":") || biomeKey.startsWith("minecraft:")) {
+      NexoAddon.getInstance().getLogger().info("Liquid `" + itemId + "` uses the vanilla biome `" + biomeKey
+          + "`; naturally occurring water of that biome will behave as this liquid too.");
+    }
+
+    boolean followFlow = section.getBoolean("Mechanics.liquid.follow_flow", true);
+    boolean placeEnabled = section.getBoolean("Mechanics.liquid.place.enabled", true);
+    boolean overwriteOtherLiquids = section.getBoolean("Mechanics.liquid.place.overwrite_other_liquids", false);
+    int placeRadius = Math.max(0, section.getInt("Mechanics.liquid.place.radius", 0));
+    String emptyItem = section.getString("Mechanics.liquid.place.empty_item");
+    String bucketItem = section.getString("Mechanics.liquid.place.bucket_item");
+    String bottleItem = section.getString("Mechanics.liquid.place.bottle_item");
+
+    Biome revertTo = null;
+    String revertKey = section.getString("Mechanics.liquid.place.revert_to");
+    if (revertKey != null && !revertKey.isBlank()) {
+      revertTo = LiquidUtil.resolveBiome(revertKey);
+      if (revertTo == null)
+        NexoAddon.getInstance().getLogger().warning("Unknown biome `" + revertKey
+            + "` in liquid.place.revert_to on `" + itemId + "`. Ignoring it.");
+    }
+
+    List<PotionEffect> effects = parsePotionEffects(section.getMapList("Mechanics.liquid.enter.effects.list"), itemId);
+    double effectsCooldown = section.getDouble("Mechanics.liquid.enter.effects.cooldown", 0.0);
+
+    List<String> commands = List.copyOf(section.getStringList("Mechanics.liquid.enter.commands.list"));
+    double commandsCooldown = section.getDouble("Mechanics.liquid.enter.commands.cooldown", 0.0);
+    boolean commandsAsConsole = !"player".equalsIgnoreCase(section.getString("Mechanics.liquid.enter.commands.as", "console"));
+
+    Liquid liquid = new Liquid(
+        itemId, biome, biomeKey, followFlow, placeEnabled, overwriteOtherLiquids, placeRadius,
+        emptyItem, bucketItem, bottleItem, revertTo,
+        effects, effectsCooldown, "liquid_fx:" + biomeKey,
+        commands, commandsCooldown, "liquid_cmd:" + biomeKey, commandsAsConsole
+    );
+
+    if (!LiquidUtil.register(liquid)) return;
+
+    mechanic.setLiquid(liquid);
+    NexoAddon.getInstance().setIsLiquid(true);
+  }
+
+  private static String liquidBiomeError(String itemId, String biomeKey) {
+    String prefix = "Liquid `" + itemId + "`: biome `" + biomeKey + "` ";
+
+    if (CustomBiomeState.isDefined(biomeKey)) {
+      if (!CustomBiomeState.isEnabled(biomeKey)) {
+        return prefix + "is defined in custom_biomes/ but is not enabled. Set `enabled: true` on it "
+            + "and restart the server. Skipping.";
+      }
+      return prefix + "is defined in custom_biomes/ but is not registered yet. Restart the server to "
+          + "apply it — biome registries can only change at startup. Skipping.";
+    }
+
+    if (CustomBiomeState.bootstrapRan()) {
+      return prefix + "is unknown. Define it in plugins/NexoAddon/custom_biomes/ and restart, or use a "
+          + "vanilla biome. Run /nexoaddon biomes to see what is registered. Skipping.";
+    }
+
+    return prefix + "is unknown, and custom biome generation did not run (disabled via config or "
+        + "-Dnexoaddon.biomes=off, or it failed at startup — check the log). Skipping.";
+  }
+
+  private static List<PotionEffect> parsePotionEffects(List<Map<?, ?>> effectList, String itemId) {
+    List<PotionEffect> effects = new ArrayList<>();
+    for (Map<?, ?> map : effectList) {
+      String typeName = String.valueOf(map.get("type")).toLowerCase();
+      if (typeName.isEmpty() || "null".equals(typeName)) continue;
+
+      if (!typeName.contains(":")) {
+        typeName = "minecraft:" + typeName;
+      }
+
+      PotionEffectType type = null;
+      try {
+        NamespacedKey key = NamespacedKey.fromString(typeName);
+        if (key != null) type = Registry.MOB_EFFECT.get(key);
+      } catch (Throwable ignored) {
+      }
+
+      if (type == null) {
+        NexoAddon.getInstance().getLogger().warning("Invalid potion effect `" + typeName
+            + "` in liquid mechanic on `" + itemId + "`. Skipping it.");
+        continue;
+      }
+
+      int duration = Math.max(1, (map.get("duration") instanceof Number number) ? number.intValue() : 100);
+      int amplifier = Math.max(0, (map.get("amplifier") instanceof Number number) ? number.intValue() : 0);
+      boolean ambient = (map.get("ambient") instanceof Boolean bool) && bool;
+      boolean particles = !(map.get("particles") instanceof Boolean bool) || bool;
+      boolean icon = !(map.get("icon") instanceof Boolean bool) || bool;
+
+      effects.add(new PotionEffect(type, duration, amplifier, ambient, particles, icon));
+    }
+    return List.copyOf(effects);
   }
 
   private static void loadThorMechanic(ConfigurationSection section, Mechanics mechanic) {

@@ -21,6 +21,9 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import zone.vao.nexoAddon.biomes.BiomeDefinition;
+import zone.vao.nexoAddon.biomes.BiomeGenerator;
+import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.commands.NexoAddonCommand;
 import zone.vao.nexoAddon.events.PlayerCommandPreprocessListener;
 import zone.vao.nexoAddon.events.PrepareRecipesListener;
@@ -81,6 +84,9 @@ public final class NexoAddon extends JavaPlugin {
   private Boolean isDecay = false;
   @Setter
   private Boolean isSpread = false;
+  @Setter
+  private Boolean isLiquid = false;
+  private boolean biomesChanged = false;
 
 
   @Override
@@ -116,6 +122,7 @@ public final class NexoAddon extends JavaPlugin {
     particleEffectManager = new ParticleEffectManager();
     particleEffectManager.startAuraEffectTask();
     initializeMetrics();
+    reportCustomBiomes();
     getLogger().info("NexoAddon enabled!");
   }
 
@@ -138,6 +145,8 @@ public final class NexoAddon extends JavaPlugin {
     particleTasks.values().forEach(WrappedTask::cancel);
     particleTasks.clear();
     if (spreadScheduler != null) spreadScheduler.stop();
+    LiquidUtil.clear();
+    CooldownUtil.clearAll();
   }
 
   @Override
@@ -153,6 +162,7 @@ public final class NexoAddon extends JavaPlugin {
       clearPopulators();
       initializePopulators();
     });
+    regenerateCustomBiomes();
     reloadNexoFiles();
     loadComponentsIfSupported();
     bossBars.values().forEach(BossBarUtil::removeBar);
@@ -236,6 +246,43 @@ public final class NexoAddon extends JavaPlugin {
 
     Mechanics.registerListeners(this);
     Components.registerListeners(this);
+  }
+
+  private void reportCustomBiomes() {
+    if (!CustomBiomeState.bootstrapRan()) return;
+
+    CustomBiomeState.warnings().forEach(warning -> getLogger().warning("[custom_biomes] " + warning));
+
+    long enabled = CustomBiomeState.definitions().stream().filter(BiomeDefinition::enabled).count();
+    if (enabled > 0) getLogger().info("Custom biomes registered: " + enabled + ". See /nexoaddon biomes.");
+  }
+
+  public boolean isBiomesChangedSinceStartup() {
+    return biomesChanged;
+  }
+
+  private void regenerateCustomBiomes() {
+    if (!CustomBiomeState.bootstrapRan() || CustomBiomeState.dataDir() == null) return;
+    if (!globalConfig.getBoolean("custom_biomes.enabled", true)) return;
+
+    try {
+      BiomeGenerator generator = new BiomeGenerator(
+          CustomBiomeState.dataDir(),
+          globalConfig.getString("custom_biomes.namespace", "nexoaddon"),
+          globalConfig.getString("custom_biomes.default_inherit", "minecraft:the_void"),
+          globalConfig.getBoolean("custom_biomes.prune_orphans", false)
+      );
+      BiomeGenerator.Result result = generator.run();
+      result.warnings().forEach(warning -> getLogger().warning("[custom_biomes] " + warning));
+
+      String before = CustomBiomeState.startupHash();
+      biomesChanged = result.hash() != null && before != null && !result.hash().equals(before);
+      if (biomesChanged)
+        getLogger().warning("Custom biome definitions changed on disk. Restart the server to apply them "
+            + "— biome registries cannot be reloaded while running.");
+    } catch (Throwable throwable) {
+      getLogger().warning("Failed to regenerate custom biomes: " + throwable);
+    }
   }
 
   private void initializeMetrics() {

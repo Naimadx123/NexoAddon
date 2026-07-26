@@ -4,6 +4,7 @@ main: zone.vao.nexoAddon.NexoAddon
 api-version: '1.20'
 author: "Naimad (discord: 4g0)"
 loader: zone.vao.nexoAddon.loader.NALoader
+bootstrapper: zone.vao.nexoAddon.loader.NABootstrap
 folia-supported: true
 dependencies:
   server:

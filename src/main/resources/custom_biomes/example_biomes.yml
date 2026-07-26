@@ -1,0 +1,67 @@
+# NexoAddon custom biomes.
+#
+# NexoAddon turns every file in this folder into a datapack and registers it at startup.
+# Biomes exist mainly to give the `liquid` mechanic its colour: water colour comes from the biome.
+#
+# READ THIS FIRST
+#   * The top-level key is the biome id: `namespace:path`, or a bare `path` (the namespace then
+#     defaults to custom_biomes.namespace in config.yml, i.e. `nexoaddon`).
+#     Only lowercase a-z 0-9 . _ - are allowed.
+#   * Changes need a FULL SERVER RESTART. Biome registries freeze once the server is running, so
+#     /nexoaddon reload can only regenerate the files and tell you a restart is due.
+#   * QUOTE YOUR COLOURS. In YAML, `water_color: #8b0000` is a COMMENT and the value becomes empty.
+#     Always write `water_color: "#8b0000"`.
+#   * Do NOT delete a biome that has already been placed in a world. Chunks store biomes by name, so
+#     removing one makes those chunks fail to load. Set `enabled: false` and replace the water first.
+#   * Biomes are stored per 4x4x4 block cell, not per block. Two liquids of different colours must be
+#     at least 4 blocks apart on every axis, or they share a cell and end up the same colour even when
+#     solid blocks sit between them. This is a Minecraft limitation and cannot be fixed here.
+#   * Every example below is `enabled: false`. A biome becomes part of your world data permanently,
+#     so it is opt-in on purpose.
+#
+# AVAILABLE KEYS
+#   enabled, inherit, title
+#   water_color, water_fog_color, sky_color, fog_color
+#   grass_color, foliage_color, dry_foliage_color, grass_color_modifier
+#   temperature, downfall, has_precipitation, temperature_modifier, creature_spawn_probability
+#   raw  -> any biome JSON at all, merged last (see the third example)
+
+# 1. Red, lava-looking water for a Nexo liquid.
+red_water:
+  enabled: false
+  title: "Molten Water"
+  inherit: minecraft:the_void   # neutral base: no mobs, no features, no music
+  water_color: "#8b0000"        # this is what the liquid mechanic tints the water with
+  water_fog_color: "#5a0000"    # colour of the fog while submerged
+  fog_color: "#3a1010"
+  sky_color: "#4a1414"
+  temperature: 2.0
+  downfall: 0.0
+  has_precipitation: false
+
+# 2. The three-line minimum needed for a coloured liquid.
+toxic_water:
+  enabled: false
+  water_color: "#3bd44b"
+
+# 3. `raw` is the escape hatch: it is converted straight to biome JSON and merged LAST,
+#    so it can set anything the keys above do not cover.
+#    Objects merge with the inherited biome; lists REPLACE it entirely.
+haunted_water:
+  enabled: false
+  inherit: minecraft:lush_caves # borrow that biome's ambience wholesale
+  water_color: "#2b2b6e"
+  raw:
+    spawners: {}                # ...but without any of its mobs
+
+# Then point a Nexo item at the biome:
+#
+#   molten_bucket:
+#     material: WATER_BUCKET
+#     Mechanics:
+#       liquid:
+#         biome: nexoaddon:red_water
+#         place:
+#           radius: 2
+#
+# Check what actually registered with:  /nexoaddon biomes
