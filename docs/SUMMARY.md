@@ -31,6 +31,7 @@
 * [ShiftBlock](mechanics/shiftblock.md)
 * [Signal](mechanics/signal.md)
 * [SpawnerBreak](mechanics/spawnerbreak.md)
+* [Spread](mechanics/spread.md)
 * [Stackable](mechanics/stackable.md)
 * [UniqueId](mechanics/uniqueid.md)
 * [Unstackable](mechanics/unstackable.md)
