@@ -147,6 +147,7 @@ public final class NexoAddon extends JavaPlugin {
     if (spreadScheduler != null) spreadScheduler.stop();
     LiquidUtil.clear();
     CooldownUtil.clearAll();
+    BreakCascade.clearAll();
   }
 
   @Override
