@@ -18,6 +18,7 @@
 * [BlockAura](mechanics/blockaura.md)
 * [BottledExp](mechanics/bottledexp.md)
 * [Custom Block Experience](mechanics/custom-block-experience.md)
+* [CustomCrafting](mechanics/customcrafting.md)
 * [Decay](mechanics/decay.md)
 * [Enchantify](mechanics/enchantify.md)
 * [Infested](mechanics/infested.md)
