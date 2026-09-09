@@ -17,6 +17,7 @@ import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
 import zone.vao.nexoAddon.items.mechanics.Liquid;
 import zone.vao.nexoAddon.items.mechanics.Spread;
 
@@ -126,6 +127,7 @@ public class ItemConfigUtil {
         loadAutoCatchMechanic(itemSection, mechanic);
         loadUniqueIdMechanic(itemSection, mechanic);
         loadInventoryType(itemSection, mechanic);
+        loadCustomCraftingMechanic(itemSection, mechanic);
         loadLifesteal(itemSection, mechanic);
         loadSpreadMechanic(itemSection, mechanic);
         loadThorMechanic(itemSection, mechanic);
@@ -493,6 +495,36 @@ public class ItemConfigUtil {
     }
 
     mechanic.setInventoryType(type, title);
+  }
+
+  private static void loadCustomCraftingMechanic(ConfigurationSection section, Mechanics mechanic) {
+    ConfigurationSection crafting = section.getConfigurationSection("Mechanics.custom_crafting");
+    if (crafting == null || !crafting.getBoolean("enabled", true)) return;
+
+    String itemId = mechanic.getId();
+    String station = crafting.getString("station_id");
+    if (station == null || station.isBlank()) {
+      NexoAddon.getInstance().getLogger().warning("Custom crafting mechanic on `" + itemId
+          + "` has no `station_id`. Skipping.");
+      return;
+    }
+
+    int size = Math.min(6, Math.max(1, crafting.getInt("rows", 3))) * 9;
+    int resultSlot = crafting.getInt("result_slot", size - 1);
+
+    if (resultSlot < 0 || resultSlot >= size) {
+      NexoAddon.getInstance().getLogger().warning("Custom crafting `result_slot` `" + resultSlot
+          + "` on `" + itemId + "` is outside the menu. Skipping.");
+      return;
+    }
+
+    String rawTitle = crafting.getString("title", "");
+    Component title = rawTitle.isEmpty()
+        ? Component.text("Crafting")
+        : MiniMessage.miniMessage().deserialize(rawTitle);
+
+    mechanic.setCustomCrafting(new CustomCrafting(title, size, resultSlot, station.trim(),
+        CustomCraftingUtil.buildItem(crafting.getConfigurationSection("filler"))));
   }
 
   private static void loadLifesteal(ConfigurationSection section, Mechanics mechanic) {

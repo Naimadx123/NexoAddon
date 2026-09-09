@@ -57,6 +57,7 @@ public class RecipesUtil {
   public static void loadRecipes()
   {
     RecipesUtil.loadRecipeFiles();
+    CustomCraftingUtil.loadStations();
 
     if(RecipeManager.getRecipesFiles().isEmpty()) return;
 

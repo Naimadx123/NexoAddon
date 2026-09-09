@@ -40,6 +40,7 @@ public class Mechanics {
   private AutoCatch autoCatch;
   private UniqueId uniqueId;
   private InventoryType inventoryType;
+  private CustomCrafting customCrafting;
   private Lifesteal lifesteal;
   private Spread spread;
   private Thor thor;
@@ -129,6 +130,10 @@ public class Mechanics {
     this.inventoryType = new InventoryType(inventoryType, title);
   }
 
+  public void setCustomCrafting(CustomCrafting customCrafting) {
+    this.customCrafting = customCrafting;
+  }
+
   public void setLifesteal(int amount, double cooldown) {
     this.lifesteal = new Lifesteal(amount, cooldown);
   }
@@ -152,6 +157,8 @@ public class Mechanics {
     registerListener(new BigMining.BigMiningListener(), plugin);
     registerListener(new BlockAura.BlockAuraListener(), plugin);
     registerListener(new BottledExp.BottledExpListener(), plugin);
+
+    registerListener(new CustomCrafting.CustomCraftingListener(), plugin);
 
     registerListener(new Decay.DecayListener(), plugin);
     registerListener(new DropExperience.DropExperienceListener(), plugin);

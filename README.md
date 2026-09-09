@@ -50,6 +50,7 @@ Designed as a feature-rich addon for servers using Nexo, NexoAddon enhances your
 
 ⚒️ **Crafting Enhancements**
 * Smithing Recipe Support.
+* CustomCrafting – Slot-based recipes inside your own menu, opened from a CustomBlock or Furniture.
 
 🆕 **And more coming soon...**
 
