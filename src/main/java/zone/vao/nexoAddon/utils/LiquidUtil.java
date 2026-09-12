@@ -1,14 +1,13 @@
 package zone.vao.nexoAddon.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
@@ -28,6 +27,8 @@ public class LiquidUtil {
   private static final Map<NamespacedKey, Liquid> liquids = new ConcurrentHashMap<>();
   private static final Map<ChunkRef, Long> lastRefresh = new ConcurrentHashMap<>();
   private static final Set<ChunkRef> pendingRefresh = ConcurrentHashMap.newKeySet();
+  private static final Map<ChunkRef, Map<Location, Block>> tinted = new ConcurrentHashMap<>();
+  private static volatile WrappedTask sweepTask;
 
   public static Biome resolveBiome(String raw) {
     if (raw == null || raw.isBlank()) return null;
@@ -67,6 +68,85 @@ public class LiquidUtil {
     liquids.clear();
     lastRefresh.clear();
     pendingRefresh.clear();
+    tinted.clear();
+    WrappedTask task = sweepTask;
+    if (task != null) {
+      task.cancel();
+      sweepTask = null;
+    }
+  }
+
+  private static void track(World world, int x, int y, int z) {
+    ChunkRef ref = new ChunkRef(world.getUID(), packChunk(x >> 4, z >> 4));
+    Block anchor = cellAnchor(world, x, y, z);
+    tinted.computeIfAbsent(ref, key -> new ConcurrentHashMap<>()).putIfAbsent(anchor.getLocation(), anchor);
+    ensureSweeping();
+  }
+
+  public static void restart(Chunk chunk) {
+    for (Block block : CustomBlockData.getBlocksWithCustomData(NexoAddon.getInstance(), chunk)) {
+      CustomBlockData data = new CustomBlockData(block, NexoAddon.getInstance());
+      if (!data.has(originalBiomeKey(), PersistentDataType.STRING)) continue;
+      track(chunk.getWorld(), block.getX(), block.getY(), block.getZ());
+    }
+  }
+
+  public static void restartLoaded() {
+    NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+      for (World world : Bukkit.getWorlds()) {
+        for (Chunk chunk : world.getLoadedChunks()) restart(chunk);
+      }
+    }, 10L);
+  }
+
+  public static void forgetChunk(Chunk chunk) {
+    tinted.remove(new ChunkRef(chunk.getWorld().getUID(), packChunk(chunk.getX(), chunk.getZ())));
+  }
+
+  private static void ensureSweeping() {
+    if (sweepTask != null) return;
+    long interval = Math.max(1L,
+        NexoAddon.getInstance().getGlobalConfig().getLong("liquid.restore_interval_ticks", 20));
+    sweepTask = NexoAddon.getInstance().getFoliaLib().getScheduler().runTimer(LiquidUtil::sweep, interval, interval);
+  }
+
+  private static void sweep() {
+    for (Map.Entry<ChunkRef, Map<Location, Block>> entry : tinted.entrySet()) {
+      ChunkRef ref = entry.getKey();
+      Map<Location, Block> cells = entry.getValue();
+      World world = Bukkit.getWorld(ref.world());
+      Location anchor = cells.keySet().stream().findFirst().orElse(null);
+      if (world == null || anchor == null) {
+        tinted.remove(ref);
+        continue;
+      }
+      if (!world.isChunkLoaded((int) (ref.chunk() >> 32), (int) ref.chunk())) continue;
+
+      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(anchor, task -> {
+        for (Map.Entry<Location, Block> cell : cells.entrySet()) {
+          if (holdsLiquid(cell.getValue())) continue;
+
+          Block water = sweepCell(cell.getKey());
+          if (water == null) cells.remove(cell.getKey());
+          else cells.put(cell.getKey(), water);
+        }
+      });
+    }
+  }
+
+  private static Block sweepCell(Location cell) {
+    Block block = cell.getBlock();
+    Liquid owner = byBiome(block.getBiome());
+    if (owner == null) {
+      new CustomBlockData(block, NexoAddon.getInstance()).remove(originalBiomeKey());
+      return null;
+    }
+
+    Block water = cellFind(block.getWorld(), block.getX(), block.getY(), block.getZ(),
+        Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, LiquidUtil::holdsLiquid);
+    if (water != null) return water;
+
+    return restoreCell(cell, owner.revertTo(), false) == RESTORE_OK ? null : block;
   }
 
   public static boolean isWater(Block block) {
@@ -97,11 +177,22 @@ public class LiquidUtil {
     data.set(originalBiomeKey(), PersistentDataType.STRING, current.getKey().toString());
   }
 
-  public static boolean cellHasWater(World world, int x, int y, int z) {
-    return cellHasWater(world, x, y, z, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+  public static boolean isSource(Block block) {
+    if (!holdsLiquid(block)) return false;
+    if (block.getType() == Material.WATER_CAULDRON) return true;
+    return !(block.getBlockData() instanceof Levelled levelled) || levelled.getLevel() == 0;
   }
 
-  public static boolean cellHasWater(World world, int x, int y, int z, int skipX, int skipY, int skipZ) {
+  public static boolean cellHasWater(World world, int x, int y, int z) {
+    return cellFind(world, x, y, z, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, LiquidUtil::holdsLiquid) != null;
+  }
+
+  public static boolean cellHasSource(World world, int x, int y, int z, int skipX, int skipY, int skipZ) {
+    return cellFind(world, x, y, z, skipX, skipY, skipZ, LiquidUtil::isSource) != null;
+  }
+
+  private static Block cellFind(World world, int x, int y, int z, int skipX, int skipY, int skipZ,
+                                java.util.function.Predicate<Block> test) {
     int baseX = (x >> 2) << 2;
     int baseY = (y >> 2) << 2;
     int baseZ = (z >> 2) << 2;
@@ -114,11 +205,12 @@ public class LiquidUtil {
           int cz = baseZ + dz;
           if (cy < world.getMinHeight() || cy >= world.getMaxHeight()) continue;
           if (cx == skipX && cy == skipY && cz == skipZ) continue;
-          if (holdsLiquid(world.getBlockAt(cx, cy, cz))) return true;
+          Block block = world.getBlockAt(cx, cy, cz);
+          if (test.test(block)) return block;
         }
       }
     }
-    return false;
+    return null;
   }
 
   public record CleanupResult(int restored, int hadWater, int noOriginal) {}
@@ -202,10 +294,6 @@ public class LiquidUtil {
   public static final int RESTORE_HAS_WATER = 2;
   public static final int RESTORE_NO_ORIGINAL = 3;
 
-  public static boolean restoreCell(Location location, Biome fallback) {
-    return restoreCell(location, fallback, false) == RESTORE_OK;
-  }
-
   public static int restoreCell(Location location, Biome fallback, boolean force) {
     if (location == null) return RESTORE_NOT_LIQUID;
 
@@ -235,47 +323,6 @@ public class LiquidUtil {
 
     refreshChunks(world, chunks);
     return RESTORE_OK;
-  }
-
-  public static int restoreRegion(Location start, Biome fallback, int maxCells) {
-    if (start == null) return 0;
-
-    World world = start.getWorld();
-    if (world == null) return 0;
-
-    Biome startBiome = world.getBiome(start.getBlockX(), start.getBlockY(), start.getBlockZ());
-    if (byBiome(startBiome) == null) return 0;
-
-    NamespacedKey liquidKey = startBiome.getKey();
-    java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
-    Set<Long> visited = new HashSet<>();
-    int restored = 0;
-
-    int[] origin = {start.getBlockX(), start.getBlockY(), start.getBlockZ()};
-    queue.add(origin);
-    visited.add(packCell(origin[0] >> 2, origin[1] >> 2, origin[2] >> 2));
-
-    while (!queue.isEmpty() && visited.size() <= maxCells) {
-      int[] cell = queue.poll();
-      if (restoreCell(new Location(world, cell[0], cell[1], cell[2]), fallback, false) == RESTORE_OK) restored++;
-
-      int[][] neighbours = {
-          {cell[0] + 4, cell[1], cell[2]}, {cell[0] - 4, cell[1], cell[2]},
-          {cell[0], cell[1] + 4, cell[2]}, {cell[0], cell[1] - 4, cell[2]},
-          {cell[0], cell[1], cell[2] + 4}, {cell[0], cell[1], cell[2] - 4}
-      };
-
-      for (int[] next : neighbours) {
-        if (next[1] < world.getMinHeight() || next[1] >= world.getMaxHeight()) continue;
-        if (!visited.add(packCell(next[0] >> 2, next[1] >> 2, next[2] >> 2))) continue;
-        if (!world.isChunkLoaded(next[0] >> 4, next[2] >> 4)) continue;
-        if (!liquidKey.equals(world.getBiome(next[0], next[1], next[2]).getKey())) continue;
-
-        queue.add(next);
-      }
-    }
-
-    return restored;
   }
 
   public static int paintBiome(Location center, int radiusBlocks, Biome biome) {
@@ -315,13 +362,14 @@ public class LiquidUtil {
           if (target.equals(current.getKey())) continue;
 
           if (!overwriteOtherLiquids && byBiome(current) != null
-              && cellHasWater(world, x, y, z, centerX, centerY, centerZ)) {
+              && cellHasSource(world, x, y, z, centerX, centerY, centerZ)) {
             blockedByOtherLiquid++;
             continue;
           }
 
           rememberOriginal(world, x, y, z, current);
           world.setBiome(x, y, z, biome);
+          track(world, x, y, z);
           chunks.add(packChunk(x >> 4, z >> 4));
         }
       }

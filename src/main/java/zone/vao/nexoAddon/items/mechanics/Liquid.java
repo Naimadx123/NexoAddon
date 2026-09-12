@@ -12,11 +12,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -106,8 +110,6 @@ public record Liquid(
         ItemBuilder itemBuilder = NexoItems.itemFromId(liquid.bucketItem());
         if (itemBuilder != null) event.setItemStack(itemBuilder.build());
       }
-
-      scheduleRestore(block.getLocation(), liquid.revertTo());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -123,11 +125,7 @@ public record Liquid(
         if (source != null && source.bottleItem() != null) swapFilledBottle(filler, source.bottleItem());
       }
 
-      if (event.getNewLevel() <= 0) {
-        scheduleRestore(location, null);
-        return;
-      }
-
+      if (event.getNewLevel() <= 0) return;
       if (reason != CauldronLevelChangeEvent.ChangeReason.BUCKET_EMPTY) return;
       if (!(event.getEntity() instanceof Player player)) return;
 
@@ -222,27 +220,21 @@ public record Liquid(
       return null;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(BlockBreakEvent event) {
+    @EventHandler
+    public void onChunkLoad(ChunkLoadEvent event) {
       if (!NexoAddon.getInstance().getIsLiquid()) return;
-      scheduleRestore(event.getBlock().getLocation(), null);
+
+      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(
+          event.getChunk().getBlock(0, 0, 0).getLocation(),
+          task -> LiquidUtil.restart(event.getChunk()),
+          3L
+      );
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(BlockPlaceEvent event) {
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent event) {
       if (!NexoAddon.getInstance().getIsLiquid()) return;
-      scheduleRestore(event.getBlock().getLocation(), null);
-    }
-
-    private void scheduleRestore(Location location, Biome fallback) {
-      Liquid owner = LiquidUtil.byBiome(location.getBlock().getBiome());
-      if (owner == null) return;
-
-      Biome revert = fallback != null ? fallback : owner.revertTo();
-      for (long delay : new long[]{2L, 20L, 80L}) {
-        NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(location,
-            task -> LiquidUtil.restoreRegion(location, revert, 256), delay);
-      }
+      LiquidUtil.forgetChunk(event.getChunk());
     }
 
     @EventHandler(ignoreCancelled = true)

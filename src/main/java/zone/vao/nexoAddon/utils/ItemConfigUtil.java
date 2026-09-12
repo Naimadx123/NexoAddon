@@ -134,6 +134,8 @@ public class ItemConfigUtil {
         loadLiquidMechanic(itemSection, mechanic);
       });
     }
+
+    if (NexoAddon.getInstance().getIsLiquid()) LiquidUtil.restartLoaded();
   }
 
   private static void loadRepairMechanic(ConfigurationSection section, Mechanics mechanic) {
@@ -559,7 +561,7 @@ public class ItemConfigUtil {
     boolean overwriteOtherLiquids = section.getBoolean("Mechanics.liquid.place.overwrite_other_liquids", false);
     int placeRadius = Math.max(0, section.getInt("Mechanics.liquid.place.radius", 0));
     String emptyItem = section.getString("Mechanics.liquid.place.empty_item");
-    String bucketItem = section.getString("Mechanics.liquid.place.bucket_item");
+    String bucketItem = section.getString("Mechanics.liquid.place.bucket_item", itemId);
     String bottleItem = section.getString("Mechanics.liquid.place.bottle_item");
 
     Biome revertTo = null;

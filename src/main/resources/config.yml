@@ -19,6 +19,9 @@ liquid:
   refresh_cooldown_ticks: 20                # Per-chunk debounce for that resend (a resend is a FULL chunk packet per viewer).
                                             # Flowing water paints new cells as it spreads, so a short
                                             # value here means a chunk resend several times per second.
+  restore_interval_ticks: 20                # How often cells painted by a liquid are checked for water; a cell
+                                            # with no water left (bucket, block placed over it, /setblock, drained
+                                            # flow...) gets its original biome back. Raise if you have huge lakes.
   max_place_radius: 4                       # Hard cap on Mechanics.liquid.place.radius.
                                             # Biomes are stored per 4x4x4 cell, so any radius above 0
                                             # paints neighbouring cells too and will recolour a liquid
