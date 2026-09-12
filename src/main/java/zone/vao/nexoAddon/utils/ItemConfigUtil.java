@@ -18,6 +18,7 @@ import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
+import zone.vao.nexoAddon.items.mechanics.Fuel;
 import zone.vao.nexoAddon.items.mechanics.Liquid;
 import zone.vao.nexoAddon.items.mechanics.Spread;
 
@@ -132,6 +133,7 @@ public class ItemConfigUtil {
         loadSpreadMechanic(itemSection, mechanic);
         loadThorMechanic(itemSection, mechanic);
         loadLiquidMechanic(itemSection, mechanic);
+        loadFuelMechanic(itemSection, mechanic);
       });
     }
 
@@ -646,6 +648,24 @@ public class ItemConfigUtil {
       effects.add(new PotionEffect(type, duration, amplifier, ambient, particles, icon));
     }
     return List.copyOf(effects);
+  }
+
+  private static void loadFuelMechanic(ConfigurationSection section, Mechanics mechanic) {
+    if (!section.contains("Mechanics.fuel")) return;
+
+    int burnTime = section.getInt("Mechanics.fuel.burn_time", 1600);
+    if (burnTime != Fuel.INFINITE) burnTime = Math.max(1, burnTime);
+    List<Material> furnaces = new ArrayList<>();
+    for (String raw : section.getStringList("Mechanics.fuel.furnaces")) {
+      Material material = Material.matchMaterial(raw);
+      if (material == null) {
+        NexoAddon.getInstance().getLogger().warning("Unknown furnace `" + raw + "` in fuel mechanic on `" + mechanic.getId() + "`. Skipping it.");
+        continue;
+      }
+      furnaces.add(material);
+    }
+
+    mechanic.setFuel(burnTime, furnaces, section.getString("Mechanics.fuel.leftover"));
   }
 
   private static void loadThorMechanic(ConfigurationSection section, Mechanics mechanic) {

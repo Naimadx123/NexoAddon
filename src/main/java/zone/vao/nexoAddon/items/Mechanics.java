@@ -45,6 +45,7 @@ public class Mechanics {
   private Spread spread;
   private Thor thor;
   private Liquid liquid;
+  private Fuel fuel;
 
   public Mechanics(String id) {
     this.id = id;
@@ -150,6 +151,10 @@ public class Mechanics {
     this.liquid = liquid;
   }
 
+  public void setFuel(int burnTime, List<Material> furnaces, String leftover) {
+    this.fuel = new Fuel(burnTime, furnaces, leftover);
+  }
+
   public static void registerListeners(NexoAddon plugin){
 
     registerListener(new AutoCatch.AutoCatchListener(), plugin);
@@ -164,6 +169,7 @@ public class Mechanics {
     registerListener(new DropExperience.DropExperienceListener(), plugin);
 
     registerListener(new Enchantify.EnchantifyListener(), plugin);
+    registerListener(new Fuel.FuelListener(), plugin);
 
     registerListener(new Infested.InfestedListener(), plugin);
     registerListener(new InventoryType.InventoryTypeListener(), plugin);
