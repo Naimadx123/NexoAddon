@@ -21,6 +21,7 @@
 * [CustomCrafting](mechanics/customcrafting.md)
 * [Decay](mechanics/decay.md)
 * [Enchantify](mechanics/enchantify.md)
+* [Fuel](mechanics/fuel.md)
 * [Infested](mechanics/infested.md)
 * [InventoryType](mechanics/infested-1.md)
 * [KillMessage](mechanics/killmessage.md)
