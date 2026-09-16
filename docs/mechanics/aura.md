@@ -23,11 +23,44 @@ Mechanics:
     particle: PORTAL      # Particle to spawn
 ```
 
+## Multiple Auras
+
+`aura` also accepts a list, so one item can combine several effects - including more than one `custom` formula.
+
+```yaml
+# Example
+
+Mechanics:
+  aura:
+    - type: ring
+      particle: PORTAL
+    - type: custom
+      particle: FLAME
+      custom: "(x+2*cos(angle+time)),(y+1),(z+2*sin(angle+time))"
+    - type: custom
+      particle: SOUL_FIRE_FLAME
+      custom: "(x+2*cos(angle-time)),(y+1.5),(z+2*sin(angle-time))"
+```
+
 ## Advanced Aura
 
 {% hint style="info" %}
-Available variables: `x`, `y`, `z`, `angle`, `angle2`,`yaw`, `pitch`, `Math_PI`
+Available variables: `x`, `y`, `z`, `angle`, `angle2`, `yaw`, `pitch`, `time`, `Math_PI`
+
+`angle` runs from `0` to `2π`, `angle2` from `-π/2` to `π/2`. `time` is the server uptime in seconds, so `angle+time` rotates a shape and `sin(time)` makes it pulse. `yaw` and `pitch` are in degrees.
 {% endhint %}
+
+```yaml
+# Example
+
+Mechanics:
+  aura:
+    type: custom
+    # Rotating ring
+    custom: "(x+2*cos(angle+time)),(y+1),(z+2*sin(angle+time))"
+    particle: FLAME
+    points: 40            # Points per pass. Defaults to 20.
+```
 
 ```yaml
 # Example
