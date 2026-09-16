@@ -3,9 +3,11 @@ package zone.vao.nexoAddon.utils;
 import com.nexomc.nexo.api.NexoItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.objecthunter.exp4j.Expression;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -17,10 +19,7 @@ import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
-import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
-import zone.vao.nexoAddon.items.mechanics.Fuel;
-import zone.vao.nexoAddon.items.mechanics.Liquid;
-import zone.vao.nexoAddon.items.mechanics.Spread;
+import zone.vao.nexoAddon.items.mechanics.*;
 
 import java.io.File;
 import java.util.*;
@@ -231,12 +230,56 @@ public class ItemConfigUtil {
   }
 
   private static void loadAuraMechanic(ConfigurationSection section, Mechanics mechanic) {
-    if (section.contains("Mechanics.aura.type") && section.contains("Mechanics.aura.particle")) {
-      Particle particle = Particle.valueOf(section.getString("Mechanics.aura.particle", "FLAME").toUpperCase());
-      String type = section.getString("Mechanics.aura.type");
-      String customFormula = section.getString("Mechanics.aura.custom", null);
-      mechanic.setAura(particle, type, customFormula);
+    List<ConfigurationSection> entries = new ArrayList<>();
+    if (section.isList("Mechanics.aura")) {
+      for (Map<?, ?> map : section.getMapList("Mechanics.aura")) {
+        entries.add(new MemoryConfiguration().createSection("aura", map));
+      }
+    } else if (section.isConfigurationSection("Mechanics.aura")) {
+      entries.add(section.getConfigurationSection("Mechanics.aura"));
     }
+
+    List<Aura> auras = new ArrayList<>();
+    for (ConfigurationSection entry : entries) {
+      Aura aura = parseAura(mechanic.getId(), entry);
+      if (aura != null) auras.add(aura);
+    }
+    if (!auras.isEmpty()) mechanic.setAura(auras);
+  }
+
+  private static Aura parseAura(String itemId, ConfigurationSection section) {
+    String type = section.getString("type");
+    if (type == null) return null;
+
+    String rawParticle = section.getString("particle", "FLAME");
+    Particle particle;
+    try {
+      particle = Particle.valueOf(rawParticle.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      NexoAddon.getInstance().getLogger().warning("Unknown particle `" + rawParticle + "` in aura mechanic on `" + itemId + "`. Skipping it.");
+      return null;
+    }
+
+    Expression[] custom = null;
+    if ("custom".equalsIgnoreCase(type)) {
+      String formula = section.getString("custom");
+      if (formula == null) {
+        NexoAddon.getInstance().getLogger().warning("Custom aura on `" + itemId + "` has no `custom` formula. Skipping it.");
+        return null;
+      }
+      try {
+        custom = Aura.compile(formula);
+      } catch (IllegalArgumentException e) {
+        NexoAddon.getInstance().getLogger().warning("Invalid aura formula on `" + itemId + "`: " + e.getMessage() + ". Skipping it.");
+        return null;
+      }
+      if (custom == null) {
+        NexoAddon.getInstance().getLogger().warning("Custom aura formula on `" + itemId + "` must define x, y and z components separated by commas. Skipping it.");
+        return null;
+      }
+    }
+
+    return new Aura(particle, type, custom, Math.max(1, section.getInt("points", 20)));
   }
 
   private static void loadSpawnerBreak(ConfigurationSection section, Mechanics mechanic) {

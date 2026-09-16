@@ -2,21 +2,20 @@ package zone.vao.nexoAddon.utils.handlers;
 
 import com.nexomc.nexo.api.NexoItems;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
-import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.Expression;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.Aura;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ParticleEffectManager {
 
   private final NexoAddon plugin = NexoAddon.getInstance();
-  private final double MATH_PI = Math.PI;
+  private final long startMillis = System.currentTimeMillis();
   private WrappedTask task;
 
   public void startAuraEffectTask() {
@@ -33,53 +32,32 @@ public class ParticleEffectManager {
       task.cancel();
   }
 
-  private Aura getAuraFromTool(Player player) {
-    ItemStack heldItem = player.getInventory().getItemInMainHand();
-    if (heldItem.getType().isAir()) return null;
-
-    String toolId = NexoItems.idFromItem(heldItem);
-    if (toolId == null) return null;
-
-    if (NexoAddon.getInstance().getMechanics().get(toolId) == null) return null;
-    return NexoAddon.getInstance().getMechanics().get(toolId).getAura();
-  }
-
-  private List<Aura> getAurasFromArmor(Player player) {
-    List<Aura> auras = new ArrayList<>();
-    for (ItemStack armorPiece : player.getInventory().getArmorContents()) {
-      if (armorPiece == null || armorPiece.getType().isAir()) continue;
-
-      String armorId = NexoItems.idFromItem(armorPiece);
-      if (armorId == null) continue;
-
-      if (NexoAddon.getInstance().getMechanics().get(armorId) == null) continue;
-
-      Aura aura = NexoAddon.getInstance().getMechanics().get(armorId).getAura();
-      if (aura != null) {
-        auras.add(aura);
-      }
-    }
-    return auras;
-  }
-
   private void applyAuraEffects(Player player) {
-    Aura toolAura = getAuraFromTool(player);
-    if (toolAura != null) {
-      applyAuraEffect(player, toolAura);
+    applyAuras(player, player.getInventory().getItemInMainHand());
+    for (ItemStack armorPiece : player.getInventory().getArmorContents()) {
+      applyAuras(player, armorPiece);
     }
+  }
 
-    List<Aura> armorAuras = getAurasFromArmor(player);
-    for (Aura aura : armorAuras) {
+  private void applyAuras(Player player, ItemStack item) {
+    if (item == null || item.getType().isAir()) return;
+
+    String itemId = NexoItems.idFromItem(item);
+    if (itemId == null) return;
+
+    Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(itemId);
+    if (mechanics == null || mechanics.getAura() == null) return;
+
+    for (Aura aura : mechanics.getAura()) {
       applyAuraEffect(player, aura);
     }
   }
 
   private void applyAuraEffect(Player player, Aura aura) {
-    String formula = aura.formula();
     Particle particle = aura.particle();
 
     if ("custom".equalsIgnoreCase(aura.type())) {
-      spawnCustomParticles(player, particle, formula);
+      spawnCustomParticles(player, aura);
     } else if ("simple".equalsIgnoreCase(aura.type())) {
       spawnSimpleParticles(player, particle);
     } else if ("ring".equalsIgnoreCase(aura.type())) {
@@ -91,44 +69,33 @@ public class ParticleEffectManager {
     }
   }
 
-  private void spawnCustomParticles(Player player, Particle particle, String formula) {
-    int particlesCount = 20;
-
-    String[] components = extractFormulaComponents(formula);
-    if (components.length != 3) {
-      stopAuraEffectTask();
-      throw new IllegalArgumentException("Custom formula must define x, y, and z components, separated by commas ["+components.length+"]. Disabling Aura Mechanic - use \"/nexoaddon reload\" to activate again.");
-    }
-    double x = player.getLocation().getX();
-    double y = player.getLocation().getY();
-    double z = player.getLocation().getZ();
-    float yaw = player.getLocation().getYaw();
-    float pitch = player.getLocation().getPitch();
+  private void spawnCustomParticles(Player player, Aura aura) {
+    Location location = player.getLocation();
+    int points = aura.points();
     double angle = 0.0;
     double angle2 = -Math.PI / 2;
-    String xFormula = components[0];
-    String yFormula = components[1];
-    String zFormula = components[2];
 
-    if(xFormula == null || yFormula == null || zFormula == null){
-      stopAuraEffectTask();
-      throw new IllegalArgumentException("Custom formula must define x, y, and z components, separated by commas ["+components.length+"]. Disabling Aura Mechanic - use \"/nexoaddon reload\" to activate again.");
+    for (Expression expression : aura.custom()) {
+      expression.setVariable("x", location.getX())
+          .setVariable("y", location.getY())
+          .setVariable("z", location.getZ())
+          .setVariable("yaw", location.getYaw())
+          .setVariable("pitch", location.getPitch())
+          .setVariable("time", (System.currentTimeMillis() - startMillis) / 1000.0)
+          .setVariable("Math_PI", Math.PI);
     }
 
-    for (int i = 0; i < particlesCount; i++) {
-      for (int j = 0; j < particlesCount; j++) {
+    for (int i = 0; i < points; i++) {
+      for (int j = 0; j < points; j++) {
+        double[] pos = new double[3];
+        for (int k = 0; k < 3; k++) {
+          pos[k] = aura.custom()[k].setVariable("angle", angle).setVariable("angle2", angle2).evaluate();
+        }
+        player.getWorld().spawnParticle(aura.particle(), pos[0], pos[1], pos[2], 1, 0, 0, 0, 0);
 
-          double posX = evaluateFormula(xFormula.replace("Math_PI", Double.toString(MATH_PI)).replace("x", Double.toString(x)).replace("yaw", Float.toString(yaw)).replace("y", Double.toString(y)).replace("z", Double.toString(z)).replace("pitch", Float.toString(pitch)).replace("angle2", Double.toString(angle2)).replace("angle", Double.toString(angle)));
-
-          double posY = evaluateFormula(yFormula.replace("Math_PI", Double.toString(MATH_PI)).replace("x", Double.toString(x)).replace("yaw", Float.toString(yaw)).replace("y", Double.toString(y)).replace("z", Double.toString(z)).replace("pitch", Float.toString(pitch)).replace("angle2", Double.toString(angle2)).replace("angle", Double.toString(angle)));
-
-          double posZ = evaluateFormula(zFormula.replace("Math_PI", Double.toString(MATH_PI)).replace("x", Double.toString(x)).replace("yaw", Float.toString(yaw)).replace("y", Double.toString(y)).replace("z", Double.toString(z)).replace("pitch", Float.toString(pitch)).replace("angle2", Double.toString(angle2)).replace("angle", Double.toString(angle)));
-
-          player.getWorld().spawnParticle(particle, posX, posY, posZ, 1, 0, 0, 0, 0);
-
-        angle += Math.PI * 2 / particlesCount;
+        angle += Math.PI * 2 / points;
       }
-      angle2 += Math.PI / particlesCount;
+      angle2 += Math.PI / points;
     }
   }
 
@@ -144,9 +111,8 @@ public class ParticleEffectManager {
     double yawRadians = Math.toRadians(yaw);
 
     for (int i = 0; i < particlesCount; i++) {
-      double heartX = evaluateFormula("(4*pow(sin(angle),3))".replace("angle", Double.toString(angle)));
-      double heartY = 0;
-      double heartZ = evaluateFormula("(3*cos(angle)-1.25*cos(2*angle)-0.75*cos(3*angle)-0.25*cos(4*angle))".replace("angle", Double.toString(angle)));
+      double heartX = 4 * Math.pow(Math.sin(angle), 3);
+      double heartZ = 3 * Math.cos(angle) - 1.25 * Math.cos(2 * angle) - 0.75 * Math.cos(3 * angle) - 0.25 * Math.cos(4 * angle);
 
       double rotatedX = x + heartX * Math.cos(yawRadians) - heartZ * Math.sin(yawRadians);
       double rotatedZ = z + heartX * Math.sin(yawRadians) + heartZ * Math.cos(yawRadians);
@@ -191,42 +157,5 @@ public class ParticleEffectManager {
 
       player.getWorld().spawnParticle(particle, x, y, z, 1, 0, 0, 0, 0);
     }
-  }
-
-  private double evaluateFormula(String formula) {
-    try {
-      return new ExpressionBuilder(formula).build().evaluate();
-    } catch (Exception e) {
-      stopAuraEffectTask();
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String[] extractFormulaComponents(String formula) {
-    String[] components = new String[3];
-    int firstComma = -1;
-    int secondComma = -1;
-    int openParenthesesCount = 0;
-
-    for (int i = 0; i < formula.length(); i++) {
-      char c = formula.charAt(i);
-      if (c == '(') openParenthesesCount++;
-      else if (c == ')') openParenthesesCount--;
-      else if (c == ',' && openParenthesesCount == 0) {
-        if (firstComma == -1) {
-          firstComma = i;
-        } else if (secondComma == -1) {
-          secondComma = i;
-        }
-      }
-    }
-
-    if (firstComma != -1 && secondComma != -1) {
-      components[0] = formula.substring(0, firstComma);
-      components[1] = formula.substring(firstComma + 1, secondComma);
-      components[2] = formula.substring(secondComma + 1);
-    }
-
-    return components;
   }
 }

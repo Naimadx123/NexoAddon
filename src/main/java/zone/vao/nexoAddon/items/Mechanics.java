@@ -22,7 +22,7 @@ public class Mechanics {
   private BigMining bigMining;
   private VeinMiner veinMiner;
   private BedrockBreak bedrockBreak;
-  private Aura aura;
+  private List<Aura> aura;
   private SpawnerBreak spawnerBreak;
   private MiningTools miningTools;
   private DropExperience dropExperience;
@@ -67,8 +67,8 @@ public class Mechanics {
     this.bedrockBreak = new BedrockBreak(hardness, probability, durabilityCost, disableOnFirstLayer, sound);
   }
 
-  public void setAura(Particle particle, String type, String formula) {
-    this.aura = new Aura(particle, type, formula);
+  public void setAura(List<Aura> aura) {
+    this.aura = aura;
   }
 
   public void setMiningTools(final List<Material> materials, final List<String> nexoIds, final String type) {
