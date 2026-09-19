@@ -1,6 +1,8 @@
 package zone.vao.nexoAddon.utils;
 
 import com.nexomc.nexo.api.NexoItems;
+import com.nexomc.nexo.items.ItemTemplate;
+import com.nexomc.nexo.utils.NexoYamlKt;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.objecthunter.exp4j.Expression;
@@ -34,6 +36,25 @@ public class ItemConfigUtil {
     return itemFiles;
   }
 
+  private static ConfigurationSection withTemplates(ConfigurationSection itemSection) {
+    if (itemSection == null) return null;
+
+    List<String> ids = new ArrayList<>(itemSection.getStringList("template"));
+    if (ids.isEmpty()) ids.addAll(itemSection.getStringList("templates"));
+    if (ids.isEmpty() && itemSection.isString("template")) ids.add(itemSection.getString("template"));
+
+    ConfigurationSection merged = null;
+    for (String id : ids) {
+      ConfigurationSection template = ItemTemplate.INSTANCE.getItemTemplates().get(id);
+      if (template == null) continue;
+      if (merged == null) merged = new YamlConfiguration().createSection(itemSection.getName());
+      NexoYamlKt.copyFrom(merged, template);
+    }
+    if (merged == null) return itemSection;
+
+    return NexoYamlKt.copyFrom(merged, itemSection);
+  }
+
   public static void loadComponents() {
     NexoAddon.getInstance().getComponents().clear();
 
@@ -41,7 +62,7 @@ public class ItemConfigUtil {
       YamlConfiguration config = YamlConfiguration.loadConfiguration(itemFile);
 
       config.getKeys(false).forEach(itemId -> {
-        ConfigurationSection itemSection = config.getConfigurationSection(itemId);
+        ConfigurationSection itemSection = withTemplates(config.getConfigurationSection(itemId));
         if (itemSection == null || !itemSection.contains("Components")) return;
 
         Components component = NexoAddon.getInstance().getComponents()
@@ -99,7 +120,7 @@ public class ItemConfigUtil {
       YamlConfiguration config = YamlConfiguration.loadConfiguration(itemFile);
 
       config.getKeys(false).forEach(itemId -> {
-        ConfigurationSection itemSection = config.getConfigurationSection(itemId);
+        ConfigurationSection itemSection = withTemplates(config.getConfigurationSection(itemId));
         if (itemSection == null || !itemSection.contains("Mechanics")) return;
 
         Mechanics mechanic = NexoAddon.getInstance().getMechanics()
