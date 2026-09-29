@@ -12,7 +12,7 @@ public class PlayerMovementListener implements Listener {
   @EventHandler
   public void onPlayerMove(PlayerMoveEvent event) {
 
-    if(NexoAddon.getInstance().getGlobalConfig().getBoolean("boss_bar", true))
+    if(NexoAddon.getInstance().getGlobalConfig().getBoolean("boss_bar.enabled", true))
       FurnituresRaytrace.onFurnituresRaytrace(event);
 
     LiquidEnter.onLiquidEnter(event);

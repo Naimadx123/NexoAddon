@@ -3,9 +3,8 @@ package zone.vao.nexoAddon.events.player.movements;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.items.ItemBuilder;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import net.kyori.adventure.text.TextComponent;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
+
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 import zone.vao.nexoAddon.NexoAddon;
@@ -20,19 +19,22 @@ public class FurnituresRaytrace {
     if(fm == null){
       BossBarUtil bossBar = NexoAddon.getInstance().getBossBars().get(player.getUniqueId());
       if(bossBar!=null) {
-        bossBar.removeBar();
+        bossBar.removeFromPlayer(player);
         NexoAddon.getInstance().getBossBars().remove(player.getUniqueId());
       }
       return;
     }
     ItemBuilder itemBuilder = NexoItems.itemFromId(fm.getItemID());
-    String name = fm.getItemID();
-    if(itemBuilder != null && itemBuilder.getItemName() != null)
-      name = ((TextComponent) itemBuilder.getItemName()).content();
+    Component name = null;
+    if(itemBuilder != null && itemBuilder.getItemName() != null) {
+      name = itemBuilder.getItemName();
+    } else {
+      name = Component.text(fm.getItemID());
+    }
 
     BossBarUtil bossBar = NexoAddon.getInstance().getBossBars().get(player.getUniqueId());
     if(bossBar == null) {
-      bossBar = new BossBarUtil(name, BarColor.WHITE, BarStyle.SOLID);
+      bossBar = new BossBarUtil(name);
       NexoAddon.getInstance().getBossBars().put(player.getUniqueId(), bossBar);
       bossBar.sendToPlayer(player);
     }

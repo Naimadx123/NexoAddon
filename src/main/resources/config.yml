@@ -1,4 +1,8 @@
-boss_bar: false                             # Boss bar when looking at furniture
+boss_bar:                                   # Boss bar when looking at furniture
+  enabled: false                             
+  color: WHITE                              # Valid colors https://jd.papermc.io/adventure/5.2.0/net.kyori.adventure.api/net/kyori/adventure/bossbar/BossBar.Color.html#enum-constant-summary
+  overlay: PROGRESS                         # valid overlays(The bar style) https://jd.papermc.io/adventure/5.2.0/net.kyori.adventure.api/net/kyori/adventure/bossbar/BossBar.Overlay.html#enum-constant-summary
+
 furniture_evolution_status: true            # Display hologram on interacting with Furniture with evolution mechanics
 prevent_furniture_break_with_tools: true
 prevent_furniture_break_with_sword: true
