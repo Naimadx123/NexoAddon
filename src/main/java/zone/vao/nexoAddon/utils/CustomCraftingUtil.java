@@ -68,8 +68,9 @@ public class CustomCraftingUtil {
       return item;
     }
 
-    Material material = matchMaterial(section.getString("minecraft_item"));
-    return material == null ? null : new ItemStack(material, amount);
+    ItemStack item = buildMinecraftItem(section);
+    if (item != null) item.setAmount(amount);
+    return item;
   }
 
   private static CustomCrafting.Recipe loadRecipe(File file, String station) {
@@ -88,13 +89,17 @@ public class CustomCraftingUtil {
     Map<Integer, CustomCrafting.Ingredient> ingredients = new HashMap<>();
     for (String rawSlot : ingredientsSection.getKeys(false)) {
       int slot = parseSlot(rawSlot, file.getName());
-      if (slot < 0 || slot > 53) continue;
+      if (slot < 0 || slot > 53) {
+        NexoAddon.getInstance().getLogger().warning("Custom crafting slot `" + rawSlot + "` in `"
+            + file.getName() + "` is invalid. Skipping recipe.");
+        return null;
+      }
 
       CustomCrafting.Ingredient ingredient = buildIngredient(ingredientsSection.getConfigurationSection(rawSlot));
       if (ingredient == null) {
         NexoAddon.getInstance().getLogger().warning("Custom crafting ingredient in slot `" + rawSlot + "` of `"
-            + file.getName() + "` is invalid. Skipping.");
-        continue;
+            + file.getName() + "` is invalid. Skipping recipe.");
+        return null;
       }
       ingredients.put(slot, ingredient);
     }
@@ -116,14 +121,33 @@ public class CustomCraftingUtil {
     if (nexoId != null && NexoItems.itemFromId(nexoId) != null)
       return new CustomCrafting.Ingredient(nexoId, null, amount);
 
-    Material material = matchMaterial(section.getString("minecraft_item"));
-    return material == null ? null : new CustomCrafting.Ingredient(null, material, amount);
+    ItemStack item = buildMinecraftItem(section);
+    if (item == null) return null;
+
+    boolean exact = section.contains("components");
+    return new CustomCrafting.Ingredient(null, item.getType(), amount, exact ? item : null);
   }
 
-  private static Material matchMaterial(String rawMaterial) {
-    if (rawMaterial == null || rawMaterial.isBlank()) return null;
+  private static ItemStack buildMinecraftItem(ConfigurationSection section) {
+    String rawItem = section.getString("minecraft_item");
+    if (rawItem == null || rawItem.isBlank()) return null;
 
-    return Material.matchMaterial(rawMaterial.trim());
+    Material material = rawItem.contains("[") || rawItem.contains("{")
+        ? null : Material.matchMaterial(rawItem.trim());
+    if (material == null || !material.isItem() || material.isAir()) return null;
+    if (!section.contains("components")) return new ItemStack(material);
+
+    if (!section.isString("components")) return null;
+    String components = section.getString("components");
+    if (components == null || components.isBlank()) return null;
+
+    try {
+      return Bukkit.getItemFactory().createItemStack(material.getKey() + "[" + components.trim() + "]");
+    } catch (IllegalArgumentException exception) {
+      NexoAddon.getInstance().getLogger().warning("Invalid custom crafting components for `" + rawItem + "`: "
+          + exception.getMessage());
+      return null;
+    }
   }
 
   private static int parseSlot(String rawSlot, String fileName) {

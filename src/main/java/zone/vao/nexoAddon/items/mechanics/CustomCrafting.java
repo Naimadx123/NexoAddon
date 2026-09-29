@@ -36,7 +36,11 @@ public record CustomCrafting(
     ItemStack filler
 ) {
 
-  public record Ingredient(String nexoId, Material material, int amount) {
+  public record Ingredient(String nexoId, Material material, int amount, ItemStack exactItem) {
+
+    public Ingredient(String nexoId, Material material, int amount) {
+      this(nexoId, material, amount, null);
+    }
 
     public boolean matches(ItemStack item) {
       if (item == null || item.getType().isAir() || item.getAmount() < amount) return false;
@@ -44,7 +48,8 @@ public record CustomCrafting(
       String itemId = NexoItems.idFromItem(item);
       if (nexoId != null) return nexoId.equals(itemId);
 
-      return itemId == null && item.getType() == material;
+      return itemId == null && item.getType() == material
+          && (exactItem == null || exactItem.isSimilar(item));
     }
   }
 
