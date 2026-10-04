@@ -1,0 +1,8 @@
+customx:
+  enabled: false
+  biome: nexoaddon:customx
+  worlds: [ world ]
+  minY: -64
+  maxY: 319
+  biomes: [ minecraft:plains ]
+  chance: 1.0

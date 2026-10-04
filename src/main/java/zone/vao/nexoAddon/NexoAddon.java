@@ -38,6 +38,7 @@ import zone.vao.nexoAddon.events.player.PlayerMovementListener;
 import zone.vao.nexoAddon.events.player.TotemSound;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.populators.BiomePopulator;
 import zone.vao.nexoAddon.populators.CustomChunkGenerator;
 import zone.vao.nexoAddon.populators.orePopulator.CustomOrePopulator;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
@@ -69,7 +70,8 @@ public final class NexoAddon extends JavaPlugin {
   public PopulatorsConfigUtil populatorsConfig;
   public List<Ore> ores = new ArrayList<>();
   public final OrePopulator orePopulator = new OrePopulator();
-  public Map<String, List<CustomOrePopulator>> worldPopulators = new HashMap<>();
+  public Map<String, List<BlockPopulator>> worldPopulators = new HashMap<>();
+  private List<BiomePopulator> biomePopulators = List.of();
   public Map<String, String> jukeboxLocations = new HashMap<>();
   public Map<String, Integer> customBlockLights = new HashMap<>();
   public BlockHardnessHandler blockHardnessHandler;
@@ -214,6 +216,8 @@ public final class NexoAddon extends JavaPlugin {
 
   private void initializeOres() {
     foliaLib.getScheduler().runNextTick(initOres -> {
+      biomePopulators = populatorsConfig.loadBiomePopulatorsFromConfig();
+      Bukkit.getWorlds().forEach(this::addBiomePopulators);
       ores = populatorsConfig.loadOresFromConfig();
       orePopulator.clearOres();
       ores.forEach(orePopulator::addOre);
@@ -230,6 +234,19 @@ public final class NexoAddon extends JavaPlugin {
         logPopulatorAdded("BlockPopulator", "all_ores", world);
       });
     });
+  }
+
+  public void addBiomePopulators(World world) {
+    for (BiomePopulator populator : biomePopulators) {
+      if (!populator.appliesToWorld(world.getName())) continue;
+
+      List<BlockPopulator> populators = worldPopulators.computeIfAbsent(world.getName(), k -> new ArrayList<>());
+      if (populators.contains(populator)) continue;
+
+      addPopulatorToWorld(world, populator);
+      populators.add(populator);
+      logPopulatorAdded("BiomePopulator", populator.getId(), world);
+    }
   }
 
   private void registerEvents() {
