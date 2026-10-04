@@ -48,6 +48,7 @@ import zone.vao.nexoAddon.utils.handlers.BlockHardnessHandler;
 import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
 import zone.vao.nexoAddon.utils.handlers.RecipeManager;
 import zone.vao.nexoAddon.utils.hooks.PacketEventsHook;
+import zone.vao.nexoAddon.utils.metrics.MechanicsMetrics;
 import zone.vao.nexoAddon.utils.metrics.Metrics;
 import zone.vao.thirdparties.updatechecker.UpdateCheckSource;
 import zone.vao.thirdparties.updatechecker.UpdateChecker;
@@ -309,6 +310,8 @@ public final class NexoAddon extends JavaPlugin {
 
     Metrics metrics = new Metrics(this, 24168);
     metrics.addCustomChart(new Metrics.SimplePie("marketplace", () -> "%%__POLYMART__%%".equals("1") ? "polymart" : "spigot"));
+    metrics.addCustomChart(new Metrics.AdvancedBarChart("mechanics_usage", MechanicsMetrics::getUsage));
+    metrics.addCustomChart(new Metrics.SimpleBarChart("mechanics_items", MechanicsMetrics::getItems));
 
     if(getGlobalConfig().getBoolean("update_checker", true))
       new UpdateChecker(this, UpdateCheckSource.POLYMART, "6950")

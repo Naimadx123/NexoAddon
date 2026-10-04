@@ -22,6 +22,7 @@ import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.*;
+import zone.vao.nexoAddon.utils.metrics.MechanicsMetrics;
 
 import java.io.File;
 import java.util.*;
@@ -157,6 +158,9 @@ public class ItemConfigUtil {
       });
     }
 
+    MechanicsMetrics.update(NexoAddon.getInstance().getMechanics().values().stream()
+        .filter(mechanic -> NexoItems.itemFromId(mechanic.getId()) != null)
+        .toList());
     if (NexoAddon.getInstance().getIsLiquid()) LiquidUtil.restartLoaded();
   }
 
