@@ -125,6 +125,7 @@ public final class NexoAddon extends JavaPlugin {
     particleEffectManager.startAuraEffectTask();
     initializeMetrics();
     reportCustomBiomes();
+    BossBarUtil.setupConfig();
     getLogger().info("NexoAddon enabled!");
   }
 
@@ -190,6 +191,7 @@ public final class NexoAddon extends JavaPlugin {
         }
       }
     }, 10L);
+    BossBarUtil.setupConfig();
   }
 
   private void initializeCommandManager() {
