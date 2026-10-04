@@ -19,32 +19,34 @@ public final class YamlJson {
     if (value == null) return null;
 
     if (value instanceof ConfigurationSection section) {
-      JsonObject object = new JsonObject();
-      for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
-        JsonElement converted = toJson(entry.getValue());
-        if (converted != null) object.add(entry.getKey(), converted);
-      }
-      return object;
+      return toJsonObject(section.getValues(false));
     }
 
-    if (value instanceof Map<?, ?> map) {
-      JsonObject object = new JsonObject();
-      for (Map.Entry<?, ?> entry : map.entrySet()) {
-        JsonElement converted = toJson(entry.getValue());
-        if (converted != null) object.add(String.valueOf(entry.getKey()), converted);
-      }
-      return object;
-    }
+    if (value instanceof Map<?, ?> map) return toJsonObject(map);
+    if (value instanceof Collection<?> collection) return toJsonArray(collection);
 
-    if (value instanceof Collection<?> collection) {
-      JsonArray array = new JsonArray();
-      for (Object element : collection) {
-        JsonElement converted = toJson(element);
-        if (converted != null) array.add(converted);
-      }
-      return array;
-    }
+    return toJsonPrimitive(value);
+  }
 
+  private static JsonObject toJsonObject(Map<?, ?> map) {
+    JsonObject object = new JsonObject();
+    for (Map.Entry<?, ?> entry : map.entrySet()) {
+      JsonElement converted = toJson(entry.getValue());
+      if (converted != null) object.add(String.valueOf(entry.getKey()), converted);
+    }
+    return object;
+  }
+
+  private static JsonArray toJsonArray(Collection<?> collection) {
+    JsonArray array = new JsonArray();
+    for (Object element : collection) {
+      JsonElement converted = toJson(element);
+      if (converted != null) array.add(converted);
+    }
+    return array;
+  }
+
+  private static JsonPrimitive toJsonPrimitive(Object value) {
     if (value instanceof Number number) return new JsonPrimitive(number);
     if (value instanceof Boolean bool) return new JsonPrimitive(bool);
     if (value instanceof String string) return new JsonPrimitive(string);

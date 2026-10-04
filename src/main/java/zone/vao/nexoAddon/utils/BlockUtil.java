@@ -461,6 +461,21 @@ public class BlockUtil {
   private record SpreadCandidate(Block block, String resultId) {}
 
   static void trySpread(Block source, Spread spread, String sourceId) {
+    List<SpreadCandidate> candidates = findSpreadCandidates(source, spread, sourceId);
+    if (candidates.isEmpty()) return;
+
+    if (spread.mode() == Spread.Mode.MULTI) {
+      for (SpreadCandidate candidate : candidates) {
+        convert(source, candidate.block(), candidate.resultId(), spread);
+      }
+      return;
+    }
+
+    SpreadCandidate target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+    convert(source, target.block(), target.resultId(), spread);
+  }
+
+  private static List<SpreadCandidate> findSpreadCandidates(Block source, Spread spread, String sourceId) {
     int radius = spread.radius();
     int maxNearby = spread.maxNearby();
     boolean limitNearby = spread.hasNearbyLimit();
@@ -475,36 +490,26 @@ public class BlockUtil {
           if (x == 0 && y == 0 && z == 0) continue;
 
           Block relative = source.getRelative(x, y, z);
-          Material type = relative.getType();
-
-          Spread.Rule rule = spread.ruleFor(type);
-          if (rule != null && rule.wildcard() && UNBREAKABLE_BLOCKS.contains(type)) continue;
-          if (rule == null && !limitNearby) continue;
-
-          if (isResultBlock(relative, resultIds)) {
-            nearby++;
-            if (limitNearby && nearby >= maxNearby) return;
-            continue;
-          }
-
-          if (rule == null || !matchesConditions(relative, spread)) continue;
-
-          candidates.add(new SpreadCandidate(relative, Spread.resolveResult(rule.result(), sourceId)));
+          nearby += collectSpreadCandidate(relative, spread, sourceId, resultIds, candidates);
+          if (limitNearby && nearby >= maxNearby) return List.of();
         }
       }
     }
 
-    if (candidates.isEmpty()) return;
+    return candidates;
+  }
 
-    if (spread.mode() == Spread.Mode.MULTI) {
-      for (SpreadCandidate candidate : candidates) {
-        convert(source, candidate.block(), candidate.resultId(), spread);
-      }
-      return;
-    }
+  private static int collectSpreadCandidate(Block block, Spread spread, String sourceId,
+                                            Set<String> resultIds, List<SpreadCandidate> candidates) {
+    Material type = block.getType();
+    Spread.Rule rule = spread.ruleFor(type);
+    if (rule != null && rule.wildcard() && UNBREAKABLE_BLOCKS.contains(type)) return 0;
+    if (rule == null && !spread.hasNearbyLimit()) return 0;
+    if (isResultBlock(block, resultIds)) return 1;
+    if (rule == null || !matchesConditions(block, spread)) return 0;
 
-    SpreadCandidate target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
-    convert(source, target.block(), target.resultId(), spread);
+    candidates.add(new SpreadCandidate(block, Spread.resolveResult(rule.result(), sourceId)));
+    return 0;
   }
 
   private static void convert(Block source, Block target, String resultId, Spread spread) {

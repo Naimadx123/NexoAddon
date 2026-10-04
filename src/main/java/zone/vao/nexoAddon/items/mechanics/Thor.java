@@ -44,24 +44,10 @@ public record Thor(int lightningBoltsAmount, double randomLocationVariation, int
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onThor(PlayerInteractEvent event) {
-      Action action = event.getAction();
-      if (event.getHand() != EquipmentSlot.HAND
-          || action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
-      if (event.useItemInHand() == Event.Result.DENY) return;
-
-      Block clicked = event.getClickedBlock();
-      if (clicked != null && clicked.getType().isInteractable() && event.useInteractedBlock() != Event.Result.DENY) return;
+      if (!canUseThor(event)) return;
 
       Player player = event.getPlayer();
-      if (NexoAddon.getInstance().getMechanics().isEmpty()) return;
-
-      String itemId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());
-      if (itemId == null || itemId.isEmpty()) return;
-
-      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(itemId);
-      if (mechanics == null) return;
-
-      Thor thor = mechanics.getThor();
+      Thor thor = getThor(player);
       if (thor == null) return;
 
       Block target = player.getTargetBlockExact(TARGET_DISTANCE);
@@ -78,6 +64,26 @@ public record Thor(int lightningBoltsAmount, double randomLocationVariation, int
           world.strikeLightning(thor.randomizedLocation(location));
         }
       });
+    }
+
+    private boolean canUseThor(PlayerInteractEvent event) {
+      Action action = event.getAction();
+      if (event.getHand() != EquipmentSlot.HAND
+          || action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return false;
+      if (event.useItemInHand() == Event.Result.DENY) return false;
+
+      Block clicked = event.getClickedBlock();
+      return clicked == null || !clicked.getType().isInteractable() || event.useInteractedBlock() == Event.Result.DENY;
+    }
+
+    private Thor getThor(Player player) {
+      if (NexoAddon.getInstance().getMechanics().isEmpty()) return null;
+
+      String itemId = NexoItems.idFromItem(player.getInventory().getItemInMainHand());
+      if (itemId == null || itemId.isEmpty()) return null;
+
+      Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(itemId);
+      return mechanics == null ? null : mechanics.getThor();
     }
 
     private boolean consumeCooldown(Player player, int delay) {

@@ -226,7 +226,27 @@ public final class BiomeGenerator {
   private BiomeDefinition build(String file, String key, ConfigurationSection section,
                                 VanillaBiomeSource.Schema schema) {
     String where = "custom_biomes/" + file + " -> " + key;
+    BiomeId id = parseBiomeId(key, where);
+    if (id == null) return null;
 
+    JsonObject base = readBaseBiome(section, where);
+    if (base == null) return null;
+
+    warnUnknownKeys(section, where);
+    if (!applyEffectColors(base, section, schema, where)) return null;
+    if (!applyAttributeColors(base, section, schema, where)) return null;
+    applyGrassModifier(base, section, where);
+    if (!applyNumbers(base, section, where)) return null;
+    if (!applyBooleans(base, section, where)) return null;
+    applyTemperatureModifier(base, section);
+
+    return new BiomeDefinition(id.namespace(), id.path(), file,
+        section.getString("title", id.path()), section.getBoolean("enabled", false), mergeRaw(base, section));
+  }
+
+  private record BiomeId(String namespace, String path) {}
+
+  private BiomeId parseBiomeId(String key, String where) {
     String namespace = defaultNamespace;
     String path = key.toLowerCase(Locale.ROOT);
     int colon = path.indexOf(':');
@@ -248,6 +268,10 @@ public final class BiomeGenerator {
       return null;
     }
 
+    return new BiomeId(namespace, path);
+  }
+
+  private JsonObject readBaseBiome(ConfigurationSection section, String where) {
     String inherit = section.getString("inherit", defaultInherit);
     JsonObject base;
     if (VanillaBiomeSource.DEFAULT_BASE.equalsIgnoreCase(inherit)) {
@@ -258,25 +282,35 @@ public final class BiomeGenerator {
     if (base == null) {
       warnings.add(where + ": could not read base biome `" + inherit
           + "` from the server jar. Skipping (define every field via `raw:` if this persists).");
-      return null;
     }
+    return base;
+  }
 
+  private void warnUnknownKeys(ConfigurationSection section, String where) {
     for (String candidate : section.getKeys(false)) {
       if (!KNOWN_KEYS.contains(candidate)) {
         warnings.add(where + ": unknown key `" + candidate + "`; use `raw:` for arbitrary biome JSON.");
       }
     }
+  }
 
+  private boolean applyEffectColors(JsonObject base, ConfigurationSection section,
+                                    VanillaBiomeSource.Schema schema, String where) {
     for (String colorKey : EFFECT_COLORS) {
       if (!section.contains(colorKey)) continue;
       Integer rgb = color(section, colorKey, where);
-      if (rgb == null) return null;
+      if (rgb == null) return false;
       YamlJson.put(base, YamlJson.colorValue(rgb, schema.hexColors()), "effects", colorKey);
     }
+    return true;
+  }
+
+  private boolean applyAttributeColors(JsonObject base, ConfigurationSection section,
+                                       VanillaBiomeSource.Schema schema, String where) {
     for (Map.Entry<String, String> entry : ATTRIBUTE_COLORS.entrySet()) {
       if (!section.contains(entry.getKey())) continue;
       Integer rgb = color(section, entry.getKey(), where);
-      if (rgb == null) return null;
+      if (rgb == null) return false;
       JsonElement value = YamlJson.colorValue(rgb, schema.hexColors());
       if (schema.colorsInAttributes()) {
         YamlJson.put(base, value, "attributes", entry.getValue());
@@ -284,7 +318,10 @@ public final class BiomeGenerator {
         YamlJson.put(base, value, "effects", entry.getKey());
       }
     }
+    return true;
+  }
 
+  private void applyGrassModifier(JsonObject base, ConfigurationSection section, String where) {
     if (section.contains("grass_color_modifier")) {
       String modifier = String.valueOf(section.get("grass_color_modifier")).toLowerCase(Locale.ROOT);
       if (!Set.of("none", "dark_forest", "swamp").contains(modifier)) {
@@ -292,45 +329,54 @@ public final class BiomeGenerator {
       }
       YamlJson.put(base, new JsonPrimitive(modifier), "effects", "grass_color_modifier");
     }
+  }
 
+  private boolean applyNumbers(JsonObject base, ConfigurationSection section, String where) {
     for (String numberKey : NUMBER_KEYS) {
       if (!section.contains(numberKey)) continue;
       Object raw = section.get(numberKey);
       if (!(raw instanceof Number number)) {
         warnings.add(where + ": `" + numberKey + "` must be a number but was `" + raw + "`. Skipping biome.");
-        return null;
+        return false;
       }
       if (numberKey.equals("downfall") && (number.doubleValue() < 0 || number.doubleValue() > 1)) {
         warnings.add(where + ": downfall " + number + " is outside 0.0-1.0; passing it through.");
       }
       base.add(numberKey, new JsonPrimitive(number));
     }
+    return true;
+  }
 
+  private boolean applyBooleans(JsonObject base, ConfigurationSection section, String where) {
     for (String booleanKey : BOOLEAN_KEYS) {
       if (!section.contains(booleanKey)) continue;
       Object raw = section.get(booleanKey);
       if (!(raw instanceof Boolean bool)) {
         warnings.add(where + ": `" + booleanKey + "` must be true or false but was `" + raw
             + "`. Write it unquoted as `true` or `false`. Skipping biome.");
-        return null;
+        return false;
       }
       base.add(booleanKey, new JsonPrimitive(bool));
     }
+    return true;
+  }
 
+  private void applyTemperatureModifier(JsonObject base, ConfigurationSection section) {
     if (section.contains("temperature_modifier")) {
       base.add("temperature_modifier",
           new JsonPrimitive(String.valueOf(section.get("temperature_modifier")).toLowerCase(Locale.ROOT)));
     }
+  }
 
+  private JsonObject mergeRaw(JsonObject base, ConfigurationSection section) {
     if (section.isConfigurationSection("raw")) {
       JsonElement raw = YamlJson.toJson(section.getConfigurationSection("raw"));
       if (raw != null && raw.isJsonObject()) {
-        base = YamlJson.merge(base, raw.getAsJsonObject());
+        return YamlJson.merge(base, raw.getAsJsonObject());
       }
     }
 
-    return new BiomeDefinition(namespace, path, file,
-        section.getString("title", path), section.getBoolean("enabled", false), base);
+    return base;
   }
 
   private Integer color(ConfigurationSection section, String key, String where) {
