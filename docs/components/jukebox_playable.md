@@ -7,10 +7,10 @@ This Component has been removed in NexoAddon v1.15
 {% endhint %}
 
 {% hint style="info" %}
-`jukebox_playable` Component is handling by NexoAddon on versions 1.20.4-1.21.1
+This page is kept for older configurations. The current NexoAddon version does not load `jukebox_playable`; configure the component through Nexo instead.
 {% endhint %}
 
-Refer to [Nexo docs](https://docs.nexomc.com/configuration/items-advanced) for setup this Component.
+Refer to [Nexo docs](https://docs.nexomc.com/configuration/items-advanced) for the supported configuration on your server version.
 
 ```yaml
 # Example

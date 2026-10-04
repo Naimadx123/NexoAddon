@@ -7,6 +7,7 @@
 * [equippable](components/equippable.md)
 * [fertilizer](components/fertilizer.md)
 * [jukebox\_playable](components/jukebox_playable.md)
+* [note\_block\_sound](components/note_block_sound.md)
 * [skull\_value](components/skull_value.md)
 
 ## Mechanics
@@ -35,6 +36,7 @@
 * [SpawnerBreak](mechanics/spawnerbreak.md)
 * [Spread](mechanics/spread.md)
 * [Stackable](mechanics/stackable.md)
+* [Thor](mechanics/thor.md)
 * [UniqueId](mechanics/uniqueid.md)
 * [Unstackable](mechanics/unstackable.md)
 * [VeinMiner](mechanics/veinminer.md)
@@ -46,6 +48,7 @@
 ## Populators
 
 * [Block Populators](populators/block-populators.md)
+* [Biome Populators](populators/biome-populators.md)
 
 ## Recipes
 
@@ -53,6 +56,7 @@
 
 ## Commands
 
+* [Commands](commands/commands.md)
 * [Totem Command](commands/totemcommand.md)
 
 ## Settings

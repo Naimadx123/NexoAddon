@@ -59,7 +59,7 @@ Placeholders usable in commands: `<player>`, `<uuid>`, `<world>`, `<x>`, `<y>`, 
 
 ### Returned items
 
-You can decide what the player gets back after emptying the bucket, scooping the liquid, or filling a bottle from it. All three are Nexo item IDs and all are optional.
+You can decide what the player gets back after emptying the bucket, scooping the liquid, or filling a bottle from it. All three are Nexo item IDs and all are optional. `bucket_item` defaults to the item carrying this Liquid mechanic.
 
 ```yaml
 # Example
@@ -140,7 +140,11 @@ By default a liquid will not recolour a cell that another liquid is actively usi
 
 When the last water in a cell is gone, the biome is restored to whatever it was before the liquid was placed. This happens automatically when you break the water, place a block into it, scoop it with a bucket, or empty a cauldron.
 
-Removal done by other means - WorldEdit, `/setblock`, `/fill` - fires no event, so the colour stays behind. Clean those up with:
+Tracked cells are also checked periodically, so removing water with WorldEdit, `/setblock` or `/fill` is cleaned up even when no Bukkit event fires. The original biome is saved in the chunk data and tracking resumes when the chunk loads after a restart.
+
+The check interval is set by `liquid.restore_interval_ticks`, which defaults to `20` ticks. A cell is restored only when it contains no water, waterlogged blocks or water-filled cauldrons. If the original biome is unavailable, `place.revert_to` supplies a fallback.
+
+For older tinted areas or an explicit cleanup, use:
 
 ```yaml
 /nexoaddon liquidclean [radius] [biome]
@@ -151,8 +155,10 @@ Removal done by other means - WorldEdit, `/setblock`, `/fill` - fires no event, 
 
 The command reports how many cells it restored, how many still contain water, and how many had no known original biome.
 
+Run it in-game with the `nexoaddon.admin` permission. At least one Liquid mechanic must be configured, and the optional biome must already be registered.
+
 {% hint style="info" %}
-Cells that still contain water are skipped on purpose: the biome covers the whole cell, so restoring it would break the colour of the water that is still there.
+Cells that still contain water, waterlogged blocks or water-filled cauldrons are skipped: the biome covers the whole cell, so restoring it would break the colour of the liquid that is still there.
 {% endhint %}
 
 ## Global settings
@@ -163,5 +169,14 @@ These live in `config.yml` and apply to every liquid.
 liquid:
   refresh_chunks: true          # Resend chunks so clients see a new colour without relogging.
   refresh_cooldown_ticks: 20    # Per-chunk debounce for that resend.
+  restore_interval_ticks: 20
   max_place_radius: 4           # Hard cap on place.radius.
 ```
+
+`restore_interval_ticks` controls how often tracked cells are checked for remaining water. It has a minimum of `1` tick. Raise it to reduce the frequency of checks for large areas of liquid.
+
+### Biome-based detection
+
+Liquids are identified by their biome. Water in the same biome has the same enter effects and collection behaviour, even if it was generated naturally or placed with another tool. Using a vanilla biome therefore also affects naturally occurring water in that biome.
+
+Use a separate biome for each liquid. If several Liquid items claim the same biome, NexoAddon logs a warning and keeps the item with the alphabetically first ID.

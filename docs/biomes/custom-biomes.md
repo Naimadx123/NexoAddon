@@ -7,7 +7,7 @@ description: Define your own biomes in YAML.
 NexoAddon can create biomes for you. Drop a YAML file into `plugins/NexoAddon/custom_biomes/`, restart, and the biome is registered -
 no datapack to write, no world folder to touch.
 
-Custom biomes exist mainly to give the [Liquid mechanic](../mechanics/liquid.md) its colour, since water takes its colour from the biome, but any biome field can be set.
+Custom biomes can give the [Liquid mechanic](../mechanics/liquid.md) its colour, since water takes its colour from the biome, or replace biomes during chunk generation through [Biome Populators](../populators/biome-populators.md). Any biome field can be set.
 
 {% hint style="warning" %}
 Adding or changing a biome needs a **full server restart**. Biome registries are frozen once the server is running, so `/nexoaddon reload` can only regenerate the files and tell you a restart is due.
@@ -90,7 +90,19 @@ haunted_water:
 
 ### Namespaces
 
-A top-level key can be a bare name or `namespace:path`. A bare name uses the namespace from `config.yml`, which is `nexoaddon` by default, so `toxic_water` becomes `nexoaddon:toxic_water`. Only lowercase `a-z 0-9 . _ -` are allowed, and the `minecraft` namespace is rejected so you cannot overwrite vanilla biomes.
+A top-level key can be a bare name or `namespace:path`. A bare name uses the namespace from `config.yml`, which is `nexoaddon` by default, so `toxic_water` becomes `nexoaddon:toxic_water`. Namespaces allow lowercase `a-z 0-9 . _ -`; paths also allow `/`, but cannot start or end with it. The `minecraft` namespace is rejected so you cannot overwrite vanilla biomes.
+
+### Changing the biome of an existing area
+
+Registered custom biomes work with the vanilla `fillbiome` command:
+
+```text
+/minecraft:fillbiome ~-8 ~-4 ~-8 ~8 ~4 ~8 nexoaddon:customx
+```
+
+Replace `nexoaddon:customx` with the ID shown as registered by `/nexoaddon biomes`. The command changes the biome cells in the selected area without regenerating blocks. You need permission to use the vanilla command.
+
+For new chunks, use [Biome Populators](../populators/biome-populators.md) instead.
 
 ### Checking what registered
 

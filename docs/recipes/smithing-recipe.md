@@ -11,7 +11,7 @@ description: Smithing Recipe
 
 example_recipe:                           # Unique identifier for the recipe
   keep_durability: true                   # Should keep durability of base item?
-  copy_trim: false                        # Should the result retain the trim design from the base item? Defaults to true
+  copy_trim: false                        # Should the result retain the trim design from the base item? Defaults to false
   copy_enchantments: true                 # Should enchantments from the base item be transferred to the result? Defaults to true
   copy_pdc: false                         # Should keep PDC of base item? Default to false
   copy_meta: false                        # Should keep all ItemMeta of base item? Default to false

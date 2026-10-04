@@ -9,7 +9,7 @@ The Aura Mechanic creates dynamic, particle-based visual effects around the play
 <figure><img src="../.gitbook/assets/obraz_2025-01-12_162030861.png" alt=""><figcaption><p>Aura showcase</p></figcaption></figure>
 
 {% hint style="info" %}
-Aura mechanic works on held item and items in armor slots!
+Aura mechanic works on the item held in the **main hand** and items in armor slots!
 {% endhint %}
 
 ## Basic Aura
@@ -47,7 +47,9 @@ Mechanics:
 {% hint style="info" %}
 Available variables: `x`, `y`, `z`, `angle`, `angle2`, `yaw`, `pitch`, `time`, `Math_PI`
 
-`angle` runs from `0` to `2π`, `angle2` from `-π/2` to `π/2`. `time` is the server uptime in seconds, so `angle+time` rotates a shape and `sin(time)` makes it pulse. `yaw` and `pitch` are in degrees.
+`x`, `y` and `z` are the player's world coordinates. `angle` increases by `2π / points` for each particle and continues across passes. `angle2` starts at `-π/2` and increases by `π / points` after each pass. Both angles are in radians.
+
+`time` is the number of seconds since the aura manager was created when the plugin enabled, so `angle+time` rotates a shape and `sin(time)` makes it pulse. `yaw` and `pitch` are in degrees; multiply them by `Math_PI / 180` to use them in `sin` or `cos`.
 {% endhint %}
 
 ```yaml
@@ -59,8 +61,14 @@ Mechanics:
     # Rotating ring
     custom: "(x+2*cos(angle+time)),(y+1),(z+2*sin(angle+time))"
     particle: FLAME
-    points: 40            # Points per pass. Defaults to 20.
+    points: 40
 ```
+
+The `custom` value must contain three expressions separated by commas: the particle's world `x`, `y` and `z` coordinates. Invalid formulas and unknown particle names are skipped with a warning in the server log.
+
+`points` defaults to `20`, with a minimum of `1`. A custom aura runs `points` passes with `points` particles each: `20` produces `400` particles per update, while `40` produces `1600`. This option only affects custom auras.
+
+The update interval is controlled by [`aura_mechanic_delay`](../settings/prevent-furniture-breaks-1.md) in `config.yml`, which defaults to `5` ticks. Combining several custom auras adds their particle counts together.
 
 ```yaml
 # Example
@@ -125,4 +133,4 @@ Mechanics:
 - **`sqrt`**: Square root.
 - **`tan`**: Tangent.
 - **`tanh`**: Hyperbolic tangent.
-- **`signum`**: Signum. 
+- **`signum`**: Signum.

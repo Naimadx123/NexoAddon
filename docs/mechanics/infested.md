@@ -7,7 +7,7 @@ description: Infested mechanic.
 The Infested Mechanic lets you add a list of entities that should spawn upon breaking a custom block
 
 {% hint style="info" %}
-`entities` option is required!
+At least one of `entities` or `mythic-mobs` is required. `mythic-mobs` needs MythicMobs installed.
 {% endhint %}
 
 ### A custom block infested with Zombies and Slimes

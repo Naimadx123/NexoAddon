@@ -1,10 +1,10 @@
 ---
-description: Drop exact placed custom item using shears! (stringblocks only)
+description: Drop exact placed custom item using shears! (stringblocks and chorusblocks)
 ---
 
 # Count shears as silktouch
 
-`count_shears_as_silktouch` is just list of stringblocks that should drop using shears.
+`count_shears_as_silktouch` is a list of stringblock and chorusblock IDs that should drop their placed item when broken with shears.
 
 ```yaml
 # Example

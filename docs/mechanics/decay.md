@@ -1,10 +1,12 @@
 ---
-description: Decay chorusblock mechanic.
+description: Decay custom_block mechanic.
 ---
 
 # Decay
 
 Create unique leaves with Decay Mechanic!
+
+`time`, `chance`, `base` and `radius` are required. `time` is measured in seconds between decay checks. A block stays intact while connected to one of the configured base blocks within the search radius; otherwise each check rolls `chance` to break it.
 
 {% hint style="info" %}
 This Mechanic works on every custom\_block type

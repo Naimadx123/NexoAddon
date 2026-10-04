@@ -16,6 +16,10 @@ automatic_fishing_rod:
     custom_model_data: 1001
   Mechanics:
     autocatch:
-      toggable: false      # Allow do enbale/disable auto chatch
-      recast: false        # Should recast the fish hook when player is looking or to to the previous location?
+      toggable: false
+      recast: false
 ```
+
+`toggable` defaults to `false`, so automatic catching is always active. Set it to `true` to let the player switch it on or off by left-clicking a non-interactive block with the rod in their main hand. A toggleable rod starts disabled.
+
+`recast` defaults to `true` and casts in the direction the player is looking. With `false`, the new hook is returned to the previous hook's location.

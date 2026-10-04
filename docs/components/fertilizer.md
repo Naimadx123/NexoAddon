@@ -1,6 +1,8 @@
 # fertilizer
 
-`fertilizer`Component have 2 properties, `usable_on`and `growth_speedup`. Check example below.
+The `fertilizer` Component speeds up furniture evolution or applies bone meal to vanilla blocks. `usable_on` and `growth_speedup` are required; `cooldown` is optional and defaults to `0` seconds.
+
+For furniture, `growth_speedup` is added to its stored evolution progress. For vanilla blocks, it is the number of bone meal applications attempted per use.
 
 ### One time usable
 
@@ -70,7 +72,9 @@ common_fertilizer:
       usable_on:
       - _MINECRAFT
       growth_speedup: 50
+      cooldown: 30
     max_stack_size: 1
     durability: 50                                  # How many uses
-    cooldown: 30                                    # 30 seconds of cooldown
 ```
+
+Put `cooldown` inside `fertilizer`. It is measured in seconds and shared by the player's fertilizer items.

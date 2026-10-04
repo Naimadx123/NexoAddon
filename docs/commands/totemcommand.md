@@ -5,6 +5,8 @@ icon: "🗿"
 
 # Totem Animation
 
+Requires PacketEvents and the `nexoaddon.admin` permission. The target player must be online.
+
 {% hint style="warning" %}
 The item **MUST** be a `TOTEM_OF_UNDYING` to display custom models/textures!
 {% endhint %}
@@ -12,7 +14,7 @@ The item **MUST** be a `TOTEM_OF_UNDYING` to display custom models/textures!
 ### Usage
 
 ```yaml
-/nexoaddon totem <player> <customModelData|nexoID>
+/nexoaddon totem <player> <customModelData|nexoID> [sound]
 ```
 
 ### Examples
@@ -25,6 +27,22 @@ The item **MUST** be a `TOTEM_OF_UNDYING` to display custom models/textures!
 #### Using Nexo Items
 ```yaml
 /nexoaddon totem PlayerName diamond_totem
+```
+
+#### Playing a sound with the animation
+
+```text
+/nexoaddon totem PlayerName diamond_totem minecraft:entity.lightning_bolt.thunder
+```
+
+`sound` is an optional sound key. The animation does not consume an item or grant death protection.
+
+### Animation delay
+
+If the animation fails to display on a client, enable the two-tick delay in `config.yml`. It defaults to `false`.
+
+```yaml
+enable_totem_delay: true
 ```
 
 ### Required Item Setup

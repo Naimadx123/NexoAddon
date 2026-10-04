@@ -287,7 +287,9 @@ Blocks that are already a result of this mechanic are never re-converted, which 
 
 ## Performance
 
-Spreading blocks are driven by one shared scheduler with a server-wide budget, so the cost does not grow with the number of blocks. Once more blocks are due than the budget allows, the extras simply wait for the next tick, oldest first.
+Spreading blocks are driven by one shared scheduler with a server-wide budget that limits the number of attempts per tick. Once more blocks are due than the budget allows, the extras wait for a later tick. The cost of each attempt still depends on `radius`, `mode` and the matching rules.
+
+Set the budget in `plugins/NexoAddon/config.yml`:
 
 ```yaml
 spread:

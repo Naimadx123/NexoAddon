@@ -4,11 +4,9 @@ description: Add skull with custom textures!
 
 # skull\_value
 
-{% hint style="danger" %}
-This Component has been removed in NexoAddon v1.16 favor of Nexo's **profile** Component
-{% endhint %}
-
 Decorate your world with player heads with custom textures!
+
+The item must use `material: PLAYER_HEAD`. `skull_value` accepts a Base64-encoded texture profile. The current version still loads this component; invalid texture values are reported in the server log and fall back to the default NexoAddon head texture.
 
 ### Hedgehog
 
@@ -23,3 +21,5 @@ skull_test:
 ```
 
 <figure><img src="../.gitbook/assets/obraz_2025-01-15_225656761.png" alt=""><figcaption><p>Result</p></figcaption></figure>
+
+To give the head a sound when placed above a note block, add [`note_block_sound`](note_block_sound.md) alongside `skull_value`.
