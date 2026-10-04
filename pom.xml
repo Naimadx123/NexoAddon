@@ -6,7 +6,7 @@
 
     <groupId>zone.vao</groupId>
     <artifactId>NexoAddon</artifactId>
-    <version>1.18.1</version>
+    <version>1.19.0</version>
 
     <packaging>jar</packaging>
 
@@ -173,19 +173,19 @@
         <dependency>
             <groupId>ca.bkaw</groupId>
             <artifactId>paper-nms</artifactId>
-            <version>26.1.2.build.63-stable-SNAPSHOT</version>
+            <version>26.3.build.136-beta-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>[26.1.2.build,)</version>
+            <version>[26.3.build,)</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.25.0</version>
+            <version>1.28.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

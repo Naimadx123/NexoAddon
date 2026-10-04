@@ -29,6 +29,7 @@ public class WorldLoadListener implements Listener {
 
   private void applyPopulator(WorldEvent event) {
     NexoAddon.getInstance().foliaLib.getScheduler().runLater(() -> {
+      NexoAddon.getInstance().addBiomePopulators(event.getWorld());
       NexoAddon.getInstance().getOrePopulator().getOres().forEach(ore -> {
         if (ore.getNexoFurniture() != null || (
             ore.nexoBlocks != null &&

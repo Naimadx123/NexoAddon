@@ -5,12 +5,15 @@ import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.custom_block.stringblock.StringBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import zone.vao.nexoAddon.NexoAddon;
+import zone.vao.nexoAddon.populators.BiomePopulator;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
 
 import java.io.*;
@@ -22,11 +25,13 @@ public class PopulatorsConfigUtil {
 
   private final File populatorsDir;
   private final File blocksDir;
+  private final File biomesDir;
   private final ClassLoader pluginClassLoader;
 
   public PopulatorsConfigUtil(File pluginDirectory, ClassLoader pluginClassLoader) {
     this.populatorsDir = new File(pluginDirectory, "populators");
     this.blocksDir = new File(populatorsDir, "blocks");
+    this.biomesDir = new File(populatorsDir, "biomes");
     this.pluginClassLoader = pluginClassLoader;
     createPopulatorFiles();
   }
@@ -43,6 +48,11 @@ public class PopulatorsConfigUtil {
     }
 
     copyResourceIfAbsent("block_populator.yml", populatorsDir);
+    if (!biomesDir.exists() && !biomesDir.mkdirs()) {
+      NexoAddon.getInstance().getLogger().severe("Failed to create biomes directory.");
+      return;
+    }
+    copyResourceIfAbsent("biome_populator.yml", populatorsDir);
   }
 
   private void copyResourceIfAbsent(String fileName, File targetDir) {
@@ -79,7 +89,8 @@ public class PopulatorsConfigUtil {
       return Collections.emptyList();
     }
 
-    File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
+    File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml")
+        && (!directory.equals(populatorsDir) || !name.equals("biome_populator.yml")));
     if (files == null) {
       logError("Failed to list files in the directory: " + directory.getName());
       return Collections.emptyList();
@@ -103,6 +114,53 @@ public class PopulatorsConfigUtil {
     }
 
     return ores;
+  }
+
+  public List<BiomePopulator> loadBiomePopulatorsFromConfig() {
+    List<FileConfiguration> configs = new ArrayList<>();
+    FileConfiguration rootConfig = loadConfigFile("biome_populator.yml", populatorsDir);
+    if (rootConfig != null) configs.add(rootConfig);
+    configs.addAll(loadConfigsFromDirectory(biomesDir));
+
+    List<BiomePopulator> populators = new ArrayList<>();
+    for (FileConfiguration config : configs) {
+      for (String id : config.getKeys(false)) {
+        ConfigurationSection section = config.getConfigurationSection(id);
+        if (section == null || !section.getBoolean("enabled", true)) continue;
+
+        String biomeName = section.getString("biome");
+        Biome biome = biomeName == null ? null : LiquidUtil.resolveBiome(biomeName.trim().toLowerCase(Locale.ROOT));
+        if (biome == null) {
+          logError("Unknown biome `" + biomeName + "` in biome populator `" + id
+              + "`. Register custom biomes at startup and check /nexoaddon biomes. Skipping.");
+          continue;
+        }
+
+        List<String> worldNames = section.getStringList("worlds");
+        if (worldNames.isEmpty()) {
+          logError("Biome populator `" + id + "` has no worlds. Skipping.");
+          continue;
+        }
+
+        List<String> biomeNames = section.getStringList("biomes");
+        List<Biome> biomes = parseBiomes(biomeNames);
+        if (biomes.isEmpty()) {
+          logError("Biome populator `" + id + "` matches no registered biomes. Skipping.");
+          continue;
+        }
+
+        int minY = section.getInt("minY", Integer.MIN_VALUE);
+        int maxY = section.getInt("maxY", Integer.MAX_VALUE);
+        double chance = section.getDouble("chance", 1.0);
+        if (minY > maxY || !Double.isFinite(chance) || chance < 0.0 || chance > 1.0) {
+          logError("Invalid height range or chance in biome populator `" + id + "`. Skipping.");
+          continue;
+        }
+
+        populators.add(new BiomePopulator(id, biome, worldNames, biomes, minY, maxY, chance));
+      }
+    }
+    return List.copyOf(populators);
   }
 
   private List<Ore> loadOresFromConfig(FileConfiguration config) {
@@ -136,7 +194,11 @@ public class PopulatorsConfigUtil {
     NexoAddon.getInstance().getLogger().info(key + " worlds: " + worldNames);
     List<World> worlds = worldNames.size() == 1 && worldNames.getFirst().equalsIgnoreCase("all")? Bukkit.getWorlds() : parseWorlds(worldNames);
     if (worlds.isEmpty()) return null;
-    List<Biome> biomes = parseBiomes(worlds, section.getStringList("biomes"));
+    List<Biome> biomes = parseBiomes(section.getStringList("biomes"));
+    if (biomes.isEmpty()) {
+      logError("Populator `" + key + "` matches no registered biomes. Skipping.");
+      return null;
+    }
 
     List<Material> replaceMaterials = parseMaterials(section.getStringList("replace"));
     List<Material> placeOnMaterials = parseMaterials(section.getStringList("place_on"));
@@ -189,11 +251,11 @@ public class PopulatorsConfigUtil {
     return NexoAddon.getInstance().getServer().createWorld(creator);
   }
 
-  private List<Biome> parseBiomes(List<World> worlds, List<String> biomeNames) {
+  private List<Biome> parseBiomes(List<String> biomeNames) {
     if (Biome.class.isEnum()) {
       return parseBiomesOld(Arrays.asList(Biome.class.getEnumConstants()), biomeNames);
     } else {
-      return parseBiomesNew(Registry.BIOME.stream().toList(), biomeNames);
+      return parseBiomesNew(getAllBiomes(), biomeNames);
     }
   }
 
@@ -202,7 +264,7 @@ public class PopulatorsConfigUtil {
 
     boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
     List<String> cleanNames = biomeNames.stream()
-            .map(name -> name.replaceFirst("!", "").toUpperCase())
+            .map(name -> name.replaceFirst("!", "").toUpperCase(Locale.ROOT))
             .toList();
 
     List<Biome> result = new ArrayList<>();
@@ -210,18 +272,12 @@ public class PopulatorsConfigUtil {
       Method nameMethod = Enum.class.getMethod("name");
       for (Biome biome : biomes) {
         String name = ((String) nameMethod.invoke(biome)).toUpperCase().replace(" ", "_");
-        if (biomeNames.contains(name)) {
-          if (isBlacklist) {
-            if (!cleanNames.contains(name)) result.add(biome);
-          } else {
-            if (cleanNames.contains(name)) result.add(biome);
-          }
-        }
+        if (isBlacklist != cleanNames.contains(name)) result.add(biome);
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
-    return result.isEmpty() ? biomes : result;
+    return result;
   }
 
 
@@ -230,33 +286,22 @@ public class PopulatorsConfigUtil {
 
     boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
     List<String> cleanNames = biomeNames.stream()
-            .map(name -> name.replaceFirst("!", "").toUpperCase())
+            .map(name -> name.replaceFirst("!", "").trim().toLowerCase(Locale.ROOT))
             .toList();
 
     List<Biome> result = new ArrayList<>();
-    try {
-      Method getKeyMethod = Biome.class.getMethod("getKey");
-      Method getKeyNameMethod = NamespacedKey.class.getMethod("getKey");
-      for (Biome biome : biomes) {
-        Object keyObject = getKeyMethod.invoke(biome);
-        String keyName = ((String) getKeyNameMethod.invoke(keyObject)).toUpperCase();
-        if (biomeNames.contains(keyName)) {
-          if (isBlacklist) {
-            if (!cleanNames.contains(keyName)) result.add(biome);
-          } else {
-            if (cleanNames.contains(keyName)) result.add(biome);
-          }
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    for (Biome biome : biomes) {
+      NamespacedKey key = biome.getKey();
+      boolean matches = cleanNames.contains(key.toString())
+          || key.getNamespace().equals("minecraft") && cleanNames.contains(key.getKey());
+      if (isBlacklist != matches) result.add(biome);
     }
-    return result.isEmpty() ? new ArrayList<>(biomes) : result;
+    return result;
   }
 
 
   private List<Biome> getAllBiomes() {
-    return Registry.BIOME.stream().toList();
+    return RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).stream().toList();
   }
 
   private List<Material> parseMaterials(List<String> materialNames) {

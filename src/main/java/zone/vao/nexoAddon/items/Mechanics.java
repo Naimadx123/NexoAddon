@@ -22,7 +22,7 @@ public class Mechanics {
   private BigMining bigMining;
   private VeinMiner veinMiner;
   private BedrockBreak bedrockBreak;
-  private Aura aura;
+  private List<Aura> aura;
   private SpawnerBreak spawnerBreak;
   private MiningTools miningTools;
   private DropExperience dropExperience;
@@ -40,7 +40,12 @@ public class Mechanics {
   private AutoCatch autoCatch;
   private UniqueId uniqueId;
   private InventoryType inventoryType;
+  private CustomCrafting customCrafting;
   private Lifesteal lifesteal;
+  private Spread spread;
+  private Thor thor;
+  private Liquid liquid;
+  private Fuel fuel;
 
   public Mechanics(String id) {
     this.id = id;
@@ -62,8 +67,8 @@ public class Mechanics {
     this.bedrockBreak = new BedrockBreak(hardness, probability, durabilityCost, disableOnFirstLayer, sound);
   }
 
-  public void setAura(Particle particle, String type, String formula) {
-    this.aura = new Aura(particle, type, formula);
+  public void setAura(List<Aura> aura) {
+    this.aura = aura;
   }
 
   public void setMiningTools(final List<Material> materials, final List<String> nexoIds, final String type) {
@@ -126,8 +131,28 @@ public class Mechanics {
     this.inventoryType = new InventoryType(inventoryType, title);
   }
 
+  public void setCustomCrafting(CustomCrafting customCrafting) {
+    this.customCrafting = customCrafting;
+  }
+
   public void setLifesteal(int amount, double cooldown) {
     this.lifesteal = new Lifesteal(amount, cooldown);
+  }
+
+  public void setSpread(Spread spread) {
+    this.spread = spread;
+  }
+
+  public void setThor(int lightningBoltsAmount, double randomLocationVariation, int delay) {
+    this.thor = new Thor(lightningBoltsAmount, randomLocationVariation, delay);
+  }
+
+  public void setLiquid(Liquid liquid) {
+    this.liquid = liquid;
+  }
+
+  public void setFuel(int burnTime, List<Material> furnaces, String leftover) {
+    this.fuel = new Fuel(burnTime, furnaces, leftover);
   }
 
   public static void registerListeners(NexoAddon plugin){
@@ -138,10 +163,13 @@ public class Mechanics {
     registerListener(new BlockAura.BlockAuraListener(), plugin);
     registerListener(new BottledExp.BottledExpListener(), plugin);
 
+    registerListener(new CustomCrafting.CustomCraftingListener(), plugin);
+
     registerListener(new Decay.DecayListener(), plugin);
     registerListener(new DropExperience.DropExperienceListener(), plugin);
 
     registerListener(new Enchantify.EnchantifyListener(), plugin);
+    registerListener(new Fuel.FuelListener(), plugin);
 
     registerListener(new Infested.InfestedListener(), plugin);
     registerListener(new InventoryType.InventoryTypeListener(), plugin);
@@ -149,6 +177,7 @@ public class Mechanics {
     registerListener(new KillMessage.KillMessageListener(), plugin);
 
     registerListener(new Lifesteal.LifestealListener(), plugin);
+    registerListener(new Liquid.LiquidListener(), plugin);
 
     registerListener(new MiningTools.MiningToolsListener(), plugin);
 
@@ -164,6 +193,8 @@ public class Mechanics {
     registerListener(new Unstackable.UnstackableListener(), plugin);
 
     registerListener(new Signal.SignalListener(), plugin);
+    registerListener(new Spread.SpreadListener(), plugin);
+    registerListener(new Thor.ThorListener(), plugin);
     registerListener(new VeinMiner.VeinMinerListener(), plugin);
   }
 

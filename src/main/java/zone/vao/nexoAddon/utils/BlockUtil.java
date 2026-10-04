@@ -10,20 +10,23 @@ import com.tcoded.folialib.wrapper.task.WrappedBukkitTask;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.Decay;
+import zone.vao.nexoAddon.items.mechanics.Spread;
 
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class BlockUtil {
 
@@ -397,5 +400,171 @@ public class BlockUtil {
            RESPAWN_ANCHOR -> true;
       default -> false;
     };
+  }
+
+  public static void startSpread(Location location) {
+    if (location == null || location.getWorld() == null) return;
+    if (!NexoAddon.instance.getIsSpread()) return;
+
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler == null || scheduler.isRegistered(location)) return;
+
+    Block block = location.getBlock();
+    if (!NexoBlocks.isCustomBlock(block)) return;
+
+    CustomBlockMechanic customBlockMechanic = NexoBlocks.customBlockMechanic(location);
+    if (customBlockMechanic == null) return;
+
+    Mechanics mechanic = NexoAddon.getInstance().getMechanics().get(customBlockMechanic.getItemID());
+    if (mechanic == null || mechanic.getSpread() == null) return;
+
+    scheduler.register(location, mechanic.getSpread(), customBlockMechanic.getItemID());
+  }
+
+  public static void stopSpread(Location location) {
+    if (location == null) return;
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler != null) scheduler.unregister(location);
+  }
+
+  public static void restartSpread(Chunk chunk) {
+    if (!NexoAddon.instance.getIsSpread()) return;
+    if (NexoAddon.getInstance().getMechanics().isEmpty()) return;
+
+    SpreadScheduler scheduler = NexoAddon.getInstance().getSpreadScheduler();
+    if (scheduler == null) return;
+
+    for (Block block : CustomBlockData.getBlocksWithCustomData(NexoAddon.getInstance(), chunk)) {
+      CustomBlockData customBlockData = new CustomBlockData(block, NexoAddon.getInstance());
+      if (!customBlockData.has(SpreadScheduler.spreadKey(), PersistentDataType.STRING)) continue;
+
+      Location location = block.getLocation();
+      if (scheduler.isRegistered(location)) continue;
+
+      if (!NexoBlocks.isCustomBlock(block)) {
+        customBlockData.remove(SpreadScheduler.spreadKey());
+        continue;
+      }
+
+      CustomBlockMechanic customBlockMechanic = NexoBlocks.customBlockMechanic(location);
+      Mechanics mechanic = customBlockMechanic == null ? null
+          : NexoAddon.getInstance().getMechanics().get(customBlockMechanic.getItemID());
+      if (mechanic == null || mechanic.getSpread() == null) {
+        customBlockData.remove(SpreadScheduler.spreadKey());
+        continue;
+      }
+
+      scheduler.register(location, mechanic.getSpread(), customBlockMechanic.getItemID(), false);
+    }
+  }
+
+  private record SpreadCandidate(Block block, String resultId) {}
+
+  static void trySpread(Block source, Spread spread, String sourceId) {
+    List<SpreadCandidate> candidates = findSpreadCandidates(source, spread, sourceId);
+    if (candidates.isEmpty()) return;
+
+    if (spread.mode() == Spread.Mode.MULTI) {
+      for (SpreadCandidate candidate : candidates) {
+        convert(source, candidate.block(), candidate.resultId(), spread);
+      }
+      return;
+    }
+
+    SpreadCandidate target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+    convert(source, target.block(), target.resultId(), spread);
+  }
+
+  private static List<SpreadCandidate> findSpreadCandidates(Block source, Spread spread, String sourceId) {
+    int radius = spread.radius();
+    int maxNearby = spread.maxNearby();
+    boolean limitNearby = spread.hasNearbyLimit();
+    Set<String> resultIds = spread.resultIds(sourceId);
+
+    int nearby = 0;
+    List<SpreadCandidate> candidates = new ArrayList<>();
+
+    for (int x = -radius; x <= radius; x++) {
+      for (int y = -radius; y <= radius; y++) {
+        for (int z = -radius; z <= radius; z++) {
+          if (x == 0 && y == 0 && z == 0) continue;
+
+          Block relative = source.getRelative(x, y, z);
+          nearby += collectSpreadCandidate(relative, spread, sourceId, resultIds, candidates);
+          if (limitNearby && nearby >= maxNearby) return List.of();
+        }
+      }
+    }
+
+    return candidates;
+  }
+
+  private static int collectSpreadCandidate(Block block, Spread spread, String sourceId,
+                                            Set<String> resultIds, List<SpreadCandidate> candidates) {
+    Material type = block.getType();
+    Spread.Rule rule = spread.ruleFor(type);
+    if (rule != null && rule.wildcard() && UNBREAKABLE_BLOCKS.contains(type)) return 0;
+    if (rule == null && !spread.hasNearbyLimit()) return 0;
+    if (isResultBlock(block, resultIds)) return 1;
+    if (rule == null || !matchesConditions(block, spread)) return 0;
+
+    candidates.add(new SpreadCandidate(block, Spread.resolveResult(rule.result(), sourceId)));
+    return 0;
+  }
+
+  private static void convert(Block source, Block target, String resultId, Spread spread) {
+    Location location = target.getLocation();
+    NexoAddon.instance.foliaLib.getScheduler().runAtLocation(location, r -> {
+      if (!allowSpread(source, target, spread)) return;
+
+      target.setType(Material.AIR);
+      NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
+        NexoBlocks.place(resultId, location);
+        startSpread(location);
+      }, 1L);
+    });
+  }
+
+  private static boolean allowSpread(Block source, Block target, Spread spread) {
+    if (!spread.protectionEnabled() || !spread.respectClaims()) return true;
+
+    try {
+      BlockState newState = target.getState();
+      newState.setBlockData(source.getBlockData());
+      return EventUtil.callEvent(new BlockSpreadEvent(target, source, newState));
+    } catch (Throwable ignored) {
+      return true;
+    }
+  }
+
+  private static boolean matchesConditions(Block block, Spread spread) {
+    if (spread.requiresAirAbove() && !block.getRelative(BlockFace.UP).getType().isAir()) {
+      return false;
+    }
+
+    int light = block.getLightLevel();
+    if (light < spread.lightMin() || light > spread.lightMax()) {
+      return false;
+    }
+
+    if (!spread.biomes().isEmpty() && !spread.biomes().contains(biomeName(block))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private static boolean isResultBlock(Block block, Set<String> resultIds) {
+    if (!NexoBlocks.isCustomBlock(block)) return false;
+    CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block.getLocation());
+    return mechanic != null && resultIds.contains(mechanic.getItemID());
+  }
+
+  private static String biomeName(Block block) {
+    try {
+      return block.getBiome().getKey().getKey().toLowerCase();
+    } catch (Throwable ignored) {
+      return block.getBiome().toString().toLowerCase();
+    }
   }
 }

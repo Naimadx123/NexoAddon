@@ -22,6 +22,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.utils.BlockUtil;
+import zone.vao.nexoAddon.utils.BreakCascade;
 import zone.vao.nexoAddon.utils.EventUtil;
 
 import java.util.*;
@@ -35,7 +36,6 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
     }
 
     public static class VeinMinerListener implements Listener {
-        private static int activeBlockBreaks = 0;
         private static final NamespacedKey key = new NamespacedKey(NexoAddon.getInstance(), "veinMinerToggleable");
 
         @EventHandler
@@ -46,10 +46,7 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             String toolId = NexoItems.idFromItem(tool);
             if (!VeinMiner.isVeinMinerTool(toolId)) return;
 
-            if (activeBlockBreaks > 0) {
-                activeBlockBreaks--;
-                return;
-            }
+            if (BreakCascade.isActive(player.getUniqueId())) return;
 
             VeinMiner veinMinerMechanic = NexoAddon.getInstance()
                     .getMechanics()
@@ -68,8 +65,13 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             Block originBlock = event.getBlock();
             if (!isValidBlock(veinMinerMechanic, originBlock)) return;
 
-            mineVein(player, originBlock, veinMinerMechanic, tool);
-            activeBlockBreaks = 0;
+            UUID id = player.getUniqueId();
+            BreakCascade.hold(id);
+            try {
+                mineVein(player, originBlock, veinMinerMechanic, tool);
+            } finally {
+                BreakCascade.release(id);
+            }
         }
 
         private static boolean isValidBlock(VeinMiner veinMiner, Block block) {
@@ -144,7 +146,6 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         private static void attemptBlockBreak(Player player, Block block, ItemStack tool) {
             if (isUnbreakableBlock(player, block)) return;
 
-            activeBlockBreaks++;
             BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
 
             if (!EventUtil.callEvent(blockBreakEvent)) return;
