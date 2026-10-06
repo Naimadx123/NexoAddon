@@ -72,12 +72,14 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
       int directionalModifier = calculateModifier(primaryBlock, secondaryBlock);
 
       UUID id = player.getUniqueId();
-      BreakCascade.hold(id);
-      try {
-        breakBlocksInRadius(player, event.getBlock().getLocation(), breakFace, bigMiningMechanic, directionalModifier, tool);
-      } finally {
-        BreakCascade.release(id);
-      }
+      EventUtil.runAfterBlockBreak(event, () -> {
+        BreakCascade.hold(id);
+        try {
+          breakBlocksInRadius(player, event.getBlock().getLocation(), breakFace, bigMiningMechanic, directionalModifier, tool);
+        } finally {
+          BreakCascade.release(id);
+        }
+      });
     }
 
     private static int calculateModifier(Block primaryBlock, Block secondaryBlock) {

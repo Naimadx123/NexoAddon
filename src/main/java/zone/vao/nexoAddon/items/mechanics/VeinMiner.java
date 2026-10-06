@@ -65,13 +65,7 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             Block originBlock = event.getBlock();
             if (!isValidBlock(veinMinerMechanic, originBlock)) return;
 
-            UUID id = player.getUniqueId();
-            BreakCascade.hold(id);
-            try {
-                mineVein(player, originBlock, veinMinerMechanic, tool);
-            } finally {
-                BreakCascade.release(id);
-            }
+            mineVein(event, player, originBlock, veinMinerMechanic, tool);
         }
 
         private static boolean isValidBlock(VeinMiner veinMiner, Block block) {
@@ -86,7 +80,7 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
             return false;
         }
 
-        private static void mineVein(Player player, Block origin, VeinMiner mechanic, ItemStack tool) {
+        private static void mineVein(BlockBreakEvent event, Player player, Block origin, VeinMiner mechanic, ItemStack tool) {
             Set<Block> veinBlocks = new HashSet<>();
             Queue<Block> blocksToCheck = new LinkedList<>();
             Location originLoc = origin.getLocation();
@@ -102,7 +96,15 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
                 processAdjacentBlocks(current, veinBlocks, blocksToCheck, originLoc, maxDistanceSquared, originMaterial, originNexoId, mechanic);
             }
 
-            breakVeinBlocks(player, origin, veinBlocks, tool);
+            EventUtil.runAfterBlockBreak(event, () -> {
+                UUID id = player.getUniqueId();
+                BreakCascade.hold(id);
+                try {
+                    breakVeinBlocks(player, origin, veinBlocks, tool);
+                } finally {
+                    BreakCascade.release(id);
+                }
+            });
         }
 
         private static String getNexoId(Block block) {
