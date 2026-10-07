@@ -1,6 +1,7 @@
 package zone.vao.nexoAddon.events;
 
 import com.nexomc.nexo.api.NexoBlocks;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldEvent;
@@ -28,7 +29,7 @@ public class WorldLoadListener implements Listener {
   }
 
   private void applyPopulator(WorldEvent event) {
-    NexoAddon.getInstance().foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getGlobalRegionScheduler().runDelayed(NexoAddon.getInstance(), task -> {
       NexoAddon.getInstance().addBiomePopulators(event.getWorld());
       NexoAddon.getInstance().getOrePopulator().getOres().forEach(ore -> {
         if (ore.getNexoFurniture() != null || (

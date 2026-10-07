@@ -57,19 +57,21 @@ public class NexoAddonCommand extends BaseCommand {
 
     Location center = player.getLocation();
     Biome target = forced;
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(center, task ->
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), center, task ->
         LiquidUtil.cleanup(center, radius, target, result -> {
-          sender.sendMessage(MiniMessage.miniMessage().deserialize(
-              "<green>Restored " + result.restored() + " biome cell(s) <gray>(each cell is 4x4x4 blocks)."));
+          player.getScheduler().run(NexoAddon.getInstance(), message -> {
+            sender.sendMessage(MiniMessage.miniMessage().deserialize(
+                "<green>Restored " + result.restored() + " biome cell(s) <gray>(each cell is 4x4x4 blocks)."));
 
-          if (result.hadWater() > 0)
-            sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>Skipped " + result.hadWater()
-                + " cell(s) that still contain water. Remove the water there first."));
+            if (result.hadWater() > 0)
+              sender.sendMessage(MiniMessage.miniMessage().deserialize("<gray>Skipped " + result.hadWater()
+                  + " cell(s) that still contain water. Remove the water there first."));
 
-          if (result.noOriginal() > 0)
-            sender.sendMessage(MiniMessage.miniMessage().deserialize("<yellow>Skipped " + result.noOriginal()
-                + " cell(s) with no known original biome. Re-run with an explicit biome, e.g. "
-                + "<white>/nexoaddon liquidclean " + radius + " minecraft:plains<yellow>."));
+            if (result.noOriginal() > 0)
+              sender.sendMessage(MiniMessage.miniMessage().deserialize("<yellow>Skipped " + result.noOriginal()
+                  + " cell(s) with no known original biome. Re-run with an explicit biome, e.g. "
+                  + "<white>/nexoaddon liquidclean " + radius + " minecraft:plains<yellow>."));
+          }, null);
         }));
   }
 
@@ -141,7 +143,7 @@ public class NexoAddonCommand extends BaseCommand {
     sender.sendMessage(MiniMessage.miniMessage()
         .deserialize("<yellow>Scheduling repopulation for loaded chunks...</yellow>"));
 
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runAsync(populate -> {
+    Bukkit.getGlobalRegionScheduler().run(NexoAddon.getInstance(), populate -> {
       int processedChunks = 0;
 
       for (World world : targetWorlds) {
@@ -165,11 +167,13 @@ public class NexoAddonCommand extends BaseCommand {
       }
 
       final int finalProcessedChunks = processedChunks;
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(mess -> sender.sendMessage(
+      Runnable message = () -> sender.sendMessage(
           MiniMessage.miniMessage().deserialize(
               "<green>Repopulation scheduled for <white>" + finalProcessedChunks + "</white> chunks.</green>"
           )
-      ));
+      );
+      if (sender instanceof Player player) player.getScheduler().run(NexoAddon.getInstance(), mess -> message.run(), null);
+      else message.run();
     });
   }
 

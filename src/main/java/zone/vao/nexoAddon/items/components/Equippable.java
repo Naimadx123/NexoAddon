@@ -12,7 +12,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.utils.InventoryUtil;
@@ -54,13 +53,10 @@ public record Equippable(EquipmentSlot slot) {
         currItem = currItem.clone();
 
       ItemStack finalCurrItem = currItem;
-      new BukkitRunnable() {
-        @Override
-        public void run() {
-          player.getInventory().setItem(components.getEquippable().slot(), cursorItem);
-          player.setItemOnCursor(finalCurrItem);
-        }
-      }.runTaskLater(NexoAddon.getInstance(), 1L);
+      player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
+        player.getInventory().setItem(components.getEquippable().slot(), cursorItem);
+        player.setItemOnCursor(finalCurrItem);
+      }, null, 1L);
     }
 
     @EventHandler
@@ -115,12 +111,7 @@ public record Equippable(EquipmentSlot slot) {
 
     private static void returnPreviousItemToInventory(Player player, ItemStack previousItem) {
       if (previousItem != null && previousItem.getType() != Material.AIR) {
-        new BukkitRunnable() {
-          @Override
-          public void run() {
-            player.getInventory().addItem(previousItem);
-          }
-        }.runTaskLater(NexoAddon.getInstance(), 2);
+        player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> player.getInventory().addItem(previousItem), null, 2L);
       }
     }
 

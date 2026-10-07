@@ -2,6 +2,7 @@ package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockPlaceEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.event.EventHandler;
@@ -102,8 +103,8 @@ public record Spread(
     public void onChunkLoad(ChunkLoadEvent event) {
       if (!NexoAddon.getInstance().getIsSpread()) return;
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(
-          event.getChunk().getBlock(0, 0, 0).getLocation(),
+      Bukkit.getRegionScheduler().runDelayed(
+          NexoAddon.getInstance(), event.getWorld(), event.getChunk().getX(), event.getChunk().getZ(),
           r -> BlockUtil.restartSpread(event.getChunk()),
           3L
       );

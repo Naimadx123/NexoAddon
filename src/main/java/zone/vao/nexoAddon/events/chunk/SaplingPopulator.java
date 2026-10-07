@@ -37,7 +37,7 @@ public class SaplingPopulator {
   private static void processOre(World world, Chunk chunk, Ore ore) {
     if (!ore.getWorlds().contains(world) && !ore.getWorldNames().contains("all")) return;
 
-    NexoAddon.instance.foliaLib.getScheduler().runAsync(populate -> {
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), world, chunk.getX(), chunk.getZ(), populate -> {
       Random random = new Random();
       if (random.nextDouble() > ore.getChance()) return;
 
@@ -103,7 +103,7 @@ public class SaplingPopulator {
       Ore ore,
       int placementIndex
   ) {
-    NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), loc, populate -> {
       if (ore.getReplace() != null && ore.getReplace().contains(loc.getBlock().getType())) {
         loc.getBlock().setType(Material.AIR);
       }

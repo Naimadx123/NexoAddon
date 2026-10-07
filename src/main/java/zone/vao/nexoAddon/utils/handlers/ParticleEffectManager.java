@@ -1,7 +1,7 @@
 package zone.vao.nexoAddon.utils.handlers;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.objecthunter.exp4j.Expression;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,20 +11,23 @@ import org.bukkit.inventory.ItemStack;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.Aura;
+import java.util.Arrays;
 
 public class ParticleEffectManager {
 
   private final NexoAddon plugin = NexoAddon.getInstance();
   private final long startMillis = System.currentTimeMillis();
-  private WrappedTask task;
+  private ScheduledTask task;
 
   public void startAuraEffectTask() {
     if(task != null && !task.isCancelled()) return;
-    task = NexoAddon.instance.foliaLib.getScheduler().runTimerAsync(() -> {
+    task = Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, ticker -> {
       for (Player player : Bukkit.getOnlinePlayers()) {
-        applyAuraEffects(player);
+        player.getScheduler().run(plugin, aura -> {
+          if (!ticker.isCancelled()) applyAuraEffects(player);
+        }, null);
       }
-    }, 0L, NexoAddon.getInstance().getGlobalConfig().getLong("aura_mechanic_delay", 5));
+    }, 1L, Math.max(1L, plugin.getGlobalConfig().getLong("aura_mechanic_delay", 5)));
   }
 
   public void stopAuraEffectTask() {
@@ -74,8 +77,9 @@ public class ParticleEffectManager {
     int points = aura.points();
     double angle = 0.0;
     double angle2 = -Math.PI / 2;
+    Expression[] expressions = Arrays.stream(aura.custom()).map(Expression::new).toArray(Expression[]::new);
 
-    for (Expression expression : aura.custom()) {
+    for (Expression expression : expressions) {
       expression.setVariable("x", location.getX())
           .setVariable("y", location.getY())
           .setVariable("z", location.getZ())
@@ -89,7 +93,7 @@ public class ParticleEffectManager {
       for (int j = 0; j < points; j++) {
         double[] pos = new double[3];
         for (int k = 0; k < 3; k++) {
-          pos[k] = aura.custom()[k].setVariable("angle", angle).setVariable("angle2", angle2).evaluate();
+          pos[k] = expressions[k].setVariable("angle", angle).setVariable("angle2", angle2).evaluate();
         }
         player.getWorld().spawnParticle(aura.particle(), pos[0], pos[1], pos[2], 1, 0, 0, 0, 0);
 

@@ -1,8 +1,6 @@
 package zone.vao.thirdparties.updatechecker;
 
-import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.impl.PlatformScheduler;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -19,6 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public class UpdateChecker {
@@ -86,10 +85,8 @@ public class UpdateChecker {
   private BiConsumer<CommandSender[], String> onSuccess = (requesters, latestVersion) -> {
     };
     private String paidDownloadLink = null;
-    @Getter
-    private static PlatformScheduler scheduler;
     @Nullable
-    private WrappedTask updaterTask = null;
+    private ScheduledTask updaterTask = null;
     private int timeout = 0;
 
   @Getter
@@ -125,8 +122,6 @@ public class UpdateChecker {
         if (detectPaidVersion()) {
             usingPaidVersion = true;
         }
-
-        scheduler = new FoliaLib(plugin).getScheduler();
 
         if (!listenerAlreadyRegistered) {
             Bukkit.getPluginManager().registerEvents(new UpdateCheckListener(), plugin);
@@ -217,7 +212,7 @@ public class UpdateChecker {
         long ticks = ((int) seconds) * 20L;
         stop();
         if (ticks > 0) {
-            updaterTask = getScheduler().runTimer(() -> checkNow(Bukkit.getConsoleSender()), ticks, ticks);
+            updaterTask = Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> checkNow(Bukkit.getConsoleSender()), ticks * 50L, ticks * 50L, TimeUnit.MILLISECONDS);
         } else {
             updaterTask = null;
         }
@@ -246,7 +241,7 @@ public class UpdateChecker {
             userAgentString = UserAgentBuilder.getDefaultUserAgent().build();
         }
 
-        getScheduler().runAsync(taskAsync -> {
+        Bukkit.getAsyncScheduler().runNow(plugin, taskAsync -> {
 
             UpdateCheckEvent updateCheckEvent;
 
@@ -271,12 +266,12 @@ public class UpdateChecker {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.SUCCESS);
             } catch (final IOException exception) {
                 updateCheckEvent = new UpdateCheckEvent(UpdateCheckSuccess.FAIL);
-                getScheduler().runNextTick(task -> getOnFail().accept(requesters, exception));
+                Bukkit.getGlobalRegionScheduler().run(plugin, task -> getOnFail().accept(requesters, exception));
             }
 
             UpdateCheckEvent finalUpdateCheckEvent = updateCheckEvent.setRequesters(requesters);
 
-            getScheduler().runNextTick(task -> {
+            Bukkit.getGlobalRegionScheduler().run(plugin, task -> {
 
                 if (finalUpdateCheckEvent.getSuccess() == UpdateCheckSuccess.SUCCESS) {
                     getOnSuccess().accept(requesters, latestVersion);

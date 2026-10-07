@@ -68,10 +68,10 @@ public class TotemUtil {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, setSlotPacket);
 
         if (NexoAddon.getInstance().getGlobalConfig().getBoolean("enable_totem_delay", false)) {
-            NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+            player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
                 PacketEvents.getAPI().getPlayerManager().sendPacket(player, entityStatusPacket);
                 player.updateInventory();
-            }, 2L);
+            }, null, 2L);
         } else {
             PacketEvents.getAPI().getPlayerManager().sendPacket(player, entityStatusPacket);
             player.updateInventory();

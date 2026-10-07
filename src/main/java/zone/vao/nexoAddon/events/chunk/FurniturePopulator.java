@@ -1,9 +1,6 @@
 package zone.vao.nexoAddon.events.chunk;
 
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.populators.orePopulator.Ore;
@@ -39,7 +36,7 @@ public class FurniturePopulator {
   ) {
     if (!ore.getWorlds().contains(world) && !ore.getWorldNames().contains("all")) return;
 
-    NexoAddon.instance.foliaLib.getScheduler().runAsync(populate -> {
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), world, chunk.getX(), chunk.getZ(), populate -> {
       Random random = new Random();
       if (random.nextDouble() > ore.getChance()) return;
 
@@ -105,7 +102,7 @@ public class FurniturePopulator {
       Ore ore,
       int placementIndex
   ) {
-    NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), loc, populate -> {
       if (ore.getReplace() != null && ore.getReplace().contains(loc.getBlock().getType())) {
         loc.getBlock().setType(Material.AIR);
       }

@@ -8,6 +8,7 @@ import com.nexomc.nexo.api.events.furniture.NexoFurnitureBreakEvent;
 import com.nexomc.nexo.api.events.furniture.NexoFurniturePlaceEvent;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -114,7 +115,7 @@ public record BlockAura(Particle particle, String xOffset, String yOffset, Strin
     @EventHandler
     public static void onLoad(ChunkLoadEvent event){
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(event.getChunk().getBlock(0, 0, 0).getLocation(), r -> {
+      Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), event.getWorld(), event.getChunk().getX(), event.getChunk().getZ(), r -> {
 
         BlockUtil.restartBlockAura(event.getChunk());
       }, 3L);

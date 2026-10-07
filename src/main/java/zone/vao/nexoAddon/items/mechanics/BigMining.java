@@ -4,10 +4,7 @@ import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -120,21 +117,16 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
 
     private static void attemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic) {
       Location blockLocation = block.getLocation().clone();
-      if (isUnbreakableBlock(block.getType(), block.isLiquid(), ProtectionLib.canBreak(player, blockLocation))) return;
 
       UUID id = player.getUniqueId();
       BreakCascade.hold(id);
-      if (NexoAddon.getInstance().getFoliaLib().isFolia()) {
-        NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(blockLocation, attempt ->
-            handleAttemptBlockBreak(player, block, tool, mechanic));
-      } else {
-        NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(attempt ->
-            handleAttemptBlockBreak(player, block, tool, mechanic));
-      }
+      Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), blockLocation, attempt ->
+          handleAttemptBlockBreak(player, block, tool, mechanic));
     }
 
     private static void handleAttemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic) {
       try {
+        if (isUnbreakableBlock(block.getType(), block.isLiquid(), ProtectionLib.canBreak(player, block.getLocation()))) return;
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
 
         if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;

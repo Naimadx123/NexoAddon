@@ -3,6 +3,7 @@ package zone.vao.nexoAddon.items.mechanics;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.items.ItemBuilder;
 import com.nexomc.protectionlib.ProtectionLib;
+import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -84,7 +85,7 @@ public record Liquid(
         if (itemBuilder != null) event.setItemStack(itemBuilder.build());
       }
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(location, task -> {
+      Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), location, task -> {
         if (!LiquidUtil.isWater(location.getBlock())) return;
         LiquidUtil.paintBiome(location, liquid.placeRadius(), liquid.biome(), liquid.overwriteOtherLiquids());
       }, 1L);
@@ -132,7 +133,7 @@ public record Liquid(
       Liquid liquid = heldLiquid(player);
       if (liquid == null) return;
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(location, task ->
+      Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), location, task ->
           LiquidUtil.paintBiome(location, liquid.placeRadius(), liquid.biome(),
               liquid.overwriteOtherLiquids()), 1L);
     }
@@ -163,7 +164,7 @@ public record Liquid(
     private void swapFilledBottle(Player player, String bottleId) {
       int before = countWaterBottles(player);
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtEntityLater(player, task -> {
+      player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
         if (!player.isOnline()) return;
         if (countWaterBottles(player) <= before) return;
 
@@ -185,7 +186,7 @@ public record Liquid(
           }
           return;
         }
-      }, 1L);
+      }, null, 1L);
     }
 
     private int countWaterBottles(Player player) {
@@ -224,8 +225,8 @@ public record Liquid(
     public void onChunkLoad(ChunkLoadEvent event) {
       if (!NexoAddon.getInstance().getIsLiquid()) return;
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(
-          event.getChunk().getBlock(0, 0, 0).getLocation(),
+      Bukkit.getRegionScheduler().runDelayed(
+          NexoAddon.getInstance(), event.getWorld(), event.getChunk().getX(), event.getChunk().getZ(),
           task -> LiquidUtil.restart(event.getChunk()),
           3L
       );

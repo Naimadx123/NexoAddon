@@ -10,25 +10,26 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.scheduler.BukkitTask;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.mechanics.BedrockBreak;
 import zone.vao.nexoAddon.utils.EventUtil;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BlockHardnessHandler implements PacketListener {
 
-  private final Map<Location, BukkitTask> breakingTasks = new HashMap<>();
-  private final Map<Location, Integer> breakingProgress = new HashMap<>();
+  private final Map<Location, ScheduledTask> breakingTasks = new ConcurrentHashMap<>();
+  private final Map<Location, Integer> breakingProgress = new ConcurrentHashMap<>();
 
   @Override
   public void onPacketReceive(PacketReceiveEvent event) {
@@ -36,20 +37,23 @@ public class BlockHardnessHandler implements PacketListener {
     Player player = event.getPlayer();
 
     if (event.getPacketType() != PacketType.Play.Client.PLAYER_DIGGING) return;
-    if (player.getGameMode() == GameMode.CREATIVE) return;
+    if (player == null) return;
 
     WrapperPlayClientPlayerDigging digging = new WrapperPlayClientPlayerDigging(event);
     Vector3i position = digging.getBlockPosition();
     DiggingAction digType = digging.getAction();
     if(digType == null) return;
-    Location location = new Location(player.getWorld(), position.getX(), position.getY(), position.getZ());
-
-    if (digType == DiggingAction.START_DIGGING) {
-      handleStartBreak(player, location, digging);
-    } else if (digType == DiggingAction.FINISHED_DIGGING ||
-        digType == DiggingAction.CANCELLED_DIGGING) {
-      handleStopBreak(location, digging);
-    }
+    player.getScheduler().run(NexoAddon.getInstance(), task -> {
+      if (player.getGameMode() == GameMode.CREATIVE) return;
+      Location location = new Location(player.getWorld(), position.getX(), position.getY(), position.getZ());
+      if (!Bukkit.isOwnedByCurrentRegion(location)) return;
+      if (digType == DiggingAction.START_DIGGING) {
+        handleStartBreak(player, location, digging);
+      } else if (digType == DiggingAction.FINISHED_DIGGING ||
+          digType == DiggingAction.CANCELLED_DIGGING) {
+        handleStopBreak(location, digging);
+      }
+    }, null);
   }
 
   private void handleStartBreak(Player player, Location location, WrapperPlayClientPlayerDigging digging) {
@@ -71,60 +75,69 @@ public class BlockHardnessHandler implements PacketListener {
     double probability = bedrockBreak.probability();
     Sound sound = bedrockBreak.sound();
 
-    BukkitScheduler scheduler = Bukkit.getScheduler();
-    breakingTasks.put(location, scheduler.runTaskTimer(NexoAddon.getInstance(), new Runnable() {
-      int progress = 0;
+    AtomicInteger progress = new AtomicInteger();
+    AtomicReference<ScheduledTask> scheduled = new AtomicReference<>();
+    ScheduledTask task = player.getScheduler().runAtFixedRate(NexoAddon.getInstance(), breaking -> {
+      if (!Bukkit.isOwnedByCurrentRegion(location)) {
+        stopBreaking(location, digging);
+        return;
+      }
+      if (!block.getType().equals(Material.BEDROCK)) {
+        stopBreaking(location, digging);
+        return;
+      }
 
-      @Override
-      public void run() {
-        if (!block.getType().equals(Material.BEDROCK)) {
-          stopBreaking(location, digging);
-          return;
-        }
+      int lastStage = breakingProgress.getOrDefault(location, -1);
+      int currentProgress = progress.incrementAndGet();
+      breakingProgress.put(location, currentProgress);
 
-        int lastStage = breakingProgress.getOrDefault(location, -1);
-        progress++;
-        breakingProgress.put(location, progress);
+      int newStage = getBreakStage(currentProgress, hardness);
+      if (newStage != lastStage) {
+        sendBlockBreakAnimation(location, newStage, digging);
+      }
 
-        int newStage = getBreakStage(progress, hardness);
-        if (newStage != lastStage) {
-          sendBlockBreakAnimation(location, newStage, digging);
-        }
+      if (currentProgress >= hardness) {
+        stopBreaking(location, digging);
+        if (EventUtil.callEvent(new BlockBreakEvent(block, player)) && ProtectionLib.canBreak(player, location)) {
+          player.getScheduler().run(NexoAddon.getInstance(), finish -> {
+            if (!Bukkit.isOwnedByCurrentRegion(location) || block.getType() != Material.BEDROCK) return;
+            ItemStack currentTool = player.getInventory().getItemInMainHand();
+            if(!toolId.equals(NexoItems.idFromItem(currentTool))) return;
 
-        if (progress >= hardness) {
-          stopBreaking(location, digging);
-          if (EventUtil.callEvent(new BlockBreakEvent(block, player)) && ProtectionLib.canBreak(player, location)) {
-            Bukkit.getScheduler().runTask(NexoAddon.getInstance(), () -> {
-              ItemStack currentTool = player.getInventory().getItemInMainHand();
-              if(!toolId.equals(NexoItems.idFromItem(currentTool))) return;
-
-              boolean toolBroke = false;
-              if(currentTool.getItemMeta() instanceof Damageable damageable){
-                damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
-                int maxDurability = NexoItems.itemFromId(toolId).getMaxDamage() != null ? NexoItems.itemFromId(toolId).getMaxDamage() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
-                if(damageable.getDamage() >= maxDurability) {
-                  toolBroke = true;
-                } else {
-                  currentTool.setItemMeta(damageable);
-                }
+            boolean toolBroke = false;
+            if(currentTool.getItemMeta() instanceof Damageable damageable){
+              damageable.setDamage(damageable.getDamage()+bedrockBreak.durabilityCost());
+              int maxDurability = NexoItems.itemFromId(toolId).getMaxDamage() != null ? NexoItems.itemFromId(toolId).getMaxDamage() : NexoItems.itemFromId(toolId).build().getType().getMaxDurability();
+              if(damageable.getDamage() >= maxDurability) {
+                toolBroke = true;
+              } else {
+                currentTool.setItemMeta(damageable);
               }
+            }
 
-              if(Math.random() <= probability)
-                block.getWorld().dropItemNaturally(location, new ItemStack(Material.BEDROCK));
-              block.breakNaturally();
-              if(sound != null) {
-                block.getWorld().playSound(player.getLocation(), sound, 1f, 1f);
-              }
+            if(Math.random() <= probability)
+              block.getWorld().dropItemNaturally(location, new ItemStack(Material.BEDROCK));
+            block.breakNaturally();
+            if(sound != null) {
+              block.getWorld().playSound(player.getLocation(), sound, 1f, 1f);
+            }
 
-              if(toolBroke) {
-                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                block.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
-              }
-            });
-          }
+            if(toolBroke) {
+              player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+              block.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            }
+          }, null);
         }
       }
-    }, 0L, 10L));
+    }, () -> {
+      ScheduledTask retired = scheduled.get();
+      if (retired != null && breakingTasks.remove(location, retired)) breakingProgress.remove(location);
+    }, 1L, 10L);
+    scheduled.set(task);
+    if (task != null) {
+      ScheduledTask previous = breakingTasks.put(location, task);
+      if (previous != null) previous.cancel();
+    }
   }
 
   private int getBreakStage(double progress, double hardness) {
@@ -139,7 +152,7 @@ public class BlockHardnessHandler implements PacketListener {
   }
 
   private void stopBreaking(Location location, WrapperPlayClientPlayerDigging digging) {
-    BukkitTask task = breakingTasks.remove(location);
+    ScheduledTask task = breakingTasks.remove(location);
     if (task != null) {
       task.cancel();
     }

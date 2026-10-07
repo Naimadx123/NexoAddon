@@ -7,8 +7,7 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
-import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.*;
@@ -55,6 +54,7 @@ import zone.vao.thirdparties.updatechecker.UpdateChecker;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public final class NexoAddon extends JavaPlugin {
@@ -77,11 +77,10 @@ public final class NexoAddon extends JavaPlugin {
   public Map<String, Integer> customBlockLights = new HashMap<>();
   public BlockHardnessHandler blockHardnessHandler;
   public PacketListenerCommon packetListenerCommon;
-  public FoliaLib foliaLib;
   private boolean packeteventsLoaded = false;
   private boolean mythicMobsLoaded = false;
   private ParticleEffectManager particleEffectManager;
-  private final Map<Location, WrappedTask> particleTasks = new HashMap<>();
+  private final Map<Location, ScheduledTask> particleTasks = new ConcurrentHashMap<>();
   private SpreadScheduler spreadScheduler;
   @Setter
   private Boolean isDecay = false;
@@ -107,12 +106,10 @@ public final class NexoAddon extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    foliaLib = new FoliaLib(this);
     ProtectionLib.init(this);
     saveDefaultConfig();
     globalConfig = getConfig();
     isDebug = globalConfig.getBoolean("debug", false);
-    foliaLib = new FoliaLib(this);
     spreadScheduler = new SpreadScheduler(globalConfig.getInt("spread.max_per_tick", 40));
     initializeCommandManager();
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null &&
@@ -138,6 +135,7 @@ public final class NexoAddon extends JavaPlugin {
       PacketEvents.getAPI().getEventManager().unregisterListener(packetListenerCommon);
     RecipeManager.clearRegisteredRecipes();
     for (Location shiftblock : BlockUtil.processedShiftblocks) {
+      if (!Bukkit.isOwnedByCurrentRegion(shiftblock)) continue;
       PersistentDataContainer pdc = new CustomBlockData(shiftblock.getBlock(), this);
       String targetBlock =  pdc.get(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING);
       if(targetBlock == null || NexoBlocks.blockData(targetBlock) == null) continue;
@@ -146,7 +144,7 @@ public final class NexoAddon extends JavaPlugin {
 
       pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
     }
-    particleTasks.values().forEach(WrappedTask::cancel);
+    particleTasks.values().forEach(ScheduledTask::cancel);
     particleTasks.clear();
     if (spreadScheduler != null) spreadScheduler.stop();
     LiquidUtil.clear();
@@ -163,7 +161,7 @@ public final class NexoAddon extends JavaPlugin {
     reloadConfig();
     globalConfig = getConfig();
     isDebug = globalConfig.getBoolean("debug", false);
-    foliaLib.getScheduler().runNextTick(init -> {
+    Bukkit.getGlobalRegionScheduler().run(this, init -> {
       clearPopulators();
       initializePopulators();
     });
@@ -175,7 +173,7 @@ public final class NexoAddon extends JavaPlugin {
     RecipesUtil.loadRecipes();
     SkullUtil.applyTextures();
     particleEffectManager.stopAuraEffectTask();
-    foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getGlobalRegionScheduler().runDelayed(this, task -> {
       particleEffectManager.startAuraEffectTask();
     }, 2L);
 
@@ -184,11 +182,13 @@ public final class NexoAddon extends JavaPlugin {
       spreadScheduler.setMaxPerTick(globalConfig.getInt("spread.max_per_tick", 40));
     }
 
-    foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getGlobalRegionScheduler().runDelayed(this, task -> {
       for (World world : Bukkit.getWorlds()) {
         for (Chunk chunk : world.getLoadedChunks()) {
-          BlockUtil.restartBlockAura(chunk);
-          BlockUtil.restartSpread(chunk);
+          Bukkit.getRegionScheduler().run(this, world, chunk.getX(), chunk.getZ(), restart -> {
+            BlockUtil.restartBlockAura(chunk);
+            BlockUtil.restartSpread(chunk);
+          });
         }
       }
     }, 10L);
@@ -218,7 +218,7 @@ public final class NexoAddon extends JavaPlugin {
   }
 
   private void initializeOres() {
-    foliaLib.getScheduler().runNextTick(initOres -> {
+    Bukkit.getGlobalRegionScheduler().run(this, initOres -> {
       biomePopulators = populatorsConfig.loadBiomePopulatorsFromConfig();
       Bukkit.getWorlds().forEach(this::addBiomePopulators);
       ores = populatorsConfig.loadOresFromConfig();

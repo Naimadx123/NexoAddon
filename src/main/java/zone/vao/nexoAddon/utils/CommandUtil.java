@@ -36,7 +36,7 @@ public class CommandUtil {
     }
     if (resolved.isEmpty()) return;
 
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runAtEntityLater(player, task -> {
+    Runnable dispatch = () -> {
       Player online = Bukkit.getPlayer(uuid);
       if (online == null || !online.isOnline()) return;
 
@@ -48,6 +48,8 @@ public class CommandUtil {
           NexoAddon.getInstance().getLogger().warning("Failed to run command `" + command + "`: " + exception.getMessage());
         }
       }
-    }, 1L);
+    };
+    if (asConsole) Bukkit.getGlobalRegionScheduler().runDelayed(NexoAddon.getInstance(), task -> dispatch.run(), 1L);
+    else player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> dispatch.run(), null, 1L);
   }
 }

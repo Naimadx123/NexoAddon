@@ -3,6 +3,7 @@ package zone.vao.nexoAddon.utils.handlers;
 import com.nexomc.nexo.api.NexoItems;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -44,7 +45,7 @@ public class RecipeManager {
         NamespacedKey key = new NamespacedKey(NexoAddon.getInstance(), recipeId);
 
         if (NexoAddon.getInstance().getServer().getRecipe(key) == null) {
-            NexoAddon.instance.foliaLib.getScheduler().runNextTick(registerRecipe -> {
+            Bukkit.getGlobalRegionScheduler().run(NexoAddon.getInstance(), registerRecipe -> {
                 SmithingTransformRecipe recipe = new SmithingTransformRecipe(key, resultTemplate, template, base, addition);
                 NexoAddon.getInstance().getServer().addRecipe(recipe);
                 registeredRecipes.put(key, new RecipeInfo(config,recipeId));

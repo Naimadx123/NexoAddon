@@ -1,9 +1,9 @@
 package zone.vao.nexoAddon.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -28,7 +28,7 @@ public class LiquidUtil {
   private static final Map<ChunkRef, Long> lastRefresh = new ConcurrentHashMap<>();
   private static final Set<ChunkRef> pendingRefresh = ConcurrentHashMap.newKeySet();
   private static final Map<ChunkRef, Map<Location, Block>> tinted = new ConcurrentHashMap<>();
-  private static volatile WrappedTask sweepTask;
+  private static volatile ScheduledTask sweepTask;
 
   public static Biome resolveBiome(String raw) {
     if (raw == null || raw.isBlank()) return null;
@@ -69,7 +69,7 @@ public class LiquidUtil {
     lastRefresh.clear();
     pendingRefresh.clear();
     tinted.clear();
-    WrappedTask task = sweepTask;
+    ScheduledTask task = sweepTask;
     if (task != null) {
       task.cancel();
       sweepTask = null;
@@ -92,9 +92,11 @@ public class LiquidUtil {
   }
 
   public static void restartLoaded() {
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+    Bukkit.getGlobalRegionScheduler().runDelayed(NexoAddon.getInstance(), task -> {
       for (World world : Bukkit.getWorlds()) {
-        for (Chunk chunk : world.getLoadedChunks()) restart(chunk);
+        for (Chunk chunk : world.getLoadedChunks()) {
+          Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), world, chunk.getX(), chunk.getZ(), restart -> restart(chunk));
+        }
       }
     }, 10L);
   }
@@ -103,11 +105,11 @@ public class LiquidUtil {
     tinted.remove(new ChunkRef(chunk.getWorld().getUID(), packChunk(chunk.getX(), chunk.getZ())));
   }
 
-  private static void ensureSweeping() {
+  private static synchronized void ensureSweeping() {
     if (sweepTask != null) return;
     long interval = Math.max(1L,
         NexoAddon.getInstance().getGlobalConfig().getLong("liquid.restore_interval_ticks", 20));
-    sweepTask = NexoAddon.getInstance().getFoliaLib().getScheduler().runTimer(LiquidUtil::sweep, interval, interval);
+    sweepTask = Bukkit.getGlobalRegionScheduler().runAtFixedRate(NexoAddon.getInstance(), task -> sweep(), interval, interval);
   }
 
   private static void sweep() {
@@ -120,9 +122,8 @@ public class LiquidUtil {
         tinted.remove(ref);
         continue;
       }
-      if (!world.isChunkLoaded((int) (ref.chunk() >> 32), (int) ref.chunk())) continue;
-
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(anchor, task -> {
+      Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), anchor, task -> {
+        if (!world.isChunkLoaded((int) (ref.chunk() >> 32), (int) ref.chunk())) return;
         for (Map.Entry<Location, Block> cell : cells.entrySet()) {
           if (holdsLiquid(cell.getValue())) continue;
 
@@ -236,39 +237,37 @@ public class LiquidUtil {
         for (int z = centerZ - radius; z <= centerZ + radius; z += 1) {
           if (y < world.getMinHeight() || y >= world.getMaxHeight()) continue;
           if (!seen.add(packCell(x >> 2, y >> 2, z >> 2))) continue;
-          if (!world.isChunkLoaded(x >> 4, z >> 4)) continue;
-          if (byBiome(world.getBiome(x, y, z)) == null) continue;
-
           cells.add(new int[]{x, y, z});
         }
       }
     }
 
+    cells.sort(java.util.Comparator.comparingLong(cell -> packChunk(cell[0] >> 4, cell[2] >> 4)));
     processCleanup(world, cells, 0, new int[3], forced, onDone);
   }
 
   private static void processCleanup(World world, java.util.List<int[]> cells, int index, int[] tally,
                                     Biome forced, java.util.function.Consumer<CleanupResult> onDone) {
-    int limit = Math.min(cells.size(), index + 256);
-
-    for (int i = index; i < limit; i++) {
-      int[] cell = cells.get(i);
-      int status = restoreCell(new Location(world, cell[0], cell[1], cell[2]), forced, forced != null);
-
-      if (status == RESTORE_OK) tally[0]++;
-      else if (status == RESTORE_HAS_WATER) tally[1]++;
-      else if (status == RESTORE_NO_ORIGINAL) tally[2]++;
-    }
-
-    if (limit >= cells.size()) {
+    if (index >= cells.size()) {
       onDone.accept(new CleanupResult(tally[0], tally[1], tally[2]));
       return;
     }
 
-    int[] anchor = cells.get(limit);
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(
-        new Location(world, anchor[0], anchor[1], anchor[2]),
-        task -> processCleanup(world, cells, limit, tally, forced, onDone), 1L);
+    int[] anchor = cells.get(index);
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), new Location(world, anchor[0], anchor[1], anchor[2]), task -> {
+      int limit = index;
+      while (limit < cells.size() && limit < index + 256) {
+        int[] cell = cells.get(limit);
+        if ((cell[0] >> 4) != (anchor[0] >> 4) || (cell[2] >> 4) != (anchor[2] >> 4)) break;
+        limit++;
+        if (!world.isChunkLoaded(cell[0] >> 4, cell[2] >> 4)) continue;
+        int status = restoreCell(new Location(world, cell[0], cell[1], cell[2]), forced, forced != null);
+        if (status == RESTORE_OK) tally[0]++;
+        else if (status == RESTORE_HAS_WATER) tally[1]++;
+        else if (status == RESTORE_NO_ORIGINAL) tally[2]++;
+      }
+      processCleanup(world, cells, limit, tally, forced, onDone);
+    });
   }
 
   private static Biome neighbourBiome(World world, int x, int y, int z) {
@@ -280,6 +279,7 @@ public class LiquidUtil {
         int nz = axis == 2 ? z + offset : z;
 
         if (ny < world.getMinHeight() || ny >= world.getMaxHeight()) continue;
+        if (!Bukkit.isOwnedByCurrentRegion(new Location(world, nx, ny, nz))) continue;
         if (!world.isChunkLoaded(nx >> 4, nz >> 4)) continue;
 
         Biome candidate = world.getBiome(nx, ny, nz);
@@ -356,6 +356,7 @@ public class LiquidUtil {
 
           if (y < world.getMinHeight() || y >= world.getMaxHeight()) continue;
           if (!cells.add(packCell(x >> 2, y >> 2, z >> 2))) continue;
+          if (!Bukkit.isOwnedByCurrentRegion(new Location(world, x, y, z))) continue;
           if (!world.isChunkLoaded(x >> 4, z >> 4)) continue;
 
           Biome current = world.getBiome(x, y, z);
@@ -408,12 +409,11 @@ public class LiquidUtil {
     Location location = new Location(world, (chunkX << 4) + 8, world.getMinHeight() + 1, (chunkZ << 4) + 8);
 
     if (delayTicks <= 0L) {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(
-          location, task -> world.refreshChunk(chunkX, chunkZ));
+      Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), location, task -> world.refreshChunk(chunkX, chunkZ));
       return;
     }
 
-    NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(location, task -> {
+    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), location, task -> {
       pendingRefresh.remove(ref);
       lastRefresh.put(ref, (long) NexoAddon.getInstance().getServer().getCurrentTick());
       world.refreshChunk(chunkX, chunkZ);

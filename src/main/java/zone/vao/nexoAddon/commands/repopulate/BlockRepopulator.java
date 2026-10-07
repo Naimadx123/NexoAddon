@@ -1,5 +1,6 @@
 package zone.vao.nexoAddon.commands.repopulate;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.generator.LimitedRegion;
@@ -23,7 +24,7 @@ public class BlockRepopulator {
                 NexoAddon.getInstance().getLogger().info("[debug]  Repopulating chunk: " + chunk.getX() + ", " + chunk.getZ());
             }
 
-            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(populateSync -> {
+            Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), world, chunk.getX(), chunk.getZ(), populateSync -> {
                 LimitedRegion region = createLimitedRegion(world, chunk);
                 WorldInfo worldInfo = populator instanceof CustomOrePopulator orePopulator
                         && orePopulator.worldInfo != null ? orePopulator.worldInfo : world;

@@ -58,7 +58,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
           !mechanics.getShiftBlock().nexoIds().isEmpty() &&
           !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
         return;
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time()), 2L);
+      event.getBaseEntity().getScheduler().runDelayed(NexoAddon.getInstance(), task -> startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time()), null, 2L);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

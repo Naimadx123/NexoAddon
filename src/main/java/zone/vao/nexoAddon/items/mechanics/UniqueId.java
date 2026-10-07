@@ -50,13 +50,13 @@ public record UniqueId(boolean enabled) {
         @EventHandler(ignoreCancelled = true)
         public void onClick(InventoryClickEvent event) {
             if (!(event.getWhoClicked() instanceof Player player)) return;
-            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick((tag) -> tagAllInInventory(player));
+            player.getScheduler().run(NexoAddon.getInstance(), tag -> tagAllInInventory(player), null);
         }
 
         @EventHandler(ignoreCancelled = true)
         public void onDrag(InventoryDragEvent event) {
             if (!(event.getWhoClicked() instanceof Player player)) return;
-            NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick((tag) -> tagAllInInventory(player));
+            player.getScheduler().run(NexoAddon.getInstance(), tag -> tagAllInInventory(player), null);
         }
 
         private boolean tagIfMissing(ItemStack item) {

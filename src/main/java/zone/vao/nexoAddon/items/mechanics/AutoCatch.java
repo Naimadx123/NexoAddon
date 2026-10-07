@@ -102,7 +102,7 @@ public record AutoCatch(boolean toggable, boolean recast) {
 
                 boolean recast = mechanics.getAutoCatch().recast();
 
-                NexoAddon.getInstance().getFoliaLib().getScheduler().runLater(() -> {
+                player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
                     player.swingHand(EquipmentSlot.HAND);
                     Object hand = getFishingRodHand(player);
                     if (hand != null) {
@@ -117,7 +117,7 @@ public record AutoCatch(boolean toggable, boolean recast) {
                                 player.getFishHook().teleport(lastLocation);
                         }
                     }
-                }, delay);
+                }, null, delay);
             }
         }
 

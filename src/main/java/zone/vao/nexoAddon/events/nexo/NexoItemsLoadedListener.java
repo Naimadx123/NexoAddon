@@ -2,6 +2,7 @@ package zone.vao.nexoAddon.events.nexo;
 
 import com.nexomc.nexo.api.events.NexoItemsLoadedEvent;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import zone.vao.nexoAddon.NexoAddon;
@@ -23,7 +24,7 @@ public class NexoItemsLoadedListener implements Listener {
     SkullUtil.applyTextures();
 
     NexoAddon.getInstance().getParticleEffectManager().stopAuraEffectTask();
-    NexoAddon.instance.foliaLib.getScheduler().runLater(() -> {
+    Bukkit.getGlobalRegionScheduler().runDelayed(NexoAddon.getInstance(), task -> {
       NexoAddon.getInstance().getParticleEffectManager().startAuraEffectTask();
     },2L);
 

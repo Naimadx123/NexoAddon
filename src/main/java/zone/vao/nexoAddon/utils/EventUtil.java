@@ -18,11 +18,7 @@ public class EventUtil {
       if (!event.isCancelled()) action.run();
     };
 
-    if (NexoAddon.getInstance().getFoliaLib().isFolia()) {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocationLater(event.getBlock().getLocation(), task, 1L);
-    } else {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runNextTick(attempt -> task.run());
-    }
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), event.getBlock().getLocation(), attempt -> task.run());
   }
 
   public static boolean callEvent(Event event) {

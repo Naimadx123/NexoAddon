@@ -3,7 +3,8 @@ package zone.vao.nexoAddon.utils;
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -42,8 +43,8 @@ public class SpreadScheduler {
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicBoolean ticking = new AtomicBoolean(false);
   private volatile int maxPerTick;
-  private volatile WrappedTask tickerTask;
-  private long currentTick = 0L;
+  private volatile ScheduledTask tickerTask;
+  private volatile long currentTick = 0L;
 
   public SpreadScheduler(int maxPerTick) {
     this.maxPerTick = Math.max(1, maxPerTick);
@@ -104,7 +105,7 @@ public class SpreadScheduler {
 
   public void stop() {
     running.set(false);
-    WrappedTask task = tickerTask;
+    ScheduledTask task = tickerTask;
     if (task != null) {
       task.cancel();
       tickerTask = null;
@@ -114,7 +115,7 @@ public class SpreadScheduler {
 
   private void ensureRunning() {
     if (!running.compareAndSet(false, true)) return;
-    tickerTask = NexoAddon.getInstance().foliaLib.getScheduler().runTimerAsync(this::tick, 1L, 1L);
+    tickerTask = Bukkit.getGlobalRegionScheduler().runAtFixedRate(NexoAddon.getInstance(), task -> tick(), 1L, 1L);
   }
 
   private void tick() {
@@ -150,7 +151,9 @@ public class SpreadScheduler {
 
   private void dispatch(Entry entry, long tick) {
     entry.nextDueTick = tick + entry.spread.interval();
-    NexoAddon.getInstance().foliaLib.getScheduler().runAtLocation(entry.location, r -> attempt(entry));
+    Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), entry.location, r -> {
+      if (running.get() && entries.get(entry.location) == entry) attempt(entry);
+    });
   }
 
   private void attempt(Entry entry) {

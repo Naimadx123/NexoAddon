@@ -3,6 +3,7 @@ package zone.vao.nexoAddon.items.mechanics;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -59,11 +60,10 @@ public record Thor(int lightningBoltsAmount, double randomLocationVariation, int
 
       if (thor.delay() > 0 && !consumeCooldown(player, thor.delay())) return;
 
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtLocation(location, r -> {
-        for (int i = 0; i < thor.lightningBoltsAmount(); i++) {
-          world.strikeLightning(thor.randomizedLocation(location));
-        }
-      });
+      for (int i = 0; i < thor.lightningBoltsAmount(); i++) {
+        Location strike = thor.randomizedLocation(location);
+        Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), strike, task -> world.strikeLightning(strike));
+      }
     }
 
     private boolean canUseThor(PlayerInteractEvent event) {

@@ -246,11 +246,11 @@ public record CustomCrafting(
     }
 
     private void updateResult(Player player, Holder holder) {
-      NexoAddon.getInstance().getFoliaLib().getScheduler().runAtEntityLater(player, task -> {
+      player.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
         Recipe recipe = holder.match();
 
         holder.getInventory().setItem(holder.crafting.resultSlot(), recipe == null ? null : recipe.result().clone());
-      }, 1L);
+      }, null, 1L);
     }
 
     private void giveOrDrop(Player player, ItemStack item) {
