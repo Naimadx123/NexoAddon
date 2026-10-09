@@ -1,0 +1,11 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: NexoAddon Docs
+  structure:
+    - type: space
+      key: space-1
+      title: NexoAddon Docs
+      path: nexoaddon-docs
+      default: true
+      content:
+        directory: ./docs
