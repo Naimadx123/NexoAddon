@@ -1,0 +1,65 @@
+---
+description: BedrockBreak mechanic.
+---
+
+# BedrockBreak
+
+The BedrockBreak Mechanic allows players to break bedrock blocks with specified tools
+
+<figure><img src="../.gitbook/assets/bedrockbreak.gif" alt="" width="640"><figcaption></figcaption></figure>
+
+{% hint style="danger" %}
+**For this Mechanic** [**PacketEvents**](https://www.spigotmc.org/resources/packetevents-api.80279/) **is required!**
+{% endhint %}
+
+### Looooooooong Bedrock Break
+
+```yaml
+# Example
+
+Mechanics:
+  bedrockbreak:
+    hardness: 60               # How long should be breaking
+    probability: 1             # Chance to drop Bedrock
+    durability_cost: 1         # Cost of durability
+```
+
+### Break Bedrock, but at what cost 😢 (break item on bedrock break)
+
+```yaml
+# Example
+
+Mechanics:
+  bedrockbreak:
+    hardness: 50
+    probability: 0.5                      
+    durability_cost: 999999999            # Probably will destroy every created item
+    disable_on_first_layer: true          # Default on true
+```
+
+### Beyond the world! (Break bottom/last layer of the world)
+
+```yaml
+# Example
+
+Mechanics:
+  bedrockbreak:
+    hardness: 1                           # Fast digging
+    probability: 0.5                      
+    durability_cost: 1
+    disable_on_first_layer: false         # Allow to break last layer of the bedrock
+```
+
+### Custom break sound
+
+```yaml
+# Example
+
+Mechanics:
+  bedrockbreak:
+    hardness: 60
+    probability: 1
+    durability_cost: 1
+    sound: block.stone.break              # Sound played when the block breaks, defaults to block.stone.break.
+                                          # Accepts a namespaced key (e.g. minecraft:block.stone.break or namespace:key).
+```

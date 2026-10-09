@@ -1,0 +1,69 @@
+# Table of contents
+
+* [NexoAddon](README.md)
+
+## Components
+
+* [equippable](components/equippable.md)
+* [fertilizer](components/fertilizer.md)
+* [jukebox\_playable](components/jukebox_playable.md)
+* [note\_block\_sound](components/note_block_sound.md)
+* [skull\_value](components/skull_value.md)
+
+## Mechanics
+
+* [Aura](mechanics/aura.md)
+* [AutoCatch](mechanics/autocatch.md)
+* [BedrockBreak](mechanics/bedrockbreak.md)
+* [BigMining](mechanics/bigmining.md)
+* [BlockAura](mechanics/blockaura.md)
+* [BottledExp](mechanics/bottledexp.md)
+* [Custom Block Experience](mechanics/custom-block-experience.md)
+* [CustomCrafting](mechanics/customcrafting.md)
+* [Decay](mechanics/decay.md)
+* [Enchantify](mechanics/enchantify.md)
+* [Fuel](mechanics/fuel.md)
+* [Infested](mechanics/infested.md)
+* [InventoryType](mechanics/infested-1.md)
+* [KillMessage](mechanics/killmessage.md)
+* [Lifesteal](mechanics/lifesteal.md)
+* [Liquid](mechanics/liquid.md)
+* [MiningTools](mechanics/miningtools.md)
+* [Remember](mechanics/remember.md)
+* [Repair](mechanics/repair.md)
+* [ShiftBlock](mechanics/shiftblock.md)
+* [Signal](mechanics/signal.md)
+* [SpawnerBreak](mechanics/spawnerbreak.md)
+* [Spread](mechanics/spread.md)
+* [Stackable](mechanics/stackable.md)
+* [Thor](mechanics/thor.md)
+* [UniqueId](mechanics/uniqueid.md)
+* [Unstackable](mechanics/unstackable.md)
+* [VeinMiner](mechanics/veinminer.md)
+
+## Biomes
+
+* [Custom Biomes](biomes/custom-biomes.md)
+
+## Populators
+
+* [Block Populators](populators/block-populators.md)
+* [Biome Populators](populators/biome-populators.md)
+
+## Recipes
+
+* [Smithing Recipe](recipes/smithing-recipe.md)
+
+## Commands
+
+* [Commands](commands/commands.md)
+* [Totem Command](commands/totemcommand.md)
+
+## Settings
+
+* [Double Hit Destroy](settings/double-hit-destroy.md)
+* [Bossbar](settings/bossbar.md)
+* [Count shears as silktouch](settings/count-shears-as-silktouch.md)
+* [Prevent furniture breaks](settings/prevent-furniture-breaks.md)
+* [Delay of Aura Mechanic](settings/prevent-furniture-breaks-1.md)
+* [Default config.yml](https://github.com/Naimadx123/NexoAddon/blob/master/src/main/resources/config.yml)
