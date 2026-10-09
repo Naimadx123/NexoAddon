@@ -6,6 +6,10 @@ author: "Naimad (discord: 4g0)"
 loader: zone.vao.nexoAddon.loader.NALoader
 bootstrapper: zone.vao.nexoAddon.loader.NABootstrap
 folia-supported: true
+permissions:
+  nexoaddon.customcrafting:
+    description: Opens a custom crafting station for a player.
+    default: op
 dependencies:
   server:
     Nexo:

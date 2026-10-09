@@ -37,6 +37,7 @@ import zone.vao.nexoAddon.events.player.PlayerMovementListener;
 import zone.vao.nexoAddon.events.player.TotemSound;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
 import zone.vao.nexoAddon.populators.BiomePopulator;
 import zone.vao.nexoAddon.populators.CustomChunkGenerator;
 import zone.vao.nexoAddon.populators.orePopulator.CustomOrePopulator;
@@ -203,6 +204,15 @@ public final class NexoAddon extends JavaPlugin {
       Set<String> itemNames = NexoItems.itemNames();
       return new ArrayList<>(itemNames);
     });
+
+    manager.getCommandCompletions().registerCompletion("craftingStations", c ->
+        getMechanics().values().stream()
+            .map(Mechanics::getCustomCrafting)
+            .filter(Objects::nonNull)
+            .map(CustomCrafting::station)
+            .distinct()
+            .sorted()
+            .toList());
 
     manager.getCommandCompletions().registerCompletion("sounds", c -> {
 

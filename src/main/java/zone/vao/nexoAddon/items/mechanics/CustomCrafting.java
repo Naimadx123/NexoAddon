@@ -70,6 +70,10 @@ public record CustomCrafting(
     return inventory;
   }
 
+  public void open(Player player) {
+    player.getScheduler().run(NexoAddon.getInstance(), task -> player.openInventory(create()), null);
+  }
+
   private Set<Integer> inputSlots(List<Recipe> recipes) {
     Set<Integer> slots = new LinkedHashSet<>();
     for (Recipe recipe : recipes) {
@@ -208,7 +212,7 @@ public record CustomCrafting(
       if (mechanics == null || mechanics.getCustomCrafting() == null)
         return;
 
-      player.openInventory(mechanics.getCustomCrafting().create());
+      mechanics.getCustomCrafting().open(player);
     }
 
     private void moveToInput(InventoryClickEvent event, Holder holder) {

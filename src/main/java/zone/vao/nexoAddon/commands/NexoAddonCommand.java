@@ -15,22 +15,26 @@ import zone.vao.nexoAddon.biomes.BiomeDefinition;
 import zone.vao.nexoAddon.biomes.CustomBiomeState;
 import zone.vao.nexoAddon.commands.repopulate.BlockRepopulator;
 import zone.vao.nexoAddon.commands.repopulate.FurnitureRepopulator;
+import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
 import zone.vao.nexoAddon.utils.LiquidUtil;
 import zone.vao.nexoAddon.utils.TotemUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 @CommandAlias("nexoaddon")
-@CommandPermission("nexoaddon.admin")
 public class NexoAddonCommand extends BaseCommand {
 
   @Subcommand("reload")
+  @CommandPermission("nexoaddon.admin")
   public void onReload(CommandSender sender) {
     NexoAddon.getInstance().reload();
     sender.sendMessage("Reloaded " + NexoAddon.getInstance().getName());
   }
 
   @Subcommand("liquidclean")
+  @CommandPermission("nexoaddon.admin")
   @Syntax("[radius] [biome]")
   public void onLiquidClean(CommandSender sender, @Optional Integer radiusArg, @Optional String biomeArg) {
     if (!(sender instanceof Player player)) {
@@ -76,6 +80,7 @@ public class NexoAddonCommand extends BaseCommand {
   }
 
   @Subcommand("biomes")
+  @CommandPermission("nexoaddon.admin")
   public void onBiomes(CommandSender sender) {
     if (!CustomBiomeState.bootstrapRan()) {
       sender.sendMessage(MiniMessage.miniMessage().deserialize(
@@ -117,6 +122,7 @@ public class NexoAddonCommand extends BaseCommand {
   }
 
   @Subcommand("repopulate")
+  @CommandPermission("nexoaddon.admin")
   @Syntax("[worldName|#all] <knowTheExperimentalFeature>")
   @CommandCompletion("@worlds")
   public void onRepopulate(CommandSender sender, @Optional String worldName, @Optional Boolean knowTheExperimentalFeature) {
@@ -178,6 +184,7 @@ public class NexoAddonCommand extends BaseCommand {
   }
 
   @Subcommand("totem")
+  @CommandPermission("nexoaddon.admin")
   @Syntax("<player> <customModelData|nexoID> [sound]")
   @CommandCompletion("@players @nexoItems @sounds")
   public void onTotem(CommandSender sender, String playerName, String input, @Optional String sound) {
@@ -201,5 +208,31 @@ public class NexoAddonCommand extends BaseCommand {
       TotemUtil.playTotemAnimation(target, input, sound);
       sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>Played totem animation with Nexo item: " + input));
     }
+  }
+
+  @Subcommand("customcrafting")
+  @CommandPermission("nexoaddon.customcrafting")
+  @Syntax("<station_id> <player>")
+  @CommandCompletion("@craftingStations @players")
+  public void onCustomCrafting(CommandSender sender, String stationId, String playerName) {
+    CustomCrafting crafting = NexoAddon.getInstance().getMechanics().values().stream()
+        .map(Mechanics::getCustomCrafting)
+        .filter(Objects::nonNull)
+        .filter(station -> station.station().equals(stationId))
+        .findFirst().orElse(null);
+
+    if (crafting == null) {
+      sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Crafting station not found: " + stationId));
+      return;
+    }
+
+    Player target = Bukkit.getPlayerExact(playerName);
+    if (target == null) {
+      sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Player not found."));
+      return;
+    }
+
+    crafting.open(target);
+    sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>Opening crafting station " + stationId + " for " + target.getName()));
   }
 }
