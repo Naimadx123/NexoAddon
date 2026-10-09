@@ -39,6 +39,20 @@ The `title` supports MiniMessage formatting. `rows` is clamped to `1`–`6`; an 
 Slots are counted from `0`, left to right and top to bottom, so a menu with `rows: 3` has the slots `0` to `26`.
 {% endhint %}
 
+### Opening a station with a command
+
+```text
+/nexoaddon customcrafting <station_id> <player>
+```
+
+For example, `/nexoaddon customcrafting ruby_station PlayerName` opens the Ruby Station menu for that online player. Use the `station_id` from `Mechanics.custom_crafting`, rather than the Nexo item ID. The station must be enabled on at least one configured item; no placed block or furniture is required.
+
+The command can be run in-game or from the console. Tab completion lists configured stations and online players.
+
+{% hint style="info" %}
+The command sender needs `nexoaddon.customcrafting`, which defaults to operators. The target player does not need this permission. It controls use of the command; right-clicking a crafting block or furniture does not require it.
+{% endhint %}
+
 ### Adding recipes
 
 Recipes live in `Nexo/recipes/custom_crafting`. Every folder there is a station and every `.yml` file inside it is one recipe.

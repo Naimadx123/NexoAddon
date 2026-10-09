@@ -23,3 +23,5 @@ skull_test:
 <figure><img src="../.gitbook/assets/obraz_2025-01-15_225656761.png" alt=""><figcaption><p>Result</p></figcaption></figure>
 
 To give the head a sound when placed above a note block, add [`note_block_sound`](note_block_sound.md) alongside `skull_value`.
+
+`note_block_sound` also works with Nexo's `profile` component without `skull_value`. See [Using Nexo's profile component](note_block_sound.md#using-nexos-profile-component) for an example.

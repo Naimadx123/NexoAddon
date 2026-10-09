@@ -1,10 +1,10 @@
 ---
-description: Administrative commands for NexoAddon.
+description: Commands and permissions for NexoAddon.
 ---
 
 # Commands
 
-All `/nexoaddon` commands require the `nexoaddon.admin` permission.
+The administrative commands below require `nexoaddon.admin`. Opening a custom crafting station uses the separate `nexoaddon.customcrafting` permission.
 
 ### Reload
 
@@ -54,3 +54,19 @@ For a biome change in a selected area, use [`/minecraft:fillbiome`](../biomes/cu
 ```
 
 Plays a custom totem animation for an online player. Requires PacketEvents. See [Totem Animation](totemcommand.md) for item setup, sounds and the optional animation delay.
+
+### Custom crafting
+
+```text
+/nexoaddon customcrafting <station_id> <player>
+```
+
+Opens a [CustomCrafting](../mechanics/customcrafting.md#opening-a-station-with-a-command) menu for an online player. `station_id` is the value of `Mechanics.custom_crafting.station_id` on a configured item. For example:
+
+```text
+/nexoaddon customcrafting ruby_station PlayerName
+```
+
+Requires `nexoaddon.customcrafting` on the command sender, with access granted to operators by default. `nexoaddon.admin` is not required. The target player does not need the command permission.
+
+Run it in-game or from the console. Tab completion lists configured stations and online players. An unknown station or offline player prevents the menu from opening.
