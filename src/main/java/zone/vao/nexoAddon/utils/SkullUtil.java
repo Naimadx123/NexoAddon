@@ -28,7 +28,7 @@ public class SkullUtil {
 
     Map<String, Components> componentsList = new HashMap<>();
     NexoAddon.getInstance().getComponents().forEach((key, component) -> {
-      if(component.getSkullValue() == null) return;
+      if(component.getSkullValue() == null && component.getNoteBlockSound() == null) return;
       componentsList.put(key, component);
     });
 
@@ -42,15 +42,12 @@ public class SkullUtil {
 
           if(!items.containsKey(key)) return;
 
-          NexoItems.items().remove(item);
-          NexoItems.unexcludedItems(file).remove(item);
-
           final SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-          PlayerProfile profile = getProfileBase64(component.getSkullValue().value(), key);
-
-          if(profile == null) return;
-
-          meta.setPlayerProfile(profile);
+          if (component.getSkullValue() != null) {
+            PlayerProfile profile = getProfileBase64(component.getSkullValue().value(), key);
+            if(profile == null) return;
+            meta.setPlayerProfile(profile);
+          }
 
           if (component.getNoteBlockSound() != null) {
             trySetNoteBlockSound(meta, component.getNoteBlockSound().soundId());
@@ -58,6 +55,9 @@ public class SkullUtil {
 
           itemStack.setItemMeta(meta);
           ItemBuilder itemBuilder =  new ItemBuilder(itemStack);
+
+          NexoItems.items().remove(item);
+          NexoItems.unexcludedItems(file).remove(item);
 
           // Replace NexoItem in NexoItems Cache
           NexoItems.itemMap().get(file).put(key, itemBuilder);
