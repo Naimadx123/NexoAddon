@@ -35,6 +35,15 @@ import static zone.vao.nexoAddon.utils.BlockUtil.startShiftBlock;
 
 public record ShiftBlock(String replaceTo, int time, List<Material> materials, List<String> nexoIds, Boolean onInteract, Boolean onBreak, Boolean onPlace) {
 
+  public boolean isAllowedItem(ItemStack itemStack) {
+    if (materials.isEmpty() && nexoIds.isEmpty()) return true;
+    if (itemStack == null) return false;
+    if (materials.contains(itemStack.getType())) return true;
+    if (nexoIds.isEmpty()) return false;
+    String itemId = NexoItems.idFromItem(itemStack);
+    return itemId != null && nexoIds.contains(itemId);
+  }
+
   public static class ShiftBlockListener implements Listener {
     public static List<UUID> toCancelation = Collections.synchronizedList(new ArrayList<>());
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
@@ -53,10 +62,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (furnitureMechanic == null)
         return;
       ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          mechanics.getShiftBlock().materials().contains(itemStack.getType()) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
       event.getBaseEntity().getScheduler().runDelayed(NexoAddon.getInstance(), task -> startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time()), null, 2L);
     }
@@ -72,10 +78,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (furnitureMechanic == null)
         return;
       ItemStack itemStack = event.getItemInHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          (itemStack == null || !mechanics.getShiftBlock().materials().contains(itemStack.getType())) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          (itemStack == null || !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack))))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
       event.setCancelled(true);
       if (!toCancelation.contains(event.getPlayer().getUniqueId()))
@@ -97,10 +100,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (furnitureMechanic == null)
         return;
       ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          mechanics.getShiftBlock().materials().contains(itemStack.getType()) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
       event.setCancelled(true);
       startShiftBlock(event.getBaseEntity(), furnitureMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
@@ -161,10 +161,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (customBlockMechanic == null)
         return;
       ItemStack itemStack = event.getItemInHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          (itemStack == null || !mechanics.getShiftBlock().materials().contains(itemStack.getType())) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          (itemStack == null || !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack))))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
 
       event.getPlayer().swingMainHand();
@@ -179,10 +176,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (customBlockMechanic == null)
         return;
       ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          mechanics.getShiftBlock().materials().contains(itemStack.getType()) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
       startShiftBlock(event.getBlock().getLocation(), customBlockMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
@@ -195,10 +189,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       if (customBlockMechanic == null)
         return;
       ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
-      if (!mechanics.getShiftBlock().materials().isEmpty() &&
-          mechanics.getShiftBlock().materials().contains(itemStack.getType()) &&
-          !mechanics.getShiftBlock().nexoIds().isEmpty() &&
-          !mechanics.getShiftBlock().nexoIds().contains(NexoItems.idFromItem(itemStack)))
+      if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
       startShiftBlock(event.getBlock().getLocation(), customBlockMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }

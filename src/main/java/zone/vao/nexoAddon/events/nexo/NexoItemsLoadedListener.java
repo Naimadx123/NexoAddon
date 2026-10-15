@@ -1,7 +1,6 @@
 package zone.vao.nexoAddon.events.nexo;
 
 import com.nexomc.nexo.api.events.NexoItemsLoadedEvent;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,8 +9,6 @@ import zone.vao.nexoAddon.utils.ItemConfigUtil;
 import zone.vao.nexoAddon.utils.SkullUtil;
 
 public class NexoItemsLoadedListener implements Listener {
-  @Getter
-  public boolean firstNexoItemLoaded = false;
 
   @EventHandler
   public void on(NexoItemsLoadedEvent event) {
@@ -28,10 +25,6 @@ public class NexoItemsLoadedListener implements Listener {
       NexoAddon.getInstance().getParticleEffectManager().startAuraEffectTask();
     },2L);
 
-    if(!firstNexoItemLoaded) {
-
-      NexoAddon.getInstance().initializePopulators();
-      firstNexoItemLoaded = true;
-    }
+    Bukkit.getGlobalRegionScheduler().run(NexoAddon.getInstance(), task -> NexoAddon.getInstance().initializePopulators());
   }
 }

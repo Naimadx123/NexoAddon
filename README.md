@@ -47,6 +47,7 @@ Designed as a feature-rich addon for servers using Nexo, NexoAddon enhances your
 
 🌱 **World Populators**
 * Modify terrain generation with ores, decorations, or block overrides.
+* Choose automatic populators or the `NexoAddon` world generator, using the same rules.
 
 ⚒️ **Crafting Enhancements**
 * Smithing Recipe Support.
@@ -58,6 +59,25 @@ Designed as a feature-rich addon for servers using Nexo, NexoAddon enhances your
 * Lightweight, optimized, and fully modular.
 * Easily configurable via `config.yml`.
 * Seamless compatibility with Nexo item system.
+
+### World Generation
+
+By default, NexoAddon attaches its populators to worlds without the `NexoAddon` generator. To create a world using the generator with Multiverse-Core:
+
+```text
+/mv create custom_world normal --generator NexoAddon
+```
+
+The generator keeps vanilla terrain and applies block replacement rules directly to chunk data before vanilla decorations. Placement rules using `place_on`, `place_below` or `place_side`, furniture and saplings run on the owning region after the chunk is generated. Biome changes also run after decoration, preserving vanilla trees and plants. Both modes use `populators/block_populator.yml`, `populators/blocks/*.yml` and the biome populator files. Set the rule's `worlds` list to include the new world.
+
+To use only explicitly selected generator worlds, disable automatic populators in `config.yml`:
+
+```yaml
+populators:
+  enabled: false
+```
+
+The generator remains available with this setting. Select it when creating or loading a world after NexoAddon is enabled. Existing chunks are unaffected; new chunks use the selected mode. NexoAddon does not attach its populator to worlds using its generator.
 
 ### 📥 **Downloads & Docs:**  
 Available on [Polymart/voxel.shop](<https://voxel.shop/product/6950/nexoaddon>), [Spigot](<https://www.spigotmc.org/resources/nexoaddon.121241/>), and [GitHub](<https://github.com/Naimadx123/NexoAddon>).  

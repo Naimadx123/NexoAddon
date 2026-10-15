@@ -1,14 +1,33 @@
-# custom_block:            # The unique ID of a Nexo custom block or Nexo furniture item to be placed.
-#   iterations: 50         # Number of placement attempts per chunk. Higher numbers increase the chance of generating the block.
-#   worlds: [ world ]      # List of worlds where the custom block can spawn. Example: [ world, world_nether, world_the_end ].
-#   maxY: 50               # Maximum Y-level where the custom block can spawn within the chunk.
-#   minY: 20               # Minimum Y-level where the custom block can spawn within the chunk.
-#   biomes: [ SWAMP ]      # List of biomes where the custom block can spawn. Use an empty list `[]` for all biomes.
-#   chance: 0.2            # Probability of the custom block spawning in the chunk. Value ranges from 0.0 (never) to 1.0 (always).
-#   replace:               # List of block types that the custom block can replace. Leave empty if not replacing any blocks.
-#     - STONE              # Example: Replaces STONE blocks during generation.
-#   place_on: [ STONE ]    # Optional: List of block types that the custom block can be placed on. Overrides `replace` if provided.
-#   place_below: [ STONE ] # Optional: List of block types that the custom block can be placed below. Overrides `replace` if provided.
-#   air_only: false        # Optional: Replace Air only (for place_on and place_below).
-#   vein_size: 5           # Optional: Maximum number of blocks in a vein. Set to 0 for single block placement. Default: 0.
-#   cluster_chance: 0.8    # Optional: Probability of cluster (vein) formation within the chunk. Defaults to 0.0 for no clustering.
+COAL_ORE:
+  enabled: false
+  iterations: 50
+  worlds: [ world ]
+  minY: 20
+  maxY: 50
+  biomes: [ ]
+  chance: 0.2
+  replace: [ STONE ]
+  vein_size: 5
+  cluster_chance: 0.8
+
+small_mushroom:
+  enabled: false
+  iterations: 20
+  worlds: [ world ]
+  minY: 60
+  maxY: 120
+  biomes: [ ]
+  chance: 0.3
+  place_side: [ OAK_LOG, BIRCH_LOG, SPRUCE_LOG, DARK_OAK_LOG ]
+  air_only: true
+
+forest_furniture:
+  enabled: false
+  iterations: 2
+  worlds: [ world ]
+  minY: 60
+  maxY: 120
+  biomes: [ ]
+  chance: 0.1
+  place_on: [ GRASS_BLOCK ]
+  air_only: true

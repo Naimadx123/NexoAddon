@@ -5,21 +5,19 @@ import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.mechanics.custom_block.stringblock.StringBlockMechanic;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
-import org.bukkit.*;
+import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import zone.vao.nexoAddon.NexoAddon;
-import zone.vao.nexoAddon.populators.BiomePopulator;
-import zone.vao.nexoAddon.populators.orePopulator.Ore;
+import zone.vao.nexoAddon.populators.*;
 
-import java.io.*;
-import java.lang.reflect.Method;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 public class PopulatorsConfigUtil {
 
@@ -27,321 +25,173 @@ public class PopulatorsConfigUtil {
   private final File blocksDir;
   private final File biomesDir;
   private final ClassLoader pluginClassLoader;
+  private final Logger logger;
 
-  public PopulatorsConfigUtil(File pluginDirectory, ClassLoader pluginClassLoader) {
-    this.populatorsDir = new File(pluginDirectory, "populators");
-    this.blocksDir = new File(populatorsDir, "blocks");
-    this.biomesDir = new File(populatorsDir, "biomes");
+  public PopulatorsConfigUtil(File pluginDirectory, ClassLoader pluginClassLoader, Logger logger) {
+    populatorsDir = new File(pluginDirectory, "populators");
+    blocksDir = new File(populatorsDir, "blocks");
+    biomesDir = new File(populatorsDir, "biomes");
     this.pluginClassLoader = pluginClassLoader;
+    this.logger = logger;
     createPopulatorFiles();
   }
 
   private void createPopulatorFiles() {
-    if (!populatorsDir.exists() && !populatorsDir.mkdirs()) {
-      NexoAddon.getInstance().getLogger().severe("Failed to create populators directory.");
-      return;
+    try {
+      Files.createDirectories(blocksDir.toPath());
+      Files.createDirectories(biomesDir.toPath());
+      copyResourceIfAbsent("block_populator.yml");
+      copyResourceIfAbsent("biome_populator.yml");
+    } catch (IOException exception) {
+      logError("Failed to create populator files: " + exception.getMessage());
     }
-
-    if (!blocksDir.exists() && !blocksDir.mkdirs()) {
-      NexoAddon.getInstance().getLogger().severe("Failed to create blocks directory.");
-      return;
-    }
-
-    copyResourceIfAbsent("block_populator.yml", populatorsDir);
-    if (!biomesDir.exists() && !biomesDir.mkdirs()) {
-      NexoAddon.getInstance().getLogger().severe("Failed to create biomes directory.");
-      return;
-    }
-    copyResourceIfAbsent("biome_populator.yml", populatorsDir);
   }
 
-  private void copyResourceIfAbsent(String fileName, File targetDir) {
-    File file = new File(targetDir, fileName);
+  private void copyResourceIfAbsent(String name) throws IOException {
+    File file = new File(populatorsDir, name);
     if (file.exists()) return;
-
-    try (InputStream inputStream = pluginClassLoader.getResourceAsStream(fileName);
-         OutputStream outputStream = new FileOutputStream(file)) {
-      if (inputStream == null) return;
-
-      byte[] buffer = new byte[1024];
-      int bytesRead;
-      while ((bytesRead = inputStream.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, bytesRead);
-      }
-    } catch (IOException e) {
-      NexoAddon.getInstance().getLogger().severe("Failed to copy " + fileName + ": " + e.getMessage());
+    try (InputStream input = pluginClassLoader.getResourceAsStream(name)) {
+      if (input != null) Files.copy(input, file.toPath());
     }
   }
 
   public List<FileConfiguration> loadPopulatorConfigs() {
-    List<FileConfiguration> configs = new ArrayList<>();
-
-    configs.addAll(loadConfigsFromDirectory(populatorsDir));
-
-    configs.addAll(loadConfigsFromDirectory(blocksDir));
-
+    List<FileConfiguration> configs = new ArrayList<>(loadDirectory(populatorsDir, "biome_populator.yml"));
+    configs.addAll(loadDirectory(blocksDir, null));
     return configs;
   }
 
-  private List<FileConfiguration> loadConfigsFromDirectory(File directory) {
-    if (!directory.exists()) {
-      logError("Directory does not exist: " + directory.getName());
-      return Collections.emptyList();
-    }
-
-    File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml")
-        && (!directory.equals(populatorsDir) || !name.equals("biome_populator.yml")));
-    if (files == null) {
-      logError("Failed to list files in the directory: " + directory.getName());
-      return Collections.emptyList();
-    }
-
-    return Arrays.stream(files)
-            .map(YamlConfiguration::loadConfiguration)
-            .collect(Collectors.toList());
+  private List<FileConfiguration> loadDirectory(File directory, String excluded) {
+    File[] files = directory.listFiles(file -> file.isFile() && file.getName().endsWith(".yml") && !file.getName().equals(excluded));
+    if (files == null) return List.of();
+    Arrays.sort(files, Comparator.comparing(File::getName));
+    return Arrays.stream(files).map(file -> (FileConfiguration) YamlConfiguration.loadConfiguration(file)).toList();
   }
 
-  public List<Ore> loadOresFromConfig() {
-    List<Ore> ores = new ArrayList<>();
-
-    FileConfiguration rootConfig = loadConfigFile("block_populator.yml", populatorsDir);
-    if (rootConfig != null) {
-      ores.addAll(loadOresFromConfig(rootConfig));
+  public List<PopulatorDefinition> loadBlockPopulators() {
+    List<PopulatorDefinition> result = new ArrayList<>();
+    for (FileConfiguration config : loadPopulatorConfigs()) {
+      for (String id : config.getKeys(false)) {
+        ConfigurationSection section = config.getConfigurationSection(id);
+        if (section == null || !section.getBoolean("enabled", true)) continue;
+        try {
+          int minY = integer(section, "minY", 0);
+          int maxY = integer(section, "maxY", 0);
+          if (minY > maxY) throw new IllegalArgumentException("minY must not exceed maxY");
+          double chance = probability(section, "chance", 0.1);
+          double clusterChance = probability(section, "cluster_chance", 0.0);
+          PopulatorRange iterations = PopulatorRange.parse(section.get("iterations", 50), true);
+          PopulatorRange veinSize = PopulatorRange.parse(section.get("vein_size", 0), false);
+          List<String> worlds = worlds(section);
+          BiomeFilter biomes = biomes(section);
+          PlacementRules placement = new PlacementRules(materials(section, "replace"), materials(section, "place_on"),
+              materials(section, "place_below"), materials(section, "place_side"), section.getBoolean("air_only", false));
+          if (placement.isEmpty()) throw new IllegalArgumentException("Specify replace, place_on, place_below or place_side");
+          result.add(new PopulatorDefinition(item(id), minY, maxY, chance, iterations, veinSize, clusterChance, worlds, biomes, placement));
+        } catch (IllegalArgumentException exception) {
+          logError("Invalid populator `" + id + "`: " + exception.getMessage() + ". Skipping.");
+        }
+      }
     }
-
-    for (FileConfiguration config : loadConfigsFromDirectory(blocksDir)) {
-      ores.addAll(loadOresFromConfig(config));
-    }
-
-    return ores;
+    return List.copyOf(result);
   }
 
   public List<BiomePopulator> loadBiomePopulatorsFromConfig() {
     List<FileConfiguration> configs = new ArrayList<>();
-    FileConfiguration rootConfig = loadConfigFile("biome_populator.yml", populatorsDir);
-    if (rootConfig != null) configs.add(rootConfig);
-    configs.addAll(loadConfigsFromDirectory(biomesDir));
-
-    List<BiomePopulator> populators = new ArrayList<>();
+    File root = new File(populatorsDir, "biome_populator.yml");
+    if (root.exists()) configs.add(YamlConfiguration.loadConfiguration(root));
+    configs.addAll(loadDirectory(biomesDir, null));
+    List<BiomePopulator> result = new ArrayList<>();
     for (FileConfiguration config : configs) {
       for (String id : config.getKeys(false)) {
         ConfigurationSection section = config.getConfigurationSection(id);
         if (section == null || !section.getBoolean("enabled", true)) continue;
-
-        String biomeName = section.getString("biome");
-        Biome biome = biomeName == null ? null : LiquidUtil.resolveBiome(biomeName.trim().toLowerCase(Locale.ROOT));
-        if (biome == null) {
-          logError("Unknown biome `" + biomeName + "` in biome populator `" + id
-              + "`. Register custom biomes at startup and check /nexoaddon biomes. Skipping.");
-          continue;
+        try {
+          Biome biome = biome(section.getString("biome", ""));
+          int minY = integer(section, "minY", Integer.MIN_VALUE);
+          int maxY = integer(section, "maxY", Integer.MAX_VALUE);
+          if (minY > maxY) throw new IllegalArgumentException("minY must not exceed maxY");
+          result.add(new BiomePopulator(id, biome, worlds(section), biomes(section), minY, maxY, probability(section, "chance", 1.0)));
+        } catch (IllegalArgumentException exception) {
+          logError("Invalid biome populator `" + id + "`: " + exception.getMessage() + ". Skipping.");
         }
-
-        List<String> worldNames = section.getStringList("worlds");
-        if (worldNames.isEmpty()) {
-          logError("Biome populator `" + id + "` has no worlds. Skipping.");
-          continue;
-        }
-
-        List<String> biomeNames = section.getStringList("biomes");
-        List<Biome> biomes = parseBiomes(biomeNames);
-        if (biomes.isEmpty()) {
-          logError("Biome populator `" + id + "` matches no registered biomes. Skipping.");
-          continue;
-        }
-
-        int minY = section.getInt("minY", Integer.MIN_VALUE);
-        int maxY = section.getInt("maxY", Integer.MAX_VALUE);
-        double chance = section.getDouble("chance", 1.0);
-        if (minY > maxY || !Double.isFinite(chance) || chance < 0.0 || chance > 1.0) {
-          logError("Invalid height range or chance in biome populator `" + id + "`. Skipping.");
-          continue;
-        }
-
-        populators.add(new BiomePopulator(id, biome, worldNames, biomes, minY, maxY, chance));
       }
     }
-    return List.copyOf(populators);
+    return List.copyOf(result);
   }
 
-  private List<Ore> loadOresFromConfig(FileConfiguration config) {
-    return config.getKeys(false).stream()
-            .map(key -> parseOre(key, config))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-  }
-
-  private Ore parseOre(String key, FileConfiguration config) {
-    ConfigurationSection section = config.getConfigurationSection(key);
-
-    Material material = Material.matchMaterial(key);
-
-    if (section == null
-            || (!NexoBlocks.isCustomBlock(key)
-            && !NexoFurniture.isFurniture(key)
-            && (material == null || !material.isBlock()))) {
-      NexoAddon.getInstance().getLogger().warning("Incorrect key value! " + key);
-      return null;
+  private PopulatorItem item(String id) {
+    CustomBlockMechanic block = NexoBlocks.customBlockMechanic(id);
+    if (block != null) {
+      StringBlockMechanic string = NexoBlocks.stringMechanic(id);
+      if (block.getBlockData() == null) throw new IllegalArgumentException("Custom block has no block data");
+      return new PopulatorItem(id, block.getBlockData().clone(),
+          string != null && string.getTall() ? Material.TRIPWIRE.createBlockData() : null, null,
+          string != null && string.isSapling() ? string.sapling().getNaturalGrowthTime() : null);
     }
+    FurnitureMechanic furniture = NexoFurniture.furnitureMechanic(id);
+    if (furniture != null) return new PopulatorItem(id, null, null, furniture, null);
+    Material material = Material.matchMaterial(id);
+    if (material == null || !material.isBlock()) throw new IllegalArgumentException("Unknown block or furniture ID");
+    return new PopulatorItem(id, material.createBlockData(), null, null, null);
+  }
 
-    int minY = section.getInt("minY", 0);
-    int maxY = Math.max(section.getInt("maxY", 0), minY);
-    double chance = section.getDouble("chance", 0.1);
-    Object iterations = parseIterationValue(section, "iterations", 50);
-    Object veinSize = parseIterationValue(section, "vein_size", 0);
-    double clusterChance = section.getDouble("cluster_chance", 0.0);
+  private List<String> worlds(ConfigurationSection section) {
+    List<String> names = strings(section, "worlds").stream().map(String::trim).filter(name -> !name.isEmpty()).distinct().toList();
+    if (names.isEmpty()) throw new IllegalArgumentException("Specify at least one world");
+    return names;
+  }
 
-    List<String> worldNames = section.getStringList("worlds");
-    NexoAddon.getInstance().getLogger().info(key + " worlds: " + worldNames);
-    List<World> worlds = worldNames.size() == 1 && worldNames.getFirst().equalsIgnoreCase("all")? Bukkit.getWorlds() : parseWorlds(worldNames);
-    if (worlds.isEmpty()) return null;
-    List<Biome> biomes = parseBiomes(section.getStringList("biomes"));
-    if (biomes.isEmpty()) {
-      logError("Populator `" + key + "` matches no registered biomes. Skipping.");
-      return null;
+  private BiomeFilter biomes(ConfigurationSection section) {
+    Set<Biome> included = new HashSet<>();
+    Set<Biome> excluded = new HashSet<>();
+    for (String value : strings(section, "biomes")) {
+      String name = value.trim();
+      if (name.startsWith("!")) excluded.add(biome(name.substring(1)));
+      else included.add(biome(name));
     }
+    return new BiomeFilter(included, excluded);
+  }
 
-    List<Material> replaceMaterials = parseMaterials(section.getStringList("replace"));
-    List<Material> placeOnMaterials = parseMaterials(section.getStringList("place_on"));
-    List<Material> placeBelowMaterials = parseMaterials(section.getStringList("place_below"));
-    boolean airOnly = section.getBoolean("air_only", false);
+  private Biome biome(String name) {
+    Biome biome = LiquidUtil.resolveBiome(name.trim().toLowerCase(Locale.ROOT));
+    if (biome == null) throw new IllegalArgumentException("Unknown biome `" + name + "`");
+    return biome;
+  }
 
-    try {
-      CustomBlockMechanic block = NexoBlocks.customBlockMechanic(key);
-      FurnitureMechanic furniture = NexoFurniture.furnitureMechanic(key);
-      if (block != null) {
-        boolean isTall = false;
-        StringBlockMechanic stringMechanic = NexoBlocks.stringMechanic(block.getItemID());
-        if (stringMechanic != null) {
-          isTall = stringMechanic.getTall();
-        }
-        return new Ore(key, block, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, isTall, veinSize, clusterChance, airOnly);
-      } else if (furniture != null) {
-        return new Ore(key, furniture, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly);
-      } else {
-        return new Ore(key, material, minY, maxY, chance, replaceMaterials, placeOnMaterials, placeBelowMaterials, worlds, worldNames, biomes, iterations, false, veinSize, clusterChance, airOnly);
-      }
-    } catch (IllegalArgumentException e) {
-      logError("Invalid custom block ID: " + key);
-      return null;
+  private List<Material> materials(ConfigurationSection section, String key) {
+    List<Material> result = new ArrayList<>();
+    for (String name : strings(section, key)) {
+      Material material = Material.matchMaterial(name.trim());
+      if (material == null || !material.isBlock()) throw new IllegalArgumentException("Unknown block `" + name + "` in " + key);
+      result.add(material);
     }
+    return List.copyOf(result);
   }
 
-  private FileConfiguration loadConfigFile(String fileName, File directory) {
-    File file = new File(directory, fileName);
-    if (!file.exists()) return null;
-    return YamlConfiguration.loadConfiguration(file);
+  private int integer(ConfigurationSection section, String key, int defaultValue) {
+    return Integer.parseInt(String.valueOf(section.get(key, defaultValue)));
   }
 
-  private List<World> parseWorlds(List<String> worldNames) {
-    return worldNames.stream()
-            .map(name -> NexoAddon.getInstance().getServer().getWorld(name))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-  }
-
-  private World loadWorld(String worldName) {
-    File worldFolder = new File(NexoAddon.getInstance().getServer().getWorldContainer(), worldName);
-    if (!worldFolder.exists() || !worldFolder.isDirectory()) {
-      NexoAddon.getInstance().getLogger().warning("World folder for " + worldName + " does not exist.");
-      return null;
-    }
-
-    NexoAddon.getInstance().getLogger().info("Loaded world:" + worldName);
-    WorldCreator creator = new WorldCreator(worldName);
-    return NexoAddon.getInstance().getServer().createWorld(creator);
-  }
-
-  private List<Biome> parseBiomes(List<String> biomeNames) {
-    if (Biome.class.isEnum()) {
-      return parseBiomesOld(Arrays.asList(Biome.class.getEnumConstants()), biomeNames);
-    } else {
-      return parseBiomesNew(getAllBiomes(), biomeNames);
-    }
-  }
-
-  private List<Biome> parseBiomesOld(List<Biome> biomes, List<String> biomeNames) {
-    if (biomeNames.isEmpty()) return biomes;
-
-    boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
-    List<String> cleanNames = biomeNames.stream()
-            .map(name -> name.replaceFirst("!", "").toUpperCase(Locale.ROOT))
-            .toList();
-
-    List<Biome> result = new ArrayList<>();
-    try {
-      Method nameMethod = Enum.class.getMethod("name");
-      for (Biome biome : biomes) {
-        String name = ((String) nameMethod.invoke(biome)).toUpperCase().replace(" ", "_");
-        if (isBlacklist != cleanNames.contains(name)) result.add(biome);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+  private List<String> strings(ConfigurationSection section, String key) {
+    Object value = section.get(key);
+    if (value == null) return List.of();
+    if (!(value instanceof List<?> list)) throw new IllegalArgumentException(key + " must be a list");
+    List<String> result = new ArrayList<>();
+    for (Object entry : list) {
+      if (!(entry instanceof String text)) throw new IllegalArgumentException(key + " must contain strings");
+      result.add(text);
     }
     return result;
   }
 
-
-  private List<Biome> parseBiomesNew(Collection<Biome> biomes, List<String> biomeNames) {
-    if (biomeNames.isEmpty()) return new ArrayList<>(biomes);
-
-    boolean isBlacklist = biomeNames.stream().anyMatch(name -> name.startsWith("!"));
-    List<String> cleanNames = biomeNames.stream()
-            .map(name -> name.replaceFirst("!", "").trim().toLowerCase(Locale.ROOT))
-            .toList();
-
-    List<Biome> result = new ArrayList<>();
-    for (Biome biome : biomes) {
-      NamespacedKey key = biome.getKey();
-      boolean matches = cleanNames.contains(key.toString())
-          || key.getNamespace().equals("minecraft") && cleanNames.contains(key.getKey());
-      if (isBlacklist != matches) result.add(biome);
-    }
-    return result;
-  }
-
-
-  private List<Biome> getAllBiomes() {
-    return RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).stream().toList();
-  }
-
-  private List<Material> parseMaterials(List<String> materialNames) {
-    return materialNames.stream()
-            .map(Material::getMaterial)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-  }
-
-  private Object parseIterationValue(ConfigurationSection section, String key, int defaultValue) {
-    Object value = section.get(key, defaultValue);
-    if (value instanceof String str) {
-      if (str.contains("-")) {
-        String[] parts = str.split("-");
-        try {
-          int min = Integer.parseInt(parts[0].trim());
-          int max = Integer.parseInt(parts[1].trim());
-          if (min > max) {
-            int temp = min;
-            min = max;
-            max = temp;
-          }
-          return min + "-" + max;
-        } catch (NumberFormatException e) {
-          return defaultValue;
-        }
-      } else {
-        try {
-          return Integer.parseInt(str.trim());
-        } catch (NumberFormatException e) {
-          return defaultValue;
-        }
-      }
-    } else if (value instanceof Number) {
-      return ((Number) value).intValue();
-    }
-    return defaultValue;
+  private double probability(ConfigurationSection section, String key, double defaultValue) {
+    double value = Double.parseDouble(String.valueOf(section.get(key, defaultValue)));
+    if (!Double.isFinite(value) || value < 0.0 || value > 1.0) throw new IllegalArgumentException(key + " must be between 0.0 and 1.0");
+    return value;
   }
 
   private void logError(String message) {
-    NexoAddon.getInstance().getLogger().severe(message);
+    logger.warning(message);
   }
 }

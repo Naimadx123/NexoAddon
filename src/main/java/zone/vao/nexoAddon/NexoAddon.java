@@ -13,7 +13,6 @@ import lombok.Setter;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
-import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -38,11 +37,8 @@ import zone.vao.nexoAddon.events.player.TotemSound;
 import zone.vao.nexoAddon.items.Components;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
-import zone.vao.nexoAddon.populators.BiomePopulator;
 import zone.vao.nexoAddon.populators.CustomChunkGenerator;
-import zone.vao.nexoAddon.populators.orePopulator.CustomOrePopulator;
-import zone.vao.nexoAddon.populators.orePopulator.Ore;
-import zone.vao.nexoAddon.populators.orePopulator.OrePopulator;
+import zone.vao.nexoAddon.populators.PopulatorManager;
 import zone.vao.nexoAddon.utils.*;
 import zone.vao.nexoAddon.utils.handlers.BlockHardnessHandler;
 import zone.vao.nexoAddon.utils.handlers.ParticleEffectManager;
@@ -70,10 +66,7 @@ public final class NexoAddon extends JavaPlugin {
   public Map<UUID, BossBarUtil> bossBars = new HashMap<>();
   public FileConfiguration globalConfig;
   public PopulatorsConfigUtil populatorsConfig;
-  public List<Ore> ores = new ArrayList<>();
-  public final OrePopulator orePopulator = new OrePopulator();
-  public Map<String, List<BlockPopulator>> worldPopulators = new HashMap<>();
-  private List<BiomePopulator> biomePopulators = List.of();
+  private final PopulatorManager populatorManager = new PopulatorManager(this);
   public Map<String, String> jukeboxLocations = new HashMap<>();
   public Map<String, Integer> customBlockLights = new HashMap<>();
   public BlockHardnessHandler blockHardnessHandler;
@@ -124,6 +117,7 @@ public final class NexoAddon extends JavaPlugin {
     particleEffectManager.startAuraEffectTask();
     initializeMetrics();
     reportCustomBiomes();
+    initializePopulators();
     BossBarUtil.setupConfig();
     getLogger().info("NexoAddon enabled!");
   }
@@ -155,7 +149,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Override
   public ChunkGenerator getDefaultWorldGenerator(@NotNull String worldName, String id) {
-    return new CustomChunkGenerator(orePopulator);
+    return new CustomChunkGenerator(populatorManager);
   }
 
   public void reload() {
@@ -163,7 +157,6 @@ public final class NexoAddon extends JavaPlugin {
     globalConfig = getConfig();
     isDebug = globalConfig.getBoolean("debug", false);
     Bukkit.getGlobalRegionScheduler().run(this, init -> {
-      clearPopulators();
       initializePopulators();
     });
     regenerateCustomBiomes();
@@ -223,43 +216,8 @@ public final class NexoAddon extends JavaPlugin {
   }
 
   public void initializePopulators() {
-    populatorsConfig = new PopulatorsConfigUtil(getDataFolder(), getClassLoader());
-    initializeOres();
-  }
-
-  private void initializeOres() {
-    Bukkit.getGlobalRegionScheduler().run(this, initOres -> {
-      biomePopulators = populatorsConfig.loadBiomePopulatorsFromConfig();
-      Bukkit.getWorlds().forEach(this::addBiomePopulators);
-      ores = populatorsConfig.loadOresFromConfig();
-      orePopulator.clearOres();
-      ores.forEach(orePopulator::addOre);
-      Set<World> worldsToAddPopulator = new HashSet<>();
-      orePopulator.getOres().forEach(ore -> {
-        if(ore.getNexoFurniture() != null) return;
-        worldsToAddPopulator.addAll(ore.getWorlds());
-      });
-
-      worldsToAddPopulator.forEach(world -> {
-        CustomOrePopulator customOrePopulator = new CustomOrePopulator(orePopulator);
-        addPopulatorToWorld(world, customOrePopulator);
-        worldPopulators.computeIfAbsent(world.getName(), k -> new ArrayList<>()).add(customOrePopulator);
-        logPopulatorAdded("BlockPopulator", "all_ores", world);
-      });
-    });
-  }
-
-  public void addBiomePopulators(World world) {
-    for (BiomePopulator populator : biomePopulators) {
-      if (!populator.appliesToWorld(world.getName())) continue;
-
-      List<BlockPopulator> populators = worldPopulators.computeIfAbsent(world.getName(), k -> new ArrayList<>());
-      if (populators.contains(populator)) continue;
-
-      addPopulatorToWorld(world, populator);
-      populators.add(populator);
-      logPopulatorAdded("BiomePopulator", populator.getId(), world);
-    }
+    populatorsConfig = new PopulatorsConfigUtil(getDataFolder(), getClassLoader(), getLogger());
+    populatorManager.reload(populatorsConfig);
   }
 
   private void registerEvents() {
@@ -343,31 +301,7 @@ public final class NexoAddon extends JavaPlugin {
   }
 
   private void clearPopulators() {
-    worldPopulators.forEach((worldName, populators) -> {
-      World world = Bukkit.getWorld(worldName);
-      if (world == null) {
-        getLogger().warning("World '" + worldName + "' not found. Skipping populator removal.");
-        return;
-      }
-      populators.forEach(populator -> {
-        if (world.getPopulators().remove(populator)) {
-          getLogger().info("Populator removed from world: " + worldName);
-        }
-      });
-    });
-    worldPopulators.clear();
-  }
-
-  public void removePopulators(World world) {
-    worldPopulators.forEach((worldName, populators) -> {
-      if(!world.getName().equals(worldName)) return;
-      populators.forEach(populator -> {
-        if (world.getPopulators().remove(populator)) {
-          getLogger().info("Populator removed from world: " + worldName);
-        }
-      });
-    });
-    worldPopulators.remove(world.getName());
+    populatorManager.clear();
   }
 
   public boolean isPacketEventsPresent() {
@@ -377,20 +311,6 @@ public final class NexoAddon extends JavaPlugin {
     } catch (Exception e) {
       return false;
     }
-  }
-
-  public void addPopulatorToWorld(World world, BlockPopulator populator) {
-    if (world == null) {
-      getLogger().severe("World is null. Cannot add Populator.");
-      return;
-    }
-    if (!world.getPopulators().contains(populator)) {
-      world.getPopulators().add(populator);
-    }
-  }
-
-  public void logPopulatorAdded(String type, String name, World world) {
-    getLogger().info(type + " of "+name+" added to world: " + world.getName());
   }
 
   private void registerEvent(Listener listener) {

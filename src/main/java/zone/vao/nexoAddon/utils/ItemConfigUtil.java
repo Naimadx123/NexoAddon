@@ -417,10 +417,11 @@ public class ItemConfigUtil {
       List<String> nexoIds = new ArrayList<>();
       if(section.contains("Mechanics.shiftblock.items")){
         for (String s : section.getStringList("Mechanics.shiftblock.items")) {
-          if(NexoItems.itemFromId(s) != null){
+          Material material = Material.matchMaterial(s);
+          if(NexoItems.itemFromId(s) != null || material == null){
             nexoIds.add(s);
-          }else if(Material.matchMaterial(s) != null){
-            materials.add(Material.matchMaterial(s));
+          }else{
+            materials.add(material);
           }
         }
       }

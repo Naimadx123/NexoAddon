@@ -12,6 +12,10 @@ permissions:
     default: op
 dependencies:
   server:
+    Multiverse-Core:
+      load: AFTER
+      required: false
+      join-classpath: false
     Nexo:
       load: BEFORE
       required: true

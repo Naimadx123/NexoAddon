@@ -13,8 +13,6 @@ import org.bukkit.entity.Player;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.biomes.BiomeDefinition;
 import zone.vao.nexoAddon.biomes.CustomBiomeState;
-import zone.vao.nexoAddon.commands.repopulate.BlockRepopulator;
-import zone.vao.nexoAddon.commands.repopulate.FurnitureRepopulator;
 import zone.vao.nexoAddon.items.Mechanics;
 import zone.vao.nexoAddon.items.mechanics.CustomCrafting;
 import zone.vao.nexoAddon.utils.LiquidUtil;
@@ -156,7 +154,7 @@ public class NexoAddonCommand extends BaseCommand {
         if(NexoAddon.isDebug){
           NexoAddon.getInstance().getLogger().info("[debug] Repopulating world: " + world.getName());
         }
-        if (!NexoAddon.getInstance().worldPopulators.containsKey(world.getName())) {
+        if (!NexoAddon.getInstance().getPopulatorManager().appliesToWorld(world.getName())) {
           if(NexoAddon.isDebug){
             NexoAddon.getInstance().getLogger().info("[debug]   Skipping world: " + world.getName() + " because it has no populators.");
           }
@@ -165,8 +163,7 @@ public class NexoAddonCommand extends BaseCommand {
         for (Chunk chunk : world.getLoadedChunks()) {
           if (!chunk.isGenerated()) continue;
 
-          BlockRepopulator.repopulate(world, chunk);
-          FurnitureRepopulator.repopulate(world, chunk);
+          NexoAddon.getInstance().getPopulatorManager().repopulate(world, chunk);
 
           processedChunks++;
         }
