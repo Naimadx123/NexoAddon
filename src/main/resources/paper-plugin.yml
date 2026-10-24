@@ -52,3 +52,11 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+    BentoBox:
+      load: OMIT
+      required: false
+      join-classpath: true
+    GriefPrevention:
+      load: OMIT
+      required: false
+      join-classpath: true

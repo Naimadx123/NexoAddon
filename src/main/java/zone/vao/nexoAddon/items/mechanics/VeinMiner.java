@@ -3,7 +3,6 @@ package zone.vao.nexoAddon.items.mechanics;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
-import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
@@ -175,7 +174,7 @@ public record VeinMiner(int distance, boolean toggleable, boolean sameMaterial, 
         private static boolean isUnbreakableBlock(Player player, Block block) {
             return block.isLiquid()
                     || BlockUtil.UNBREAKABLE_BLOCKS.contains(block.getType())
-                    || !ProtectionLib.canBreak(player, block.getLocation());
+                    || !NexoAddon.getInstance().getBoundaryGuard().canBreak(player, block.getLocation());
         }
 
         @EventHandler

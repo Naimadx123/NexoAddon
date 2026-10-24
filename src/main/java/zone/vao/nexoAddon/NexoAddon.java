@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +18,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import zone.vao.boundaryGuard.BoundaryGuard;
 import zone.vao.nexoAddon.biomes.BiomeDefinition;
 import zone.vao.nexoAddon.biomes.BiomeGenerator;
 import zone.vao.nexoAddon.biomes.CustomBiomeState;
@@ -65,6 +65,7 @@ public final class NexoAddon extends JavaPlugin {
   private Map<String, ItemStack> skulls = new HashMap<>();
   public Map<UUID, BossBarUtil> bossBars = new HashMap<>();
   public FileConfiguration globalConfig;
+  private final BoundaryGuard boundaryGuard = new BoundaryGuard();
   public PopulatorsConfigUtil populatorsConfig;
   private final PopulatorManager populatorManager = new PopulatorManager(this);
   public Map<String, String> jukeboxLocations = new HashMap<>();
@@ -100,7 +101,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    ProtectionLib.init(this);
+    boundaryGuard.init(this);
     saveDefaultConfig();
     globalConfig = getConfig();
     isDebug = globalConfig.getBoolean("debug", false);
@@ -124,6 +125,7 @@ public final class NexoAddon extends JavaPlugin {
 
   @Override
   public void onDisable() {
+    boundaryGuard.close();
     bossBars.values().forEach(BossBarUtil::removeBar);
     clearPopulators();
     if(packeteventsLoaded)

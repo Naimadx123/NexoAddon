@@ -9,7 +9,6 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -98,7 +97,7 @@ public class BlockHardnessHandler implements PacketListener {
 
       if (currentProgress >= hardness) {
         stopBreaking(location, digging);
-        if (EventUtil.callEvent(new BlockBreakEvent(block, player)) && ProtectionLib.canBreak(player, location)) {
+        if (EventUtil.callEvent(new BlockBreakEvent(block, player)) && NexoAddon.getInstance().getBoundaryGuard().canBreak(player, location)) {
           player.getScheduler().run(NexoAddon.getInstance(), finish -> {
             if (!Bukkit.isOwnedByCurrentRegion(location) || block.getType() != Material.BEDROCK) return;
             ItemStack currentTool = player.getInventory().getItemInMainHand();

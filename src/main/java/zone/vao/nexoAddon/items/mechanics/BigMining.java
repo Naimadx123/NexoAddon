@@ -1,7 +1,6 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
@@ -126,7 +125,7 @@ public record BigMining(int radius, int depth, boolean switchable, List<Material
 
     private static void handleAttemptBlockBreak(Player player, Block block, ItemStack tool, BigMining mechanic) {
       try {
-        if (isUnbreakableBlock(block.getType(), block.isLiquid(), ProtectionLib.canBreak(player, block.getLocation()))) return;
+        if (isUnbreakableBlock(block.getType(), block.isLiquid(), NexoAddon.getInstance().getBoundaryGuard().canBreak(player, block.getLocation()))) return;
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
 
         if (!EventUtil.callEvent(blockBreakEvent) || !mechanic.materials().isEmpty() && !mechanic.materials().contains(block.getType())) return;

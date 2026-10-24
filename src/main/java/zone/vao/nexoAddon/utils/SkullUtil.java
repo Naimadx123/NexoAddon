@@ -18,71 +18,46 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.Base64;
+import java.util.UUID;
 
 public class SkullUtil {
 
   public static String NEXOADDON_HEAD_BASE64 = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWY1ZTgzNWMxMTZlOGUyMDBlMmUwNmFhNTkzY2FiOGYxYTlmOGM0MGU3ZjAwNWE5Yzc2ZjEyZTI0ZjRjNjM3MCJ9fX0=";
 
   public static void applyTextures(){
-
-    Map<String, Components> componentsList = new HashMap<>();
     NexoAddon.getInstance().getComponents().forEach((key, component) -> {
       if(component.getSkullValue() == null && component.getNoteBlockSound() == null) return;
-      componentsList.put(key, component);
-    });
-
-    componentsList.forEach((key, component) -> {
-
-      NexoItems.items().stream().filter(a -> Objects.equals(NexoItems.idFromItem(a), key) && NexoItems.itemFromId(key).build().getType() == Material.PLAYER_HEAD).findFirst().ifPresent(item -> {
-
-        ItemStack itemStack = item.build();
-
-        NexoItems.itemMap().forEach((file, items) -> {
-
-          if(!items.containsKey(key)) return;
-
-          final SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-          if (component.getSkullValue() != null) {
-            PlayerProfile profile = getProfileBase64(component.getSkullValue().value(), key);
-            if(profile == null) return;
-            meta.setPlayerProfile(profile);
-          }
-
-          if (component.getNoteBlockSound() != null) {
-            trySetNoteBlockSound(meta, component.getNoteBlockSound().soundId());
-          }
-
-          itemStack.setItemMeta(meta);
-          ItemBuilder itemBuilder =  new ItemBuilder(itemStack);
-
-          NexoItems.items().remove(item);
-          NexoItems.unexcludedItems(file).remove(item);
-
-          // Replace NexoItem in NexoItems Cache
-          NexoItems.itemMap().get(file).put(key, itemBuilder);
-          NexoItems.items().add(itemBuilder);
-          NexoItems.entries().put(key, itemBuilder);
-          NexoItems.unexcludedItems(file).add(itemBuilder);
-        });
-      });
+      ItemBuilder item = NexoItems.itemFromId(key);
+      if (item == null || item.getType() != Material.PLAYER_HEAD) return;
+      ItemStack itemStack = item.getFinalItemStack();
+      if (itemStack == null) itemStack = item.regenerateItem().getFinalItemStack();
+      if (itemStack != null) applyComponents(itemStack, component, key);
     });
   }
 
-  private static void trySetNoteBlockSound(SkullMeta meta, String soundId) {
-    String namespace = "minecraft";
-    String id = soundId;
-
-    if (soundId.contains(":")) {
-      String[] parts = soundId.split(":");
-      namespace = parts[0];
-      id = parts[1];
+  static void applyComponents(ItemStack itemStack, Components component, String itemId) {
+    if (!(itemStack.getItemMeta() instanceof SkullMeta meta)) return;
+    if (component.getSkullValue() != null) {
+      PlayerProfile profile = getProfileBase64(component.getSkullValue().value(), itemId);
+      if (profile == null) return;
+      meta.setPlayerProfile(profile);
     }
+    if (component.getNoteBlockSound() != null) {
+      trySetNoteBlockSound(meta, component.getNoteBlockSound().soundId());
+    }
+    itemStack.setItemMeta(meta);
+  }
+
+  private static void trySetNoteBlockSound(SkullMeta meta, String soundId) {
+    if (soundId == null) return;
 
     try {
+      NamespacedKey sound = NamespacedKey.fromString(soundId);
+      if (sound == null || sound.getKey().isEmpty()) return;
       Method set = meta.getClass().getMethod("setNoteBlockSound", NamespacedKey.class);
       set.setAccessible(true);
-      set.invoke(meta, new NamespacedKey(namespace, id));
+      set.invoke(meta, sound);
     } catch (Throwable ignored) {}
   }
 

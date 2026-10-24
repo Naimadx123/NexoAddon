@@ -11,7 +11,6 @@ import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
 import com.nexomc.nexo.utils.blocksounds.BlockSounds;
 import com.nexomc.nexo.utils.drops.Drop;
 import com.nexomc.nexo.utils.drops.Loot;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
@@ -41,7 +40,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       if(mechanic == null
           || mechanic.getUnstackable() == null
           || !checkIfAllowed(mechanic, event.getPlayer())
-          || !ProtectionLib.canInteract(event.getPlayer(), event.getBlock().getLocation())
+          || !NexoAddon.getInstance().getBoundaryGuard().canInteract(event.getPlayer(), event.getBlock().getLocation())
       ) return;
 
       String nextStage = mechanic.getUnstackable().next();
@@ -87,7 +86,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       if(mechanic == null
           || mechanic.getUnstackable() == null
           || !checkIfAllowed(mechanic, event.getPlayer())
-          || !ProtectionLib.canInteract(event.getPlayer(), event.getBaseEntity().getLocation())
+          || !NexoAddon.getInstance().getBoundaryGuard().canInteract(event.getPlayer(), event.getBaseEntity())
       ) return;
 
       String nextStage = mechanic.getUnstackable().next();

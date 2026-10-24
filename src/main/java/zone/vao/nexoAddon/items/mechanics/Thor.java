@@ -1,7 +1,6 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -56,7 +55,7 @@ public record Thor(int lightningBoltsAmount, double randomLocationVariation, int
 
       Location location = target.getLocation();
       World world = location.getWorld();
-      if (world == null || !ProtectionLib.canInteract(player, location)) return;
+      if (world == null || !NexoAddon.getInstance().getBoundaryGuard().canInteract(player, location)) return;
 
       if (thor.delay() > 0 && !consumeCooldown(player, thor.delay())) return;
 

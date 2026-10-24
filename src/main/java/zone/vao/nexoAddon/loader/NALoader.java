@@ -23,16 +23,12 @@ public class NALoader implements PluginLoader {
       repos.add(new Repo("central", "https://maven-central.storage-download.googleapis.com/maven2"));
     }
 
-    repos.add(new Repo("jitpack", "https://jitpack.io/"));
-    repos.add(new Repo("nexo", "https://repo.nexomc.com/releases/"));
-
     return repos;
   }
 
 
   private static final List<String> DEPENDS =
       List.of(
-          "com.nexomc:protectionlib:1.0.8",
           "net.objecthunter:exp4j:0.4.8"
       );
 

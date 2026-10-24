@@ -1,7 +1,6 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -36,7 +35,7 @@ public record SpawnerBreak(double probability, boolean dropExperience) {
       String nexoItemId = NexoItems.idFromItem(tool);
 
       Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(nexoItemId);
-      if (mechanics == null || mechanics.getSpawnerBreak() == null || !ProtectionLib.canBreak(player, block.getLocation())) return;
+      if (mechanics == null || mechanics.getSpawnerBreak() == null || !NexoAddon.getInstance().getBoundaryGuard().canBreak(player, block.getLocation())) return;
 
       double probability = mechanics.getSpawnerBreak().probability();
       boolean dropExperience = mechanics.getSpawnerBreak().dropExperience();

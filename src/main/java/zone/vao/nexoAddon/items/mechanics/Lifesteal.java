@@ -1,7 +1,6 @@
 package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
@@ -28,7 +27,7 @@ public record Lifesteal(int amount, double cooldown) {
                 return;
             if (!(event.getEntity() instanceof LivingEntity livingEntity))
                 return;
-            if (attacker instanceof Player player && !ProtectionLib.canInteract(player, event.getEntity().getLocation()))
+            if (attacker instanceof Player player && !NexoAddon.getInstance().getBoundaryGuard().canDamage(player, livingEntity))
                 return;
 
 

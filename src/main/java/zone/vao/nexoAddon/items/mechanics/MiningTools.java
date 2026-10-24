@@ -8,7 +8,6 @@ import com.nexomc.nexo.api.events.custom_block.noteblock.NexoNoteBlockBreakEvent
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.utils.drops.Drop;
 import com.nexomc.nexo.utils.drops.Loot;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -57,7 +56,7 @@ public record MiningTools(List<Material> materials, List<String> nexoIds, String
 
         List<Loot> loots = new ArrayList<>();
         Drop drop = new Drop(loots, false, false, NexoBlocks.customBlockMechanic(location).getItemID());
-        if(ProtectionLib.canBreak(player, location)) {
+        if(NexoAddon.getInstance().getBoundaryGuard().canBreak(player, location)) {
 
           NexoBlocks.remove(location, null, drop);
           if(tool.getItemMeta() instanceof Damageable damageable){

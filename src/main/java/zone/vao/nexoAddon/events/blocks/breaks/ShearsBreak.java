@@ -2,7 +2,6 @@ package zone.vao.nexoAddon.events.blocks.breaks;
 
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.api.NexoItems;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
 import zone.vao.nexoAddon.NexoAddon;
@@ -20,7 +19,7 @@ public class ShearsBreak {
     if(!TallStringBlocksHandler.isStringBlock(event.getBlock())
         || !event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.SHEARS)
         || !NexoAddon.getInstance().getGlobalConfig().getStringList("count_shears_as_silktouch").contains(TallStringBlocksHandler.getStringBlockId(event.getBlock()))
-        || !ProtectionLib.canBreak(event.getPlayer(), event.getBlock().getLocation())
+        || !NexoAddon.getInstance().getBoundaryGuard().canBreak(event.getPlayer(), event.getBlock().getLocation())
     ) {
       return;
     }
@@ -36,7 +35,7 @@ public class ShearsBreak {
     if(!NexoBlocks.isNexoChorusBlock(event.getBlock())
         || !event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.SHEARS)
         || !NexoAddon.getInstance().getGlobalConfig().getStringList("count_shears_as_silktouch").contains(NexoBlocks.chorusBlockMechanic(event.getBlock()).getItemID())
-        || !ProtectionLib.canBreak(event.getPlayer(), event.getBlock().getLocation())
+        || !NexoAddon.getInstance().getBoundaryGuard().canBreak(event.getPlayer(), event.getBlock().getLocation())
     ) {
       return;
     }

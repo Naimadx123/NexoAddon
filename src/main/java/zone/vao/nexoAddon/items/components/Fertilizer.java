@@ -4,7 +4,6 @@ import com.nexomc.nexo.NexoPlugin;
 import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -52,7 +51,7 @@ public record Fertilizer(int growthSpeedup, List<String> usableOn, int cooldown)
           || !fertilizer.usableOn.contains(furnitureId)
           || !event.getBaseEntity().getPersistentDataContainer().has(EVOLUTION_KEY, PersistentDataType.INTEGER)
           || (event.getBaseEntity().getPersistentDataContainer().get(EVOLUTION_KEY, PersistentDataType.INTEGER) >= NexoFurniture.furnitureMechanic(event.getBaseEntity()).getEvolution().delayInMillis())
-          || !(ProtectionLib.canInteract(player, event.getBaseEntity().getLocation()) && ProtectionLib.canUse(player, event.getBaseEntity().getLocation()))
+          || !(NexoAddon.getInstance().getBoundaryGuard().canInteract(player, event.getBaseEntity()) && NexoAddon.getInstance().getBoundaryGuard().canUse(player, event.getBaseEntity().getLocation()))
       ) return;
 
       Components component = NexoAddon.getInstance().getComponents().get(itemId);
@@ -145,8 +144,8 @@ public record Fertilizer(int growthSpeedup, List<String> usableOn, int cooldown)
     private static boolean canApplyFertilizer(Player player, Block block, Components component) {
       if (component == null || component.getFertilizer() == null) return false;
 
-      boolean canInteract = ProtectionLib.canInteract(player, block.getLocation()) &&
-          ProtectionLib.canUse(player, block.getLocation());
+      boolean canInteract = NexoAddon.getInstance().getBoundaryGuard().canInteract(player, block.getLocation()) &&
+          NexoAddon.getInstance().getBoundaryGuard().canUse(player, block.getLocation());
       boolean isUsableOnBlock = component.getFertilizer()
           .usableOn
           .stream()

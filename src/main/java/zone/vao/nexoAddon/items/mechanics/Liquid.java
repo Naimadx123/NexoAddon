@@ -2,7 +2,6 @@ package zone.vao.nexoAddon.items.mechanics;
 
 import com.nexomc.nexo.api.NexoItems;
 import com.nexomc.nexo.items.ItemBuilder;
-import com.nexomc.protectionlib.ProtectionLib;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -75,7 +74,7 @@ public record Liquid(
       if (liquid == null || !liquid.placeEnabled()) return;
 
       Location location = event.getBlock().getLocation();
-      if (!ProtectionLib.canBuild(player, location)) {
+      if (!NexoAddon.getInstance().getBoundaryGuard().canBuild(player, location)) {
         event.setCancelled(true);
         return;
       }
@@ -102,7 +101,7 @@ public record Liquid(
       if (liquid == null) return;
 
       Player player = event.getPlayer();
-      if (!ProtectionLib.canBuild(player, block.getLocation())) {
+      if (!NexoAddon.getInstance().getBoundaryGuard().canBuild(player, block.getLocation())) {
         event.setCancelled(true);
         return;
       }
