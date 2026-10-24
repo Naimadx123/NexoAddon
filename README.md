@@ -68,12 +68,21 @@ Each station can define sounds in its item's `Mechanics.custom_crafting` section
 Mechanics:
   custom_crafting:
     station_id: example_station
-    open_sound: minecraft:block.chest.open
-    close_sound: minecraft:block.chest.close
-    craft_sound: minecraft:block.anvil.use
+    open_sound:
+      sound: minecraft:block.chest.open
+      pitch: 1
+      volume: 1
+    close_sound:
+      sound: minecraft:block.chest.close
+      pitch: 1
+      volume: 1
+    craft_sound:
+      sound: minecraft:block.anvil.use
+      pitch: 1
+      volume: 1
 ```
 
-Vanilla and custom resource pack sound IDs are supported. Omit a sound or set it to an empty string to disable it. The open sound plays after the menu opens successfully, the close sound when it closes, and the craft sound after a successful craft. These settings also apply when opening a station with `/nexoaddon customcrafting`.
+Vanilla and custom resource pack sound IDs are supported. Each sound section is optional; omit it or leave its `sound` empty to disable it. Both `pitch` and `volume` default to `1`. The open sound plays after the menu opens successfully, the close sound when it closes, and the craft sound after a successful craft. These settings also apply when opening a station with `/nexoaddon customcrafting`.
 
 ### World Generation
 

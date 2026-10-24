@@ -598,7 +598,19 @@ public class ItemConfigUtil {
 
     mechanic.setCustomCrafting(new CustomCrafting(title, size, resultSlot, station.trim(),
         CustomCraftingUtil.buildItem(crafting.getConfigurationSection("filler")),
-        crafting.getString("open_sound"), crafting.getString("close_sound"), crafting.getString("craft_sound")));
+        loadCustomCraftingSound(crafting.getConfigurationSection("open_sound")),
+        loadCustomCraftingSound(crafting.getConfigurationSection("close_sound")),
+        loadCustomCraftingSound(crafting.getConfigurationSection("craft_sound"))));
+  }
+
+  private static CustomCrafting.Sound loadCustomCraftingSound(ConfigurationSection section) {
+    if (section == null) return null;
+
+    String sound = section.getString("sound");
+    if (sound == null || sound.isBlank()) return null;
+
+    return new CustomCrafting.Sound(sound.trim(), (float) section.getDouble("pitch", 1.0),
+        (float) section.getDouble("volume", 1.0));
   }
 
   private static void loadLifesteal(ConfigurationSection section, Mechanics mechanic) {

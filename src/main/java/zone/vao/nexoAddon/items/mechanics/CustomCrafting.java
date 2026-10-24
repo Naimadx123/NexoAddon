@@ -34,13 +34,16 @@ public record CustomCrafting(
     int resultSlot,
     String station,
     ItemStack filler,
-    String openSound,
-    String closeSound,
-    String craftSound
+    Sound openSound,
+    Sound closeSound,
+    Sound craftSound
 ) {
 
   public CustomCrafting(Component title, int size, int resultSlot, String station, ItemStack filler) {
     this(title, size, resultSlot, station, filler, null, null, null);
+  }
+
+  public record Sound(String sound, float pitch, float volume) {
   }
 
   public record Ingredient(String nexoId, Material material, int amount, ItemStack exactItem) {
@@ -83,9 +86,9 @@ public record CustomCrafting(
     }, null);
   }
 
-  private static void playSound(Player player, String sound) {
-    if (sound == null || sound.isBlank()) return;
-    player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+  private static void playSound(Player player, Sound sound) {
+    if (sound == null) return;
+    player.playSound(player.getLocation(), sound.sound(), sound.volume(), sound.pitch());
   }
 
   private Set<Integer> inputSlots(List<Recipe> recipes) {
