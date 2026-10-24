@@ -60,6 +60,21 @@ Designed as a feature-rich addon for servers using Nexo, NexoAddon enhances your
 * Easily configurable via `config.yml`.
 * Seamless compatibility with Nexo item system.
 
+### CustomCrafting Sounds
+
+Each station can define sounds in its item's `Mechanics.custom_crafting` section:
+
+```yaml
+Mechanics:
+  custom_crafting:
+    station_id: example_station
+    open_sound: minecraft:block.chest.open
+    close_sound: minecraft:block.chest.close
+    craft_sound: minecraft:block.anvil.use
+```
+
+Vanilla and custom resource pack sound IDs are supported. Omit a sound or set it to an empty string to disable it. The open sound plays after the menu opens successfully, the close sound when it closes, and the craft sound after a successful craft. These settings also apply when opening a station with `/nexoaddon customcrafting`.
+
 ### World Generation
 
 By default, NexoAddon attaches its populators to worlds without the `NexoAddon` generator. To create a world using the generator with Multiverse-Core:

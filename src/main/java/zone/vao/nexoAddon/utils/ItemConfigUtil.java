@@ -597,7 +597,8 @@ public class ItemConfigUtil {
         : MiniMessage.miniMessage().deserialize(rawTitle);
 
     mechanic.setCustomCrafting(new CustomCrafting(title, size, resultSlot, station.trim(),
-        CustomCraftingUtil.buildItem(crafting.getConfigurationSection("filler"))));
+        CustomCraftingUtil.buildItem(crafting.getConfigurationSection("filler")),
+        crafting.getString("open_sound"), crafting.getString("close_sound"), crafting.getString("craft_sound")));
   }
 
   private static void loadLifesteal(ConfigurationSection section, Mechanics mechanic) {

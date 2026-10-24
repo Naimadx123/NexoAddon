@@ -33,8 +33,15 @@ public record CustomCrafting(
     int size,
     int resultSlot,
     String station,
-    ItemStack filler
+    ItemStack filler,
+    String openSound,
+    String closeSound,
+    String craftSound
 ) {
+
+  public CustomCrafting(Component title, int size, int resultSlot, String station, ItemStack filler) {
+    this(title, size, resultSlot, station, filler, null, null, null);
+  }
 
   public record Ingredient(String nexoId, Material material, int amount, ItemStack exactItem) {
 
@@ -71,7 +78,14 @@ public record CustomCrafting(
   }
 
   public void open(Player player) {
-    player.getScheduler().run(NexoAddon.getInstance(), task -> player.openInventory(create()), null);
+    player.getScheduler().run(NexoAddon.getInstance(), task -> {
+      if (player.openInventory(create()) != null) playSound(player, openSound);
+    }, null);
+  }
+
+  private static void playSound(Player player, String sound) {
+    if (sound == null || sound.isBlank()) return;
+    player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
   }
 
   private Set<Integer> inputSlots(List<Recipe> recipes) {
@@ -128,16 +142,20 @@ public record CustomCrafting(
 
   public static class CustomCraftingListener implements Listener {
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void on(NexoBlockInteractEvent event) {
       if (event.getHand() != EquipmentSlot.HAND || event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        return;
+      if (!NexoAddon.getInstance().getBoundaryGuard().canInteract(event.getPlayer(), event.getBlock().getLocation()))
         return;
       openMenu(event.getPlayer(), event.getMechanic().getItemID());
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void on(NexoFurnitureInteractEvent event) {
       if (event.getHand() != EquipmentSlot.HAND)
+        return;
+      if (!NexoAddon.getInstance().getBoundaryGuard().canInteract(event.getPlayer(), event.getBaseEntity()))
         return;
       openMenu(event.getPlayer(), event.getMechanic().getItemID());
     }
@@ -205,6 +223,7 @@ public record CustomCrafting(
         giveOrDrop(player, item);
       }
       inventory.setItem(holder.crafting.resultSlot(), null);
+      playSound(player, holder.crafting.closeSound());
     }
 
     private void openMenu(Player player, String nexoItemId) {
@@ -246,6 +265,7 @@ public record CustomCrafting(
 
       inventory.setItem(holder.crafting.resultSlot(), null);
       giveOrDrop(player, recipe.result().clone());
+      playSound(player, holder.crafting.craftSound());
       updateResult(player, holder);
     }
 
