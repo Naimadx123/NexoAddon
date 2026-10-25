@@ -25,11 +25,35 @@ import java.util.*;
 
 import static zone.vao.nexoAddon.utils.BlockUtil.startShiftBlock;
 
-public record Unstackable(String next, String give, List<Material> materials, List<String> nexoIds) {
+public record Unstackable(String next, String give, List<Material> materials, List<String> nexoIds, String take) {
+
+  public Unstackable(String next, String give, List<Material> materials, List<String> nexoIds) {
+    this(next, give, materials, nexoIds, null);
+  }
+
+  public boolean takeItem(Player player) {
+    if(take == null || take.isBlank()) return true;
+
+    ItemStack item = player.getInventory().getItemInMainHand();
+    if(item == null || item.getType().isAir() || item.getAmount() < 1) return false;
+
+    Material material = Material.matchMaterial(take);
+    if(material != null) {
+      if(item.getType() != material) return false;
+    } else if(!take.equals(NexoItems.idFromItem(item))) return false;
+
+    int amount = item.getAmount() - 1;
+    if(amount == 0) player.getInventory().setItemInMainHand(null);
+    else {
+      item.setAmount(amount);
+      player.getInventory().setItemInMainHand(item);
+    }
+    return true;
+  }
 
   public static class UnstackableListener implements Listener {
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public static void onUntackable(final NexoStringBlockInteractEvent event) {
       if(NexoAddon.getInstance().getMechanics().isEmpty()) return;
 
@@ -47,6 +71,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       StringBlockMechanic newBlock = NexoBlocks.stringMechanic(nextStage);
 
       if(newBlock == null && !nextStage.equalsIgnoreCase("stop")) return;
+      if(!mechanic.getUnstackable().takeItem(event.getPlayer())) return;
 
       event.setCancelled(true);
       List<Loot> loots = new ArrayList<>();
@@ -63,16 +88,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       }
       event.getPlayer().swingMainHand();
 
-      Material material = Material.matchMaterial(mechanic.getUnstackable().give());
-      if(material != null){
-
-        event.getPlayer().getInventory().addItem(new ItemStack(material));
-        return;
-      }
-      ItemBuilder itemBuilder = NexoItems.itemFromId(mechanic.getUnstackable().give());
-      if(itemBuilder != null){
-        event.getPlayer().getInventory().addItem(itemBuilder.build());
-      }
+      giveItem(mechanic.getUnstackable(), event.getPlayer());
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -99,6 +115,7 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       event.setCancelled(true);
 
       if (hasCooldown(uuid)) return;
+      if(!mechanic.getUnstackable().takeItem(event.getPlayer())) return;
       setCooldown(uuid, 3);
 
       if(!nextStage.equalsIgnoreCase("stop")) {
@@ -106,15 +123,20 @@ public record Unstackable(String next, String give, List<Material> materials, Li
       }
       event.getPlayer().swingMainHand();
 
-      Material material = Material.matchMaterial(mechanic.getUnstackable().give());
-      if(material != null){
+      giveItem(mechanic.getUnstackable(), event.getPlayer());
+    }
 
-        event.getPlayer().getInventory().addItem(new ItemStack(material));
+    private static void giveItem(Unstackable unstackable, Player player) {
+      if(unstackable.give() == null || unstackable.give().isBlank()) return;
+
+      Material material = Material.matchMaterial(unstackable.give());
+      if(material != null){
+        player.getInventory().addItem(new ItemStack(material));
         return;
       }
-      ItemBuilder itemBuilder = NexoItems.itemFromId(mechanic.getUnstackable().give());
+      ItemBuilder itemBuilder = NexoItems.itemFromId(unstackable.give());
       if(itemBuilder != null){
-        event.getPlayer().getInventory().addItem(itemBuilder.build());
+        player.getInventory().addItem(itemBuilder.build());
       }
     }
 

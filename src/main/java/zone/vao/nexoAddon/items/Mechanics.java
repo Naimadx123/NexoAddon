@@ -101,7 +101,9 @@ public class Mechanics {
 
   public void setBottledExp(Double ration, int cost) {this.bottledExp = new BottledExp(ration, cost);}
 
-  public void setUnstackable(String next, String give, List<Material> materials, List<String> nexoIds) {this.unstackable = new Unstackable(next, give, materials, nexoIds);}
+  public void setUnstackable(String next, String give, List<Material> materials, List<String> nexoIds) {setUnstackable(next, give, materials, nexoIds, null);}
+
+  public void setUnstackable(String next, String give, List<Material> materials, List<String> nexoIds, String take) {this.unstackable = new Unstackable(next, give, materials, nexoIds, take);}
 
   public void setBlockAura(Particle particle, String xOffset, String yOffset, String zOffset, int amount, double deltaX, double deltaY, double deltaZ, double speed, boolean force) {
     this.blockAura = new BlockAura(particle, xOffset, yOffset, zOffset, amount, deltaX, deltaY, deltaZ, speed, force);

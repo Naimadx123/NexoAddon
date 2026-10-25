@@ -438,7 +438,7 @@ public class ItemConfigUtil {
 
   private static void loadUnstackableMechanic(ConfigurationSection section, Mechanics mechanic) {
     if (section.contains("Mechanics.unstackable.next")
-        && section.contains("Mechanics.unstackable.give")
+        && (section.contains("Mechanics.unstackable.give") || section.contains("Mechanics.unstackable.take"))
     ) {
       List<String> rawItems = section.getStringList("Mechanics.unstackable.items");
       List<Material> materials = new ArrayList<>();
@@ -454,7 +454,8 @@ public class ItemConfigUtil {
         }
       }
 
-      mechanic.setUnstackable(section.getString("Mechanics.unstackable.next"), section.getString("Mechanics.unstackable.give"), materials, nexoIds);
+      mechanic.setUnstackable(section.getString("Mechanics.unstackable.next"), section.getString("Mechanics.unstackable.give"), materials, nexoIds,
+          section.getString("Mechanics.unstackable.take"));
     }
   }
 
