@@ -24,10 +24,12 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import zone.vao.nexoAddon.NexoAddon;
 import zone.vao.nexoAddon.items.Mechanics;
+import zone.vao.nexoAddon.utils.BlockUtil;
 
 import java.util.*;
 
@@ -47,6 +49,31 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
   public static class ShiftBlockListener implements Listener {
     public static List<UUID> toCancelation = Collections.synchronizedList(new ArrayList<>());
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public static void clearBrokenBlock(BlockBreakEvent event) {
+      BlockUtil.clearShiftBlock(event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public static void clearBrokenBlock(NexoNoteBlockBreakEvent event) {
+      BlockUtil.clearShiftBlock(event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public static void clearBrokenBlock(NexoStringBlockBreakEvent event) {
+      BlockUtil.clearShiftBlock(event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public static void clearBrokenBlock(NexoChorusBlockBreakEvent event) {
+      BlockUtil.clearShiftBlock(event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public static void clearBrokenFurniture(NexoFurnitureBreakEvent event) {
+      BlockUtil.clearShiftBlock(event.getBaseEntity().getLocation());
+    }
 
     @EventHandler
     public static void onShiftBlockPlaceFurniture(NexoFurniturePlaceEvent event) {
@@ -169,6 +196,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
     }
 
     private static void handleBreakCustomBlock(NexoBlockBreakEvent event) {
+      if (event.isCancelled()) return;
       Mechanics mechanics = NexoAddon.getInstance().getMechanics().get(event.getMechanic().getItemID());
       if (mechanics == null || mechanics.getShiftBlock() == null || !mechanics.getShiftBlock().onBreak())
         return;
@@ -178,6 +206,7 @@ public record ShiftBlock(String replaceTo, int time, List<Material> materials, L
       ItemStack itemStack = event.getPlayer().getInventory().getItemInMainHand();
       if (!mechanics.getShiftBlock().isAllowedItem(itemStack))
         return;
+      event.setCancelled(true);
       startShiftBlock(event.getBlock().getLocation(), customBlockMechanic, event.getMechanic(), mechanics.getShiftBlock().time());
     }
 

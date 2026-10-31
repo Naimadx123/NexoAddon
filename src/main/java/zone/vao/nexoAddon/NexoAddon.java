@@ -141,6 +141,7 @@ public final class NexoAddon extends JavaPlugin {
 
       pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
     }
+    BlockUtil.cancelShiftBlocks();
     particleTasks.values().forEach(ScheduledTask::cancel);
     particleTasks.clear();
     if (spreadScheduler != null) spreadScheduler.stop();

@@ -30,91 +30,131 @@ public class BlockUtil {
 
   public static final Set<Material> UNBREAKABLE_BLOCKS = Sets.newHashSet(Material.BEDROCK, Material.BARRIER, Material.NETHER_PORTAL, Material.END_PORTAL_FRAME, Material.END_PORTAL, Material.END_GATEWAY);
   public static final Set<Location> processedCustomBlocks = ConcurrentHashMap.newKeySet();
-  public static final Set<Location> processedShiftblocks = ConcurrentHashMap.newKeySet();
+  private static final ShiftBlockTracker shiftBlocks = new ShiftBlockTracker();
+  public static final Set<Location> processedShiftblocks = shiftBlocks.locations();
+
+  public static void cancelShiftBlocks() {
+    for (Location location : List.copyOf(processedShiftblocks)) shiftBlocks.clear(location);
+  }
+
+  public static void clearShiftBlock(Location location) {
+    if (shiftBlocks.clear(location)) removeShiftBlockTarget(location);
+  }
+
+  private static void finishShiftBlock(Location location, ShiftBlockTracker.Change change) {
+    if (shiftBlocks.finish(location, change)) removeShiftBlockTarget(location);
+  }
+
+  private static void removeShiftBlockTarget(Location location) {
+    new CustomBlockData(location.getBlock(), NexoAddon.getInstance())
+        .remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
+  }
 
   public static void startShiftBlock(Location location, CustomBlockMechanic to, CustomBlockMechanic target, int time) {
-    World world = location.getWorld();
-    if(world == null || processedShiftblocks.contains(location)) return;
-
-    Location finalLocation = location.clone();
-
-    if(time > 0)
-      processedShiftblocks.add(location);
-    PersistentDataContainer pdc = new CustomBlockData(location.getBlock(), NexoAddon.getInstance());
-    pdc.set(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING, target.getItemID());
-    finalLocation.getBlock().setType(Material.AIR);
-    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, task -> NexoBlocks.place(to.getItemID(), finalLocation), 1L);
-
-    if(time <= 0)
-      return;
-    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, later -> {
-      if(!NexoBlocks.isCustomBlock(finalLocation.getBlock()) ||
-          !NexoBlocks.customBlockMechanic(finalLocation).getItemID().equalsIgnoreCase(to.getItemID())
-      ) {
-        later.cancel();
-        processedShiftblocks.remove(finalLocation);
-        pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
-        return;
+    if (location.getWorld() == null) return;
+    Location finalLocation = location.getBlock().getLocation();
+    ShiftBlockTracker.Change change = shiftBlocks.begin(finalLocation);
+    if (change == null) return;
+    try {
+      if (time > 0) {
+        PersistentDataContainer pdc = new CustomBlockData(finalLocation.getBlock(), NexoAddon.getInstance());
+        pdc.set(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING, target.getItemID());
       }
-      Bukkit.getRegionScheduler().run(NexoAddon.getInstance(), finalLocation, replaceToAir -> {
-        finalLocation.getBlock().setType(Material.AIR);
-      });
-
-      Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, task -> NexoBlocks.place(target.getItemID(), finalLocation), 1L);
-
-      processedShiftblocks.remove(finalLocation);
-      pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
-    },time*20L);
+      finalLocation.getBlock().setType(Material.AIR);
+      change.track(Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, task -> {
+        if (!shiftBlocks.isCurrent(finalLocation, change)) return;
+        try {
+          NexoBlocks.place(to.getItemID(), finalLocation);
+        } catch (RuntimeException failure) {
+          finishShiftBlock(finalLocation, change);
+          throw failure;
+        }
+        if (time <= 0) finishShiftBlock(finalLocation, change);
+      }, 1L));
+      if (time <= 0) return;
+      change.track(Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, later -> {
+        if (!shiftBlocks.isCurrent(finalLocation, change)) return;
+        CustomBlockMechanic current = NexoBlocks.customBlockMechanic(finalLocation);
+        if (current == null || !current.getItemID().equalsIgnoreCase(to.getItemID())) {
+          finishShiftBlock(finalLocation, change);
+          return;
+        }
+        // Keep ownership until the original block has actually been restored.
+        try {
+          finalLocation.getBlock().setType(Material.AIR);
+          change.track(Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, task -> {
+            if (!shiftBlocks.isCurrent(finalLocation, change)) return;
+            try {
+              NexoBlocks.place(target.getItemID(), finalLocation);
+            } finally {
+              finishShiftBlock(finalLocation, change);
+            }
+          }, 1L));
+        } catch (RuntimeException failure) {
+          finishShiftBlock(finalLocation, change);
+          throw failure;
+        }
+      }, time * 20L));
+    } catch (RuntimeException failure) {
+      finishShiftBlock(finalLocation, change);
+      throw failure;
+    }
   }
 
   public static void startShiftBlock(ItemDisplay itemDisplay, FurnitureMechanic to, FurnitureMechanic target, int time) {
-    if(processedShiftblocks.contains(itemDisplay.getLocation())) return;
-
-    ItemDisplay templateEntity = (ItemDisplay) itemDisplay.copy();
-
+    FurnitureMechanic previous = NexoFurniture.furnitureMechanic(itemDisplay);
+    if (previous == null) return;
     Location finalLocation = itemDisplay.getLocation().clone();
+    ShiftBlockTracker.Change change = shiftBlocks.begin(finalLocation);
+    if (change == null) return;
+    try {
+      ItemDisplay templateEntity = (ItemDisplay) itemDisplay.copy();
 
-    if(time > 0)
-      processedShiftblocks.add(finalLocation);
-    PersistentDataContainer pdc = new CustomBlockData(finalLocation.getBlock(), NexoAddon.getInstance());
-    pdc.set(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING, target.getItemID());
-    FurnitureMechanic previous = NexoFurniture.furnitureMechanic(finalLocation);
-    if(previous == null) return;
-    ItemDisplay newOne = to.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
-    if(!newOne.getLocation().equals(finalLocation)) {
-      newOne.teleport(finalLocation);
-    }
-    if(NexoFurniture.furnitureDye(templateEntity) != null) {
-      NexoFurniture.furnitureDye(newOne, NexoFurniture.furnitureDye(templateEntity));
-    }
-    itemDisplay.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
-      previous.removeBaseEntity(itemDisplay);
-      newOne.getScheduler().run(NexoAddon.getInstance(), refresh ->
-          NexoFurniture.furnitureMechanic(finalLocation).getHitbox().refreshHitboxes(newOne, to), null);
-    }, null, 3L);
+      PersistentDataContainer pdc = new CustomBlockData(finalLocation.getBlock(), NexoAddon.getInstance());
+      if (time > 0)
+        pdc.set(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"), PersistentDataType.STRING, target.getItemID());
+      ItemDisplay newOne = to.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
+      if(!newOne.getLocation().equals(finalLocation)) {
+        newOne.teleport(finalLocation);
+      }
+      if(NexoFurniture.furnitureDye(templateEntity) != null) {
+        NexoFurniture.furnitureDye(newOne, NexoFurniture.furnitureDye(templateEntity));
+      }
+      itemDisplay.getScheduler().runDelayed(NexoAddon.getInstance(), task -> {
+        previous.removeBaseEntity(itemDisplay);
+        if (newOne.isValid())
+          newOne.getScheduler().run(NexoAddon.getInstance(), refresh ->
+              to.getHitbox().refreshHitboxes(newOne, to), null);
+      }, null, 3L);
 
-    if(time <= 0)
-      return;
-    Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, shiftBlock -> {
-      if(!NexoFurniture.isFurniture(finalLocation) ||
-          !NexoFurniture.furnitureMechanic(finalLocation).getItemID().equalsIgnoreCase(to.getItemID())
-      ) {
-        shiftBlock.cancel();
-        processedShiftblocks.remove(finalLocation);
-        pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
+      if (time <= 0) {
+        finishShiftBlock(finalLocation, change);
         return;
       }
+      change.track(Bukkit.getRegionScheduler().runDelayed(NexoAddon.getInstance(), finalLocation, shiftBlock -> {
+        if (!shiftBlocks.isCurrent(finalLocation, change)) return;
+        try {
+          if(!newOne.isValid() || !NexoFurniture.isFurniture(finalLocation) ||
+              !NexoFurniture.furnitureMechanic(finalLocation).getItemID().equalsIgnoreCase(to.getItemID())
+          ) {
+            return;
+          }
 
-      ItemDisplay oldFurniture = newOne;
-      ItemDisplay original = target.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
-      if(NexoFurniture.furnitureDye(templateEntity) != null) {
-        NexoFurniture.furnitureDye(original, NexoFurniture.furnitureDye(templateEntity));
-      }
-      if(oldFurniture != null && NexoFurniture.furnitureMechanic(newOne) != null)
-        NexoFurniture.furnitureMechanic(newOne).removeBaseEntity(oldFurniture);
-      processedShiftblocks.remove(finalLocation);
-      pdc.remove(new NamespacedKey(NexoAddon.getInstance(), "shiftblock_target"));
-    }, time*20L);
+          ItemDisplay oldFurniture = newOne;
+          ItemDisplay original = target.place(finalLocation, templateEntity.getYaw(), templateEntity.getFacing(), false);
+          if(NexoFurniture.furnitureDye(templateEntity) != null) {
+            NexoFurniture.furnitureDye(original, NexoFurniture.furnitureDye(templateEntity));
+          }
+          if(oldFurniture != null && NexoFurniture.furnitureMechanic(newOne) != null)
+            NexoFurniture.furnitureMechanic(newOne).removeBaseEntity(oldFurniture);
+        } finally {
+          finishShiftBlock(finalLocation, change);
+        }
+      }, time*20L));
+    } catch (RuntimeException failure) {
+      finishShiftBlock(finalLocation, change);
+      throw failure;
+    }
   }
 
   public static void startDecay(Location location) {
